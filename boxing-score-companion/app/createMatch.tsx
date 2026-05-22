@@ -23,17 +23,19 @@ export default function CreateMatch() {
 
     return (
         <View style={isLandscape ? styles.landscapeContainer : styles.container}>
-        <Text style={isLandscape ? styles.landscapeTitle : styles.title}>Boxing Score Companion</Text>
+        <Text style={isLandscape ? styles.landscapeTitle : styles.title}>Create New Scorecard</Text>
         <Text style={isLandscape ? styles.landscapeNameLabel : styles.nameLabel}>Fighter 1 name:</Text>
         <TextInput 
-            placeholder="Enter fighter 1 name" 
+            placeholder="Enter name.." 
             value={fighter1Name}
+            placeholderTextColor="#D32f2f" 
             onChangeText={setFighter1Name}
             style={isLandscape ? styles.landscapeFighter1Input : styles.fighter1input} 
         />
         <Text style={isLandscape ? styles.landscapeNameLabel : styles.nameLabel}>Fighter 2 name:</Text>
         <TextInput 
-            placeholder="Enter fighter 2 name" 
+            placeholder="Enter name.." 
+            placeholderTextColor="#322fd3" 
             value={fighter2Name}
             onChangeText={setFighter2Name}
             style={isLandscape ? styles.landscapeFighter2Input : styles.fighter2Input} 
@@ -89,10 +91,13 @@ const styles = StyleSheet.create({
         width: '100%', 
         padding: 12, 
         borderRadius: 8, 
-        marginBottom: 36
+        marginBottom: 36,
+        color: '#D32f2f',
+        fontWeight: 600,
     },
     landscapeFighter1Input: {
         backgroundColor: '#fff', 
+        color: "#fff",
         width: '50%', 
         padding: 12, 
         borderRadius: 8, 
@@ -103,7 +108,9 @@ const styles = StyleSheet.create({
         width: '100%', 
         padding: 12, 
         borderRadius: 8, 
-        marginBottom: 36
+        color: '#322fd3',
+        marginBottom: 36,
+        fontWeight: 600,
     },
     landscapeFighter2Input: {
         backgroundColor: '#fff', 
@@ -128,10 +135,10 @@ const styles = StyleSheet.create({
     },
     nameLabel: {
         color: '#fff',
-        fontSize: 18,
-        fontWeight: '500',
+        fontSize: 14,
+        fontWeight: '700',
         marginBottom: 12,
-        marginLeft: 10,
+        marginLeft: 0,
         alignSelf: 'flex-start'
     },
     landscapeNameLabel: {

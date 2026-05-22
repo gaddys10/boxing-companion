@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, TextInput, Image, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
+import SavedCard from '../components/savedCard';
 const tIcon = require('../../assets/images/flatwhitet.png');
+import { Ionicons } from '@expo/vector-icons';
+
 export default function HomeScreen() {
   const router = useRouter();
   const [fighter1Name, setFighter1Name] = useState('');
@@ -13,12 +16,7 @@ export default function HomeScreen() {
 
   const handleStartFight = () => {
     router.push({
-      pathname: '/matchInfo',
-      params: {
-        fighter1: fighter1Name || 'Fighter 1',
-        fighter2: fighter2Name || 'Fighter 2',
-        rounds: selectedRounds,
-      },
+      pathname: '/createMatch',
     });
   };
 
@@ -36,41 +34,23 @@ export default function HomeScreen() {
         </View>
         <Image source={tIcon} style={styles.icon} resizeMode="contain" />
       </View>
-      <Pressable 
-        style={isLandscape ? styles.landscapeButton : styles.button}
-        onPress={handleStartFight}
-      >
-        <Text style={styles.buttonText}>+ New Scorecard</Text>
-      </Pressable>
-      <Pressable style={styles.savedCard}>
-        <View style={styles.savedCardInfoRow}>
-          <View style={styles.f1NameBox}>
-            <Text style={styles.fighter1}>Keyshawn {"\n"}Davis</Text>
-          </View>
-          <View style={styles.scoreBox}>
-            <Text style={styles.f1Score}>118</Text>
-          </View>
-          <View style={styles.eventBox}>
-            <Text style={styles.knockdowns1}>KD:&nbsp;&nbsp; 0</Text>
-            <Text style={styles.deductions1}>PEN: 2</Text>
-          </View>
+      <View style={styles.searchBox}>
+        {/* <Text style={styles.search}> Search Cards</Text> */}
+        <View style={styles.searchInputBox}>
+          <Ionicons name="search" style={styles.searchIcon} />
+          <TextInput 
+            style={styles.searchInput} 
+            placeholderTextColor="rgba(255, 255, 255, 0.5)" 
+            placeholder="Search Cards" 
+          />
         </View>
-        
-        {/* <View style={styles.nameDivider}> </View> */}
-        <View style={styles.savedCardInfoRow}>
-          <View style={styles.f2NameBox}>
-            <Text style={styles.fighter2}>Nahir {"\n"}Albright</Text>
-          </View>
-          <Text style={styles.f2Score}>108</Text>
-          <View >
-            <Text style={styles.knockdowns2}>KD:&nbsp;&nbsp; 0</Text>
-            <Text style={styles.deductions2}>PEN: 0</Text>
-          </View>
-        </View>
-        <View><Text>12 RD</Text></View>
-        
-      </Pressable>
-
+      </View>
+      <View style={styles.savedCardContainer}>
+        <SavedCard fighter1='Keyshawn Davis' fighter2='Nahir Albright' fighter1Score={118} fighter2Score={108} fighter1KD={0} fighter2KD={0} fighter1Pen={2} fighter2Pen={0} rounds={12}/>
+        <SavedCard fighter1='Naoya Inoue' fighter2='Junto Nakatani' fighter1Score={117} fighter2Score={111} fighter1KD={0} fighter2KD={0} fighter1Pen={0} fighter2Pen={0} rounds={12}/>
+        <SavedCard fighter1='Oscar Duarte' fighter2='Angel Fierro' fighter1Score={115} fighter2Score={113} fighter1KD={0} fighter2KD={0} fighter1Pen={0} fighter2Pen={0} rounds={12}/>
+        <SavedCard fighter1='Fabio Wardley' fighter2='Daniel Dubois' fighter1Score={92} fighter2Score={96} fighter1KD={2} fighter2KD={0} fighter1Pen={2} fighter2Pen={0} rounds={12}/>
+      </View>
       <Pressable 
         style={isLandscape ? styles.landscapeButton : styles.button}
         onPress={handleStartFight}
@@ -83,6 +63,41 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  search: {
+    color: "#fff",
+    fontWeight: 700,
+    left: -5
+  },
+  searchInput: {
+    width: '100%',
+    height: 20,
+    color: 'white'
+  },
+  searchIcon: {
+    color: "#fff",
+    top: 4,
+    marginRight: 5
+  },
+  searchInputBox: {
+    marginTop: 10,
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: 'white'
+
+  },
+  searchBox: {
+    // borderBottomWidth: 1,
+    // borderBottomColor: '#fff',
+    width: '45%',
+    color: 'pink',
+    height: 50,
+    top: 230,
+    left: -85
+  },
+  savedCardContainer: {
+    top: 140,
+    
+  },
   button: {
     backgroundColor: '#fff',
     paddingHorizontal: 24,
@@ -92,29 +107,13 @@ const styles = StyleSheet.create({
     bottom: 50,
     position: 'absolute'
   },
-  eventBox: {
-    // backgroundColor: 'green',
-    height: '100%',
-    width: '17%',
-    borderBottomWidth: 1,
-    borderBottomColor: '#4a4a4a'
-  },
-  scoreBox: {
-    // backgroundColor: 'green',
-    height: '100%',
-    alignContent: 'center',
-    alignItems: 'center',
-    paddingTop: 10,
-    borderBottomColor: '#4a4a4a',
-    borderBottomWidth: 1
-  },
-  landscapeButton: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 12,
-    marginTop: 25
-  },
+  // landscapeButton: {
+  //   backgroundColor: '#fff',
+  //   paddingHorizontal: 24,
+  //   paddingVertical: 14,
+  //   borderRadius: 12,
+  //   marginTop: 25
+  // },
   buttonText: {
     color: '#111',
     fontSize: 18,
@@ -124,108 +123,22 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#307Fb6',
     alignItems: 'center',
-    justifyContent: 'center',
+    // justifyContent: 'center',
     // padding: 24,
   },
-  landscapeContainer: {
-    flex: 1,
-    backgroundColor: '#307Fb6',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-    paddingTop: 25
-  },
-  knockdowns1: {
-    color: "#D32f2f",
-    position: 'absolute',
-    left: 3,
-    top: 6
-  },
-  deductions1: {
-    color: '#d32f2f',
-    position: 'absolute',
-    left: 3,
-    top: 25
-  },
-  knockdowns2: {
-    color: "#322fd3",
-    position: 'absolute',
-    left: 0,
-    top: -18
-  },
-  deductions2: {
-    color: '#322fd3',
-        position: 'absolute',
-    left: 0,
-    top: -2
-
-  },
-  nameDivider: {
-    width: '100%',
-    height: 2,
-    backgroundColor: 'black'
-  },
+  // landscapeContainer: {
+  //   flex: 1,
+  //   backgroundColor: '#307Fb6',
+  //   alignItems: 'center',
+  //   justifyContent: 'center',
+  //   padding: 24,
+  //   paddingTop: 25
+  // },
   icon: {
     width: 120,
     height: 120,
     marginBottom: 36,
     marginLeft: -5
-  },
-  savedCard: {
-    width: '90%',
-    height: '12%',
-    backgroundColor: 'white',
-    // paddingHorizontal: 10,
-    top: 100,
-    borderRadius: 15,
-    boxShadow: '2',
-    shadowColor: '#11334b',
-    shadowOffset: {width: 3, height: 3},
-    shadowOpacity: 0.7,
-    shadowRadius: 3,
-    marginBottom: 20
-  },
-  savedCardInfoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    // justifyContent: 'space-between',
-    width: '80%',
-    height: '50%',
-  },
-  f1NameBox: {
-    height: '100.5%',
-    backgroundColor: '#D32F2F',
-    width: '40%',
-    paddingTop: '1.5%',
-    paddingLeft: '4%',
-    borderTopLeftRadius: 15,
-  },
-  f2NameBox: {
-    height: '100.5%',
-    backgroundColor: '#322fd3',
-    width: '40%',
-    paddingTop: '1.5%',
-    paddingLeft: '4%',
-    borderBottomLeftRadius: 15,
-  },
-  f1Score: {
-    color: "#D32f2f",
-    fontSize: 24,
-    marginHorizontal: 20
-  },
-  f2Score: {
-    color: "#322fd3",
-    fontSize: 24,
-    marginHorizontal: 20
-  },
-  fighter1: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  fighter2: {
-    color: '#fff',
-    fontSize: 16,
-
   },
   title: {
     color: '#fff',
@@ -262,7 +175,7 @@ const styles = StyleSheet.create({
   },
   titleBigContainer: {
     position: 'absolute',
-    top: 100,
+    top: 95,
     left: 12,
     right: 0,
     alignItems: 'center',
@@ -273,11 +186,11 @@ const styles = StyleSheet.create({
     marginLeft: 0,
   },
   
-  landscapeTitle: {
-    color: '#fff',
-    fontSize: 28,
-    fontWeight: '700',
-    marginBottom: 50,
-    marginTop: -75
-  },
+  // landscapeTitle: {
+  //   color: '#fff',
+  //   fontSize: 28,
+  //   fontWeight: '700',
+  //   marginBottom: 50,
+  //   marginTop: -75
+  // },
 });
