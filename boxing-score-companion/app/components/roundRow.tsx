@@ -36,12 +36,12 @@ export default function RoundRow({ roundNumber, leftScore, rightScore, leftTotal
                     : styles.plusMinus;
     return (
         <View style={styles.row}>
-            <Text>RD {roundNumber}</Text>
-            <Text style={styles.leftRoundScore}>{leftScore ?? '-'}</Text>
-            <Text style={styles.leftTotalScore}>{leftTotal ?? '-'}</Text>
-            <Text style={plusMinusStyle}>{plusMinusDisplay}</Text>
-            <Text style={styles.rightTotalScore}>{rightTotal ?? '-'}</Text>
-            <Text style={styles.rightRoundScore}>{rightScore ?? '-'}</Text>
+            <Text style={styles.roundLabel}>RD {roundNumber}</Text>
+            <Text style={[styles.scoreText, styles.leftRoundScore]}>{leftScore ?? '-'}</Text>
+            <Text style={[styles.scoreText, styles.leftTotalScore]}>{leftTotal ?? '-'}</Text>
+            <Text style={[styles.scoreText, plusMinusStyle]}>{plusMinusDisplay}</Text>
+            <Text style={[styles.scoreText, styles.rightTotalScore]}>{rightTotal ?? '-'}</Text>
+            <Text style={[styles.scoreText, styles.rightRoundScore]}>{rightScore ?? '-'}</Text>
             <Pressable
                 style={styles.button}
                 onPress={() => router.push({
@@ -80,41 +80,39 @@ const styles = StyleSheet.create({
     },
     row: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 5,
         borderColor: '#000',
         borderBottomWidth: 1,
         paddingBottom: 5,
     },
-    leftRoundScore: {
-        color: '#D32F2F',
+    roundLabel: {
+        width: 50,
+        textAlign: 'center',
         fontSize: 16,
         fontWeight: '700',
-        marginRight: 10,
+    },
+    scoreText: {
+        flex: 1,
+        textAlign: 'center',
+        fontSize: 16,
+        fontWeight: '700',
+    },
+    leftRoundScore: {
+        color: '#D32F2F',
     },
     leftTotalScore: {
         color: '#D32F2F',
-        fontSize: 16,
-        fontWeight: '700',
-        marginRight: 10,
     },
     plusMinus: {
         color: '#000',
-        fontSize: 16,
-        fontWeight: '700',
-        marginRight: 10,
     },
     rightTotalScore: {
         color: '#1976D2',
-        fontSize: 16,
-        fontWeight: '700',
     },
     rightRoundScore: {
         color: '#1976D2',
-        fontSize: 16,
-        fontWeight: '700',
-        marginLeft: 10,
+        marginLeft: 0,
     },
         rowContainer: {
         flexDirection: 'row',
