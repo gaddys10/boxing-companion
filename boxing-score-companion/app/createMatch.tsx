@@ -17,12 +17,14 @@ export default function CreateMatch() {
     const [buttonText, setButtonText] = useState(params.buttonText || "Start Match")
     const rounds = [3, 4, 5, 6, 8, 10, 12];
     const { width, height } = useWindowDimensions();
+    const id = params.id ? String(params.id) : undefined;
     let isLandscape = width > height;
 
     const handleStartFight = () => {
         router.dismissTo({
         pathname: '/matchInfo',
         params: {
+            id,
             fighter1: fighter1Name || 'Fighter 1',
             fighter2: fighter2Name || 'Fighter 2',
             rounds: selectedRounds,
