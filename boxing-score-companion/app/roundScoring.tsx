@@ -128,6 +128,8 @@ export default function RoundScoringScreen() {
                 <Text style={styles.leftName}>{fighter1}</Text>
                 <Animated.Text style={[ styles.plusSign, { transform: [{ scale: leftPulseAnim }] }]} >+</Animated.Text>
 
+
+                {/* Left PEN */}
                 <Pressable
                     style={[styles.deductLeft]}
                     onPress={() => {
@@ -141,11 +143,15 @@ export default function RoundScoringScreen() {
                         void confirmHaptic();
                         setLeftDeductions((current) => current + 1);
                     }}
-                    delayLongPress={2000}
+                    delayLongPress={1500}
                 >
-                    <Animated.View style={[styles.fillOverlay, { width: leftDeductProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
+                    <Animated.View style={[styles.fillOverlayLeft, { width: leftDeductProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '150%'] }) }]} />
                     <Text style={styles.buttonText}>Hold to{"\n"}Deduct</Text>
                 </Pressable>
+
+
+
+                {/* Left Knockdown  */}
                 <Pressable
                     style={[styles.kdButton, styles.leftkd]}
                     onPress={() => {
@@ -160,7 +166,7 @@ export default function RoundScoringScreen() {
                         setScore((currentScore) => currentScore + 30);
                         setLeftKnockdowns((current) => current + 1);
                     }}
-                    delayLongPress={2000}
+                    delayLongPress={1900}
                 >
                     <Animated.View style={[styles.fillOverlay, { width: leftKdProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                     <Text style={styles.buttonText}>Hold for Knockdown</Text>
@@ -179,6 +185,8 @@ export default function RoundScoringScreen() {
                 <Text style={styles.rightName}>{fighter2}</Text>
                 <Animated.Text style={[styles.plusSign, { transform: [{ scale: rightPulseAnim }] }]} >+</Animated.Text>
 
+
+                {/* Right Knockdown */}
                 <Pressable
                     style={[styles.kdButton, styles.rightkd, {  height: height * 0.1 }]}
                     onPress={() => {
@@ -193,12 +201,13 @@ export default function RoundScoringScreen() {
                         setScore((currentScore) => currentScore - 30);
                         setRightKnockdowns((current) => current + 1);
                     }}
-                    delayLongPress={2000}
+                    delayLongPress={1900}
                 >
                     <Animated.View style={[styles.fillOverlay, { width: rightKdProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                     <Text style={styles.buttonText}>Hold for Knockdown</Text>
                 </Pressable>
 
+                {/* right pen */}
                 <Pressable
                     style={[styles.deductRight]}
                     onPress={() => {
@@ -212,15 +221,17 @@ export default function RoundScoringScreen() {
                         void confirmHaptic();
                         setRightDeductions((current) => current + 1);
                     }}
-                    delayLongPress={2000}
+                    delayLongPress={1800}
                 >
-                    <Animated.View style={[styles.fillOverlay, { width: rightDeductProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
+                    <Animated.View style={[styles.fillOverlay, { width: rightDeductProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '105%'] }) }]} />
                     <Text style={[styles.deductRightText, styles.buttonText]}>Hold to{"\n"}Deduct</Text>
                 </Pressable>
             </Pressable>
+
+            {/* Exit  */}
             <Pressable
                 style={styles.exitButton}
-                onPressIn={() => startLongPressFill(exitProgress, 2500)}
+                onPressIn={() => startLongPressFill(exitProgress, 2000)}
                 onPressOut={() => resetLongPressFill(exitProgress)}
                 onLongPress={() => {
                     void tripleHaptic(Haptics.ImpactFeedbackStyle.Medium);
@@ -239,9 +250,9 @@ export default function RoundScoringScreen() {
                         },
                     });
                 }}
-                delayLongPress={2500}
+                delayLongPress={1695}
             >
-                <Animated.View style={[styles.fillOverlay, { width: exitProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
+                <Animated.View style={[styles.fillOverlay, { width: exitProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '106.5%'] }) }]} />
                 <Text style={styles.exitButtonText}>Hold to Save & Exit Round {round}</Text>
             </Pressable>
         </View>
@@ -420,6 +431,12 @@ const styles = StyleSheet.create({
         ...StyleSheet.absoluteFillObject,
         backgroundColor: 'black',
         opacity: 0.35,
+    },
+    fillOverlayLeft: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'black',
+        opacity: 0.35,
+        borderTopRightRadius: 10
     }
 
 });

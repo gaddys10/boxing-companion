@@ -37,11 +37,11 @@ export default function RoundRow({ roundNumber, leftScore, rightScore, leftTotal
     return (
         <View style={styles.row}>
             <Text style={styles.roundLabel}>RD {roundNumber}</Text>
-            <Text style={[styles.scoreText, styles.leftRoundScore]}>{leftScore ?? '-'}</Text>
             <Text style={[styles.scoreText, styles.leftTotalScore]}>{leftTotal ?? '-'}</Text>
+            <Text style={[styles.scoreText, styles.leftRoundScore]}>{leftScore ?? '-'}</Text>
             <Text style={[styles.scoreText, plusMinusStyle]}>{plusMinusDisplay}</Text>
-            <Text style={[styles.scoreText, styles.rightTotalScore]}>{rightTotal ?? '-'}</Text>
             <Text style={[styles.scoreText, styles.rightRoundScore]}>{rightScore ?? '-'}</Text>
+            <Text style={[styles.scoreText, styles.rightTotalScore]}>{rightTotal ?? '-'}</Text>
             <Pressable
                 style={styles.button}
                 onPress={() => router.push({
@@ -109,10 +109,10 @@ const styles = StyleSheet.create({
     },
     rightTotalScore: {
         color: '#1976D2',
+        marginLeft: 0
     },
     rightRoundScore: {
         color: '#1976D2',
-        marginLeft: 0,
     },
         rowContainer: {
         flexDirection: 'row',

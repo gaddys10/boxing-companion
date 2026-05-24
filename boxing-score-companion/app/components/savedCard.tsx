@@ -2,6 +2,8 @@ import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+import { useRouter } from 'expo-router';
+
 type SavedCardProps = {
   fighter1: string;
   fighter2: string;
@@ -13,7 +15,30 @@ type SavedCardProps = {
   fighter2Pen: number;
   rounds: number;
 }
+
 export default function SavedCard({fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds}: SavedCardProps) {
+  const router = useRouter();
+
+  const handleEditCard = () => {
+      router.push({
+        pathname: '/createMatch',
+        params: {
+          title: 'Edit Scorecard Details',
+          backText: 'Menu',
+          buttonText: "Edit Scores",
+          fighter1,
+          fighter2,
+          fighter1Score,
+          fighter2Score,
+          fighter1KD,
+          fighter2KD,
+          fighter1Pen,
+          fighter2Pen,
+          rounds,
+      }
+    });
+  };
+
   return (
     <Pressable style={styles.savedCard}>
       <View style={styles.savedCardInfoRows}>
@@ -49,9 +74,11 @@ export default function SavedCard({fighter1, fighter2, fighter1Score, fighter2Sc
       </View>
 
       <View style={styles.actionsBox}>
-        <Pressable style={styles.actionButton}>
+        <Pressable style={styles.actionButton} onPress={handleEditCard}>
           <Ionicons name="pencil" size={22} color="#333A3F" />
-          <Text style={styles.actionButtonText}>Edit</Text>
+          <Text 
+            style={styles.actionButtonText}
+          >Edit</Text>
         </Pressable>
         <Pressable style={styles.actionButton}>
           <Ionicons name="close" size={24} color="#d32f2f" />

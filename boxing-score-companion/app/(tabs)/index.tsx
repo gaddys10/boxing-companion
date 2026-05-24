@@ -47,9 +47,6 @@ export default function HomeScreen() {
       </View>
       <View style={styles.savedCardContainer}>
         <SavedCard fighter1='Keyshawn Davis' fighter2='Nahir Albright' fighter1Score={118} fighter2Score={108} fighter1KD={0} fighter2KD={0} fighter1Pen={2} fighter2Pen={0} rounds={12}/>
-        <SavedCard fighter1='Naoya Inoue' fighter2='Junto Nakatani' fighter1Score={117} fighter2Score={111} fighter1KD={0} fighter2KD={0} fighter1Pen={0} fighter2Pen={0} rounds={12}/>
-        <SavedCard fighter1='Oscar Duarte' fighter2='Angel Fierro' fighter1Score={115} fighter2Score={113} fighter1KD={0} fighter2KD={0} fighter1Pen={0} fighter2Pen={0} rounds={12}/>
-        <SavedCard fighter1='Fabio Wardley' fighter2='Daniel Dubois' fighter1Score={92} fighter2Score={96} fighter1KD={2} fighter2KD={0} fighter1Pen={2} fighter2Pen={0} rounds={12}/>
       </View>
       <Pressable 
         style={isLandscape ? styles.landscapeButton : styles.button}

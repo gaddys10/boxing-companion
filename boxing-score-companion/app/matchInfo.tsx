@@ -63,7 +63,7 @@ export default function MatchInfoScreen() {
     const startLongPressFill = (progress: Animated.Value, duration: number) => {
         progress.setValue(0);
         Animated.timing(progress, {
-            toValue: 1,
+            toValue: 1.75,
             duration,
             useNativeDriver: false,
         }).start();
@@ -72,7 +72,7 @@ export default function MatchInfoScreen() {
     const startLandscapeLongPressFill = (progress: Animated.Value, duration: number) => {
         progress.setValue(0);
         Animated.timing(progress, {
-            toValue: 1.33,
+            toValue: 1.7,
             duration,
             useNativeDriver: false,
         }).start();
@@ -125,11 +125,17 @@ export default function MatchInfoScreen() {
                 <Text style={isLandscape ? [styles.landscapeFighterText, styles.landscapeFighter2Name] : [styles.fighterText, styles.fighter2Name]}>{fighter2}</Text>
             </View>
             <View style={isLandscape ? styles.landscapeHeaderRow : styles.headerRow}>
-                <Text style={isLandscape ? [styles.landscapeHeaderText, styles.landscapeLeftHeader] : [styles.headerText, styles.leftHeader]}>Round</Text>
-                <Text style={isLandscape ? [styles.landscapeHeaderText, styles.landscapeLeftHeader] : [styles.headerText, styles.leftHeader]}>Total</Text>
+                <Text
+                    numberOfLines={1}
+                    style={isLandscape ? [styles.landscapeHeaderText, styles.landscapeLeftHeader] : [styles.headerText, styles.leftTotal]}
+                >
+                    Total
+                </Text>
+                <Text style={isLandscape ? [styles.landscapeHeaderText, styles.landscapeLeftHeader] : [styles.headerText, styles.leftRound]}>Round</Text>
+                
                 <Text style={isLandscape ? styles.landscapeHeaderText : styles.headerText}>+/-</Text>
-                <Text style={isLandscape ? [styles.landscapeHeaderText, styles.landscapeRightHeader] : [styles.headerText, styles.rightHeader]}>Total</Text>
-                <Text style={isLandscape ? [styles.landscapeHeaderText, styles.landscapeRightHeader] : [styles.headerText, styles.rightHeader]}>Round</Text>
+                <Text style={isLandscape ? [styles.landscapeHeaderText, styles.landscapeRightHeader] : [styles.headerText, styles.rightRound]}>Round</Text>
+                <Text style={isLandscape ? [styles.landscapeHeaderText, styles.landscapeRightHeader] : [styles.headerText, styles.rightTotal]}>Total</Text>
             </View>
             
             <ScrollView style={isLandscape ? styles.landscapeRowContainer : styles.rowContainer}>
@@ -163,9 +169,9 @@ export default function MatchInfoScreen() {
                 onLongPress={() => 
                     router.push('/createMatch')
                 }
-                onPressIn={() => isLandscape ? startLandscapeLongPressFill(exitProgress, 3000) : startLongPressFill(exitProgress, 5000)}
+                onPressIn={() => isLandscape ? startLandscapeLongPressFill(exitProgress, 2000) : startLongPressFill(exitProgress, 4000)}
                 onPressOut={() => resetLongPressFill(exitProgress)}
-                delayLongPress={3000}
+                delayLongPress={2000}
             >
                 <Animated.View 
                     style={[styles.fillOverlay, { width: exitProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
@@ -176,6 +182,39 @@ export default function MatchInfoScreen() {
 }
 
 const styles = StyleSheet.create({
+    button: {
+        backgroundColor: '#D32F2F',
+        paddingHorizontal: 24,
+        paddingVertical: 14,
+        borderRadius: 12,
+        overflow: 'hidden',
+        alignSelf: 'center',
+        alignItems: 'center',
+        bottom: 25
+    },
+    landscapeButton: {
+        backgroundColor: '#D32F2F',
+        paddingHorizontal: 24,
+        paddingVertical: 14,
+        borderRadius: 12,
+        width: '43%',
+        // center button in landscape
+        alignSelf: 'center',
+        alignItems: 'center',
+        overflow: 'hidden',
+    },
+    buttonText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: '700',
+        zIndex: 1
+    },
+    landscapeButtonText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: '700',
+        zIndex: 1
+    },
     container: {
         flex: 1,
         backgroundColor: '#fff',
@@ -188,18 +227,79 @@ const styles = StyleSheet.create({
         padding: 24,
         paddingHorizontal: 100
     },
+    fighter1Name: {
+        color: '#D32F2F',
+        textAlign: 'left',
+    },
+    landscapeFighter1Name: {
+        color: '#D32F2F',
+        textAlign: 'center',
+    },
+    fighter2Name: {
+        color: '#1976D2',
+        textAlign: 'right',
+    },
+    landscapeFighter2Name: {
+        color: '#1976D2',
+        textAlign: 'center',
+    },
+    fighterText: {
+        fontSize: 16,
+        flex: 1,
+        fontWeight: '700',
+    },
+    landscapeFighterText: {
+        flex: 1,
+        fontSize: 16,
+        fontWeight: '700',
+        textAlign: 'center',
+    },
+    headerRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 12,
+        marginHorizontal: 0,
+        paddingBottom: 10,
+        marginLeft: 40,
+    },
+    landscapeHeaderRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 10,
+        paddingBottom: 10,
+        width: '77%',
+        alignSelf: 'center',
+    },
+    headerText: {
+        flex: 1,
+        textAlign: 'center',
+        color: '#333',
+        fontSize: 12,
+        fontWeight: '600',
+    },
     leftHeader: {
-        color: 'red'
+        color: 'red',
+        width: '45%',
+        // marginLeft: 15
+    },
+    leftTotal: {
+        marginLeft: 10
+    },
+    leftRound: {
+
     },
     rightHeader: {
-        color: 'blue'
+        color: 'blue',
+        width: '45%'
+
     },
     rowContainer: {
         flex: 1,
         marginBottom: 16,
         paddingHorizontal: 15,
         marginHorizontal: -24,
-
     },
     landscapeRowContainer: {
         flex: 1,
@@ -219,7 +319,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         marginBottom: 50,
         width: '85%',
-        marginLeft: 27,
+        marginLeft: 25,
         marginHorizontal: 0,
     },
     landscapeTopDescription: {
@@ -228,89 +328,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginBottom: 25,
         width: '80%',
-        alignSelf: 'center',
-    },
-    fighterText: {
-        flex: 1,
-        fontSize: 16,
-        fontWeight: '700',
-    },
-    landscapeFighterText: {
-        flex: 1,
-        fontSize: 16,
-        fontWeight: '700',
-        textAlign: 'center',
-    },
-    fighter1Name: {
-        color: '#D32F2F',
-        textAlign: 'left',
-    },
-    landscapeFighter1Name: {
-        color: '#D32F2F',
-        textAlign: 'center',
-    },
-    vsText: {
-        color: '#000',
-        textAlign: 'center',
-    },
-    fighter2Name: {
-        color: '#1976D2',
-        textAlign: 'right',
-    },
-    landscapeFighter2Name: {
-        color: '#1976D2',
-        textAlign: 'center',
-    },
-    button: {
-        backgroundColor: '#D32F2F',
-        paddingHorizontal: 24,
-        paddingVertical: 14,
-        borderRadius: 12,
-        overflow: 'hidden',
-        alignSelf: 'center',
-        alignItems: 'center',
-        bottom: 25
-    },
-    landscapeButton: {
-        backgroundColor: '#D32F2F',
-        paddingHorizontal: 24,
-        paddingVertical: 14,
-        borderRadius: 12,
-        width: '30%',
-        // center button in landscape
-        alignSelf: 'center',
-        alignItems: 'center',
-        overflow: 'hidden',
-    },
-    buttonText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: '700',
-        zIndex: 1
-    },
-    landscapeButtonText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: '700',
-        zIndex: 1
-    },
-    headerRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 12,
-        marginHorizontal: 0,
-        paddingBottom: 10,
-        marginLeft: 40,
-        width: '75%'
-    },
-    landscapeHeaderRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 10,
-        paddingBottom: 10,
-        width: '77%',
         alignSelf: 'center',
     },
     fillOverlay: {
@@ -322,11 +339,10 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         opacity: 0.35,
     },
-    headerText: {
-        flex: 1,
+    vsText: {
+        color: '#000',
         textAlign: 'center',
-        color: '#333',
-        fontSize: 12,
-        fontWeight: '600',
+        
     },
+
 });
