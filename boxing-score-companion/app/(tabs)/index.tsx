@@ -1,18 +1,74 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, TextInput, Image, useWindowDimensions } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import SavedCard from '../components/savedCard';
 const tIcon = require('../../assets/images/flatwhitet.png');
-import { Ionicons } from '@expo/vector-icons';
+
+const SAVED_CARDS_KEY = 'savedScorecards';
+
+type Scorecard = {
+  id: number;
+  fighter1: string;
+  fighter2: string;
+  fighter1Score: number;
+  fighter2Score: number;
+  fighter1KD: number;
+  fighter2KD: number;
+  fighter1Pen: number;
+  fighter2Pen: number;
+  rounds: number;
+};
 
 export default function HomeScreen() {
   const router = useRouter();
-  const [fighter1Name, setFighter1Name] = useState('');
-  const [fighter2Name, setFighter2Name] = useState('');
-  const [selectedRounds, setSelectedRounds] = useState(3);
-  const rounds = [3, 4, 5, 6, 8, 10, 12];
+  const { savedScorecard } = useLocalSearchParams();
+  const lastSavedScorecard = useRef<string | null>(null);
+  const [savedCards, setSavedCards] = useState<Scorecard[]>([]);
+  const [hasLoadedSavedCards, setHasLoadedSavedCards] = useState(false);
   const { width, height } = useWindowDimensions();
-  let isLandscape = width > height;
+  const isLandscape = width > height;
+
+  useEffect(() => {
+    const loadSavedCards = async () => {
+      try {
+        const storedCards = await AsyncStorage.getItem(SAVED_CARDS_KEY);
+
+        if (storedCards) {
+          setSavedCards(JSON.parse(storedCards) as Scorecard[]);
+        }
+      } finally {
+        setHasLoadedSavedCards(true);
+      }
+    };
+
+    void loadSavedCards();
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoadedSavedCards) return;
+
+    const scorecardParam = Array.isArray(savedScorecard) ? savedScorecard[0] : savedScorecard;
+
+    if (!scorecardParam || scorecardParam === lastSavedScorecard.current) return;
+
+    try {
+      const scorecard = JSON.parse(scorecardParam) as Scorecard;
+      lastSavedScorecard.current = scorecardParam;
+      setSavedCards((currentCards) => {
+        if (currentCards.some((card) => card.id === scorecard.id)) {
+          return currentCards;
+        }
+
+        const nextCards = [scorecard, ...currentCards];
+        void AsyncStorage.setItem(SAVED_CARDS_KEY, JSON.stringify(nextCards));
+        return nextCards;
+      });
+    } catch {
+      lastSavedScorecard.current = scorecardParam;
+    }
+  }, [hasLoadedSavedCards, savedScorecard]);
 
   const handleStartFight = () => {
     router.push({
@@ -46,7 +102,20 @@ export default function HomeScreen() {
         </View>
       </View>
       <View style={styles.savedCardContainer}>
-        <SavedCard fighter1='Keyshawn Davis' fighter2='Nahir Albright' fighter1Score={118} fighter2Score={108} fighter1KD={0} fighter2KD={0} fighter1Pen={2} fighter2Pen={0} rounds={12}/>
+        {savedCards.map((card) => (
+          <SavedCard
+            key={card.id}
+            fighter1={card.fighter1}
+            fighter2={card.fighter2}
+            fighter1Score={card.fighter1Score}
+            fighter2Score={card.fighter2Score}
+            fighter1KD={card.fighter1KD}
+            fighter2KD={card.fighter2KD}
+            fighter1Pen={card.fighter1Pen}
+            fighter2Pen={card.fighter2Pen}
+            rounds={card.rounds}
+          />
+        ))}
       </View>
       <Pressable 
         style={isLandscape ? styles.landscapeButton : styles.button}
@@ -104,13 +173,13 @@ const styles = StyleSheet.create({
     bottom: 50,
     position: 'absolute'
   },
-  // landscapeButton: {
-  //   backgroundColor: '#fff',
-  //   paddingHorizontal: 24,
-  //   paddingVertical: 14,
-  //   borderRadius: 12,
-  //   marginTop: 25
-  // },
+  landscapeButton: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginTop: 25,
+  },
   buttonText: {
     color: '#111',
     fontSize: 18,
@@ -123,14 +192,13 @@ const styles = StyleSheet.create({
     // justifyContent: 'center',
     // padding: 24,
   },
-  // landscapeContainer: {
-  //   flex: 1,
-  //   backgroundColor: '#307Fb6',
-  //   alignItems: 'center',
-  //   justifyContent: 'center',
-  //   padding: 24,
-  //   paddingTop: 25
-  // },
+  landscapeContainer: {
+    flex: 1,
+    backgroundColor: '#307Fb6',
+    alignItems: 'center',
+    padding: 24,
+    paddingTop: 25,
+  },
   icon: {
     width: 120,
     height: 120,

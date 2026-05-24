@@ -247,6 +247,10 @@ export default function RoundScoringScreen() {
                             savedLeftScore: String(leftScore),
                             savedRightScore: String(rightScore),
                             savedPlusMinus: String(score),
+                            savedLeftDeductions: String(leftDeductions),
+                            savedRightDeductions: String(rightDeductions),
+                            savedLeftKnockdowns: String(leftKnockdowns),
+                            savedRightKnockdowns: String(rightKnockdowns),
                         },
                     });
                 }}
