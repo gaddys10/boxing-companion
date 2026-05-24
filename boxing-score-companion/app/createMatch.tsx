@@ -26,6 +26,7 @@ export default function CreateMatch() {
             fighter1: fighter1Name || 'Fighter 1',
             fighter2: fighter2Name || 'Fighter 2',
             rounds: selectedRounds,
+            savedScores: params.savedScores,
         },
         });
     };

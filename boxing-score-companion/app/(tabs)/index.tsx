@@ -19,6 +19,7 @@ type Scorecard = {
   fighter1Pen: number;
   fighter2Pen: number;
   rounds: number;
+  savedScores?: string;
 };
 
 export default function HomeScreen() {
@@ -76,6 +77,14 @@ export default function HomeScreen() {
     });
   };
 
+  const handleDeleteCard = (cardId: number) => {
+    setSavedCards((currentCards) => {
+      const nextCards = currentCards.filter((card) => card.id !== cardId);
+      void AsyncStorage.setItem(SAVED_CARDS_KEY, JSON.stringify(nextCards));
+      return nextCards;
+    });
+  };
+
   return (
     <View style={isLandscape ? styles.landscapeContainer : styles.container}>
       <View style={styles.titleBigContainer}>
@@ -105,6 +114,7 @@ export default function HomeScreen() {
         {savedCards.map((card) => (
           <SavedCard
             key={card.id}
+            id={card.id}
             fighter1={card.fighter1}
             fighter2={card.fighter2}
             fighter1Score={card.fighter1Score}
@@ -114,6 +124,8 @@ export default function HomeScreen() {
             fighter1Pen={card.fighter1Pen}
             fighter2Pen={card.fighter2Pen}
             rounds={card.rounds}
+            savedScores={card.savedScores}
+            onDelete={handleDeleteCard}
           />
         ))}
       </View>
@@ -129,41 +141,6 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  search: {
-    color: "#fff",
-    fontWeight: 700,
-    left: -5
-  },
-  searchInput: {
-    width: '100%',
-    height: 20,
-    color: 'white'
-  },
-  searchIcon: {
-    color: "#fff",
-    top: 4,
-    marginRight: 5
-  },
-  searchInputBox: {
-    marginTop: 10,
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: 'white'
-
-  },
-  searchBox: {
-    // borderBottomWidth: 1,
-    // borderBottomColor: '#fff',
-    width: '45%',
-    color: 'pink',
-    height: 50,
-    top: 230,
-    left: -85
-  },
-  savedCardContainer: {
-    top: 140,
-    
-  },
   button: {
     backgroundColor: '#fff',
     paddingHorizontal: 24,
@@ -172,6 +149,18 @@ const styles = StyleSheet.create({
     marginTop: 50,
     bottom: 50,
     position: 'absolute'
+  },
+    container: {
+    flex: 1,
+    backgroundColor: '#307Fb6',
+    alignItems: 'center'
+  },
+  landscapeContainer: {
+    flex: 1,
+    backgroundColor: '#307Fb6',
+    alignItems: 'center',
+    padding: 24,
+    paddingTop: 25,
   },
   landscapeButton: {
     backgroundColor: '#fff',
@@ -185,25 +174,42 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
   },
-  container: {
-    flex: 1,
-    backgroundColor: '#307Fb6',
-    alignItems: 'center',
-    // justifyContent: 'center',
-    // padding: 24,
-  },
-  landscapeContainer: {
-    flex: 1,
-    backgroundColor: '#307Fb6',
-    alignItems: 'center',
-    padding: 24,
-    paddingTop: 25,
-  },
   icon: {
     width: 120,
     height: 120,
     marginBottom: 36,
     marginLeft: -5
+  },
+  savedCardContainer: {
+    top: 140,
+  },
+  search: {
+    color: "#fff",
+    fontWeight: 700,
+    left: -5
+  },
+  searchBox: {
+    width: '45%',
+    color: 'pink',
+    height: 50,
+    top: 230,
+    left: -85
+  },
+  searchIcon: {
+    color: "#fff",
+    top: 4,
+    marginRight: 5
+  },
+  searchInput: {
+    width: '100%',
+    height: 20,
+    color: 'white'
+  },
+  searchInputBox: {
+    marginTop: 10,
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: 'white'
   },
   title: {
     color: '#fff',
@@ -250,12 +256,4 @@ const styles = StyleSheet.create({
   titleRight: {
     marginLeft: 0,
   },
-  
-  // landscapeTitle: {
-  //   color: '#fff',
-  //   fontSize: 28,
-  //   fontWeight: '700',
-  //   marginBottom: 50,
-  //   marginTop: -75
-  // },
 });

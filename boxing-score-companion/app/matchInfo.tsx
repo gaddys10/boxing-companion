@@ -171,6 +171,7 @@ export default function MatchInfoScreen() {
                     fighter1: String(fighter1 || 'Fighter 1'),
                     fighter2: String(fighter2 || 'Fighter 2'),
                     rounds: Number(rounds || 3),
+                    savedScores: JSON.stringify(roundScores),
                     ...totals,
                 }),
             },
@@ -315,12 +316,13 @@ const styles = StyleSheet.create({
     },
     headerRow: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        // justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 12,
         marginHorizontal: 0,
         paddingBottom: 10,
-        marginLeft: 40,
+        marginLeft: 31,
+        width: '77.5%'
     },
     landscapeHeaderRow: {
         flexDirection: 'row',
@@ -337,6 +339,8 @@ const styles = StyleSheet.create({
         color: '#333',
         fontSize: 12,
         fontWeight: '600',
+        width: '17%',
+        // marginLeft: '4%'
     },
     landscapeHeaderText: {
         flex: 1,
