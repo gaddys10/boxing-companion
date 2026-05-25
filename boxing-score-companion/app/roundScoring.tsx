@@ -130,8 +130,13 @@ export default function RoundScoringScreen() {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     handleScorePress('left');
                 }}
-            >
-                <Text style={styles.leftEvents}>Deductions: {leftDeductions} &nbsp;&nbsp;&nbsp;&nbsp; Knockdowns: {leftKnockdowns} </Text>
+                >
+                <Pressable>
+                    <Text style={styles.leftEvents}>Deductions: {leftDeductions}</Text><Text style={styles.leftDedUndo}>Hold to Undo</Text>
+                </Pressable>
+                <Pressable>
+                    <Text style={styles.leftEvents2}>Knockdowns: {leftKnockdowns}{"\n"}Hold to Undo</Text>
+                </Pressable>
                 { score > 0 &&
                     <Text style={styles.leftScore}>{score}<Ionicons name="caret-back" size={24} color="white" /></Text>
                 }
@@ -158,8 +163,6 @@ export default function RoundScoringScreen() {
                     <Animated.View style={[styles.fillOverlayLeft, { width: leftDeductProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '150%'] }) }]} />
                     <Text style={styles.buttonText}>Hold to{"\n"}Deduct</Text>
                 </Pressable>
-
-
 
                 {/* Left Knockdown  */}
                 <Pressable
@@ -275,6 +278,10 @@ export default function RoundScoringScreen() {
 }
 
 const styles = StyleSheet.create({
+    buttonText: {
+        color: '#000',
+        zIndex: 1,
+    },
     container: {
         flex: 1,
         backgroundColor: '#fff',
@@ -341,13 +348,15 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 14,
         marginTop: 40,
+        zIndex: 1,
+    },
+    leftDedUndo: {
+        fontSize: 12,
+        left: 68,
+        top: 22,
+        color: '#000'
+    },
 
-        zIndex: 1,
-    },
-    buttonText: {
-        color: '#000',
-        zIndex: 1,
-    },
     kdButton: {
         position: 'absolute',
         // justifyContent: 'center',
@@ -370,15 +379,23 @@ const styles = StyleSheet.create({
     },
     leftEvents: {
         position: 'absolute',
-        color: 'white',
         left: 60,
-        textAlign: 'left',
+        marginTop: 3,
+        textAlign: 'center',
+    },
+    leftEvents2: {
+        position: 'absolute',
+        color: '#000',
+        left: 180,
+        top: -11,
+        textAlign: 'center',
+        
     },
     rightEvents: {
         position: 'absolute',
         color: 'white',
         right: 60,
-        textAlign: 'right',
+        textAlign: 'center',
     },
     leftName: {
         color: '#fff',
