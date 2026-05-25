@@ -7,6 +7,7 @@ export default function MatchInfoScreen() {
     const router = useRouter();
     const { width, height } = useWindowDimensions();
     const { 
+        id,
         fighter1,
         fighter2,
         rounds,
@@ -15,26 +16,29 @@ export default function MatchInfoScreen() {
         savedRightScore,
         savedScores,
         savedPlusMinus, 
+        savedLeftDeductions,
+        savedRightDeductions,
+        savedLeftKnockdowns,
+        savedRightKnockdowns,
     } = useLocalSearchParams();
     
     type RoundScore = {
         left: string;
         right: string;
         plusMinus: string;
+        leftDeductions?: string;
+        rightDeductions?: string;
+        leftKnockdowns?: string;
+        rightKnockdowns?: string;
     };
 
     const [roundScores, setRoundScores] = useState<Record<number, RoundScore>>({});
-    const [fighter1Name, setFighter1Name] = useState(fighter1);
-    const [fighter2Name, setFighter2Name] = useState(fighter2);
-    const [selectedRounds, setSelectedRounds] = useState(rounds);
-    const [landscape, setLandscape] = useState(false);
     const exitProgress = useRef<Animated.Value>(new Animated.Value(0)).current;
 
 
     const isLandscape = width > height;
-    useEffect(() => {
-        setLandscape(isLandscape);
-    }, [height, width, isLandscape]);
+    const scorecardId = id ? Number(String(id)) : undefined;
+    const isEditingScorecard = scorecardId !== undefined && !Number.isNaN(scorecardId);
 
     useEffect(() => {
         let currentScores: Record<number, RoundScore> = {};
@@ -47,18 +51,32 @@ export default function MatchInfoScreen() {
             }
         }
 
-        if (savedRound && savedLeftScore && savedRightScore && savedPlusMinus !== undefined) {
+        if (savedRound && savedLeftScore !== undefined && savedRightScore !== undefined && savedPlusMinus !== undefined){
             const roundNumber = Number(savedRound);
 
             currentScores[roundNumber] = {
                 left: String(savedLeftScore),
                 right: String(savedRightScore),
                 plusMinus: String(savedPlusMinus),
+                leftDeductions: String(savedLeftDeductions ?? 0),
+                rightDeductions: String(savedRightDeductions ?? 0),
+                leftKnockdowns: String(savedLeftKnockdowns ?? 0),
+                rightKnockdowns: String(savedRightKnockdowns ?? 0),
             };
         }
 
         setRoundScores(currentScores);
-    }, [savedScores, savedRound, savedLeftScore, savedRightScore, savedPlusMinus]);
+    }, [
+        savedScores,
+        savedRound,
+        savedLeftScore,
+        savedRightScore,
+        savedPlusMinus,
+        savedLeftDeductions,
+        savedRightDeductions,
+        savedLeftKnockdowns,
+        savedRightKnockdowns,
+    ]);
 
     const startLongPressFill = (progress: Animated.Value, duration: number) => {
         progress.setValue(0);
@@ -102,17 +120,75 @@ export default function MatchInfoScreen() {
         return total || '-';
     };
 
-    const getPlusMinus = (currentRound: number) => {
-        const leftTotal = getTotalScore('left', currentRound);
-        const rightTotal = getTotalScore('right', currentRound);
+    const getScorecardTotals = () => {
+        return getSavedRoundScores().reduce(
+            (totals, roundScore) => {
+                return {
+                    fighter1Score: totals.fighter1Score + Number(roundScore.left || 0),
+                    fighter2Score: totals.fighter2Score + Number(roundScore.right || 0),
+                    fighter1KD: totals.fighter1KD + Number(roundScore.leftKnockdowns || 0),
+                    fighter2KD: totals.fighter2KD + Number(roundScore.rightKnockdowns || 0),
+                    fighter1Pen: totals.fighter1Pen + Number(roundScore.leftDeductions || 0),
+                    fighter2Pen: totals.fighter2Pen + Number(roundScore.rightDeductions || 0),
+                };
+            },
+            {
+                fighter1Score: 0,
+                fighter2Score: 0,
+                fighter1KD: 0,
+                fighter2KD: 0,
+                fighter1Pen: 0,
+                fighter2Pen: 0,
+            }
+        );
+    };
 
-        if (leftTotal === '-' || rightTotal === '-') return '-';
+    const getSavedRoundScores = () => {
+        const selectedRoundCount = Number(rounds || 3);
 
-        const diff = Number(leftTotal) - Number(rightTotal);
+        return Array.from({ length: selectedRoundCount }, (_, index) => roundScores[index + 1]).filter(
+            (roundScore): roundScore is RoundScore => !!roundScore
+        );
+    };
 
-        if (diff > 0) return `+${diff}`;
-        if (diff < 0) return String(diff);
-        return '0';
+    const getSavedScores = () => {
+        const selectedRoundCount = Number(rounds || 3);
+        const savedRoundScores: Record<number, RoundScore> = {};
+
+        for (let round = 1; round <= selectedRoundCount; round++) {
+            if (roundScores[round]) {
+                savedRoundScores[round] = roundScores[round];
+            }
+        }
+
+        return savedRoundScores;
+    };
+
+    const handleSaveScorecard = () => {
+        const savedRoundScores = getSavedScores();
+        const totals = getScorecardTotals();
+
+        router.push({
+            pathname: '/',
+            params: {
+                savedScorecard: JSON.stringify({
+                    id: isEditingScorecard ? scorecardId : Date.now(),
+                    fighter1: String(fighter1 || 'Fighter 1'),
+                    fighter2: String(fighter2 || 'Fighter 2'),
+                    rounds: Number(rounds || 3),
+                    savedScores: JSON.stringify(savedRoundScores),
+                    ...totals,
+                }),
+            },
+        });
+    };
+
+    const handleClearRound = (roundNumber: number) => {
+        setRoundScores((currentScores) => {
+            const nextScores = { ...currentScores };
+            delete nextScores[roundNumber];
+            return nextScores;
+        });
     };
 
     return (
@@ -142,7 +218,6 @@ export default function MatchInfoScreen() {
                 
                 {Array.from({ length: parseInt(rounds as string) }).map((_, index) => {
                     const roundNumber = index + 1;
-                    const savedPlusMinusForRound = Number(savedRound) === roundNumber && savedPlusMinus ? savedPlusMinus : undefined;
 
                     return (
                         <RoundRow
@@ -158,7 +233,9 @@ export default function MatchInfoScreen() {
                             fighter1={String(fighter1)}
                             fighter2={String(fighter2)}
                             rounds={String(rounds)}
+                            id={id ? String(id) : undefined}
                             savedScores={JSON.stringify(roundScores)}
+                            onClearRound={handleClearRound}
                         />
                     );
                 })}
@@ -166,16 +243,16 @@ export default function MatchInfoScreen() {
             <Pressable 
                 style={isLandscape ? styles.landscapeButton : styles.button}
                 // onPress={() => router.push('/')}
-                onLongPress={() => 
-                    router.push('/createMatch')
-                }
+                onLongPress={handleSaveScorecard}
                 onPressIn={() => isLandscape ? startLandscapeLongPressFill(exitProgress, 2000) : startLongPressFill(exitProgress, 4000)}
                 onPressOut={() => resetLongPressFill(exitProgress)}
                 delayLongPress={2000}
             >
                 <Animated.View 
                     style={[styles.fillOverlay, { width: exitProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
-                <Text style={isLandscape ? styles.landscapeButtonText : styles.buttonText}>Hold to Save & Exit Match</Text>
+                <Text style={isLandscape ? styles.landscapeButtonText : styles.buttonText}>
+                    {isEditingScorecard ? 'Hold to Save Changes' : 'Hold to Save & Exit Match'}
+                </Text>
             </Pressable>
         </View>
     );
@@ -190,7 +267,7 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         alignSelf: 'center',
         alignItems: 'center',
-        bottom: 25
+        bottom: 15
     },
     landscapeButton: {
         backgroundColor: '#D32F2F',
@@ -218,7 +295,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
-        padding: 24,
+        padding: 18,
         paddingTop: 75
     },
     landscapeContainer: {
@@ -256,12 +333,13 @@ const styles = StyleSheet.create({
     },
     headerRow: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        // justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 12,
         marginHorizontal: 0,
         paddingBottom: 10,
-        marginLeft: 40,
+        marginLeft: 31,
+        width: '77.5%'
     },
     landscapeHeaderRow: {
         flexDirection: 'row',
@@ -278,11 +356,23 @@ const styles = StyleSheet.create({
         color: '#333',
         fontSize: 12,
         fontWeight: '600',
+        width: '17%',
+        // marginLeft: '4%'
+    },
+    landscapeHeaderText: {
+        flex: 1,
+        textAlign: 'center',
+        color: '#333',
+        fontSize: 12,
+        fontWeight: '600',
     },
     leftHeader: {
         color: 'red',
         width: '45%',
         // marginLeft: 15
+    },
+    landscapeLeftHeader: {
+        color: '#D32F2F',
     },
     leftTotal: {
         marginLeft: 10
@@ -290,10 +380,18 @@ const styles = StyleSheet.create({
     leftRound: {
 
     },
+    rightRound: {
+
+    },
+    rightTotal: {
+
+    },
     rightHeader: {
         color: 'blue',
         width: '45%'
-
+    },
+    landscapeRightHeader: {
+        color: '#1976D2',
     },
     rowContainer: {
         flex: 1,
@@ -343,6 +441,10 @@ const styles = StyleSheet.create({
         color: '#000',
         textAlign: 'center',
         
+    },
+    landscapeVsText: {
+        color: '#000',
+        textAlign: 'center',
     },
 
 });

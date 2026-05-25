@@ -1,10 +1,11 @@
-import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { Modal, View, Text, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useRouter } from 'expo-router';
 
 type SavedCardProps = {
+  id: number;
   fighter1: string;
   fighter2: string;
   fighter1Score: number;
@@ -14,15 +15,19 @@ type SavedCardProps = {
   fighter1Pen: number;
   fighter2Pen: number;
   rounds: number;
+  savedScores?: string;
+  onDelete: (id: number) => void;
 }
 
-export default function SavedCard({fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds}: SavedCardProps) {
+export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, savedScores, onDelete}: SavedCardProps) {
   const router = useRouter();
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
   const handleEditCard = () => {
       router.push({
         pathname: '/createMatch',
         params: {
+          id: String(id),
           title: 'Edit Scorecard Details',
           backText: 'Menu',
           buttonText: "Edit Scores",
@@ -35,57 +40,89 @@ export default function SavedCard({fighter1, fighter2, fighter1Score, fighter2Sc
           fighter1Pen,
           fighter2Pen,
           rounds,
+          savedScores,
       }
     });
   };
 
+  const handleConfirmDelete = () => {
+    setDeleteModalVisible(false);
+    onDelete(id);
+  };
+
   return (
-    <Pressable style={styles.savedCard}>
-      <View style={styles.savedCardInfoRows}>
-        <View style={styles.savedCardInfoRow}>
-          <View style={styles.f1NameBox}>
-            <Text style={styles.fighter1}>{fighter1}</Text>
+    <>
+      <Pressable style={styles.savedCard}>
+        <View style={styles.savedCardInfoRows}>
+          <View style={styles.savedCardInfoRow}>
+            <View style={styles.f1NameBox}>
+              <Text style={styles.fighter1}>{fighter1}</Text>
+            </View>
+            <View style={styles.scoreBox1}>
+              <Text style={styles.f1Score}>{fighter1Score}</Text>
+            </View>
+            <View style={styles.eventBox1}>
+              <Text style={styles.knockdowns1}>KD:&nbsp;&nbsp;&nbsp;{fighter1KD}</Text>
+              <Text style={styles.deductions1}>PEN: {fighter1Pen}</Text>
+            </View>
           </View>
-          <View style={styles.scoreBox1}>
-            <Text style={styles.f1Score}>{fighter1Score}</Text>
-          </View>
-          <View style={styles.eventBox1}>
-            <Text style={styles.knockdowns1}>KD:&nbsp;&nbsp;&nbsp;{fighter1KD}</Text>
-            <Text style={styles.deductions1}>PEN: {fighter1Pen}</Text>
+
+          <View style={styles.savedCardInfoRow}>
+            <View style={styles.f2NameBox}>
+              <Text style={styles.fighter2}>{fighter2}</Text>
+            </View>
+            <View style={styles.scoreBox2}>
+              <Text style={styles.f2Score}>{fighter2Score}</Text>
+            </View>
+            <View style={styles.eventBox2}>
+              <Text style={styles.knockdowns2}>KD:&nbsp;&nbsp; {fighter2KD}</Text>
+              <Text style={styles.deductions2}>PEN: {fighter2Pen}</Text>
+            </View>
           </View>
         </View>
 
-        <View style={styles.savedCardInfoRow}>
-          <View style={styles.f2NameBox}>
-            <Text style={styles.fighter2}>{fighter2}</Text>
-          </View>
-          <View style={styles.scoreBox2}>
-            <Text style={styles.f2Score}>{fighter2Score}</Text>
-          </View>
-          <View style={styles.eventBox2}>
-            <Text style={styles.knockdowns2}>KD:&nbsp;&nbsp; {fighter2KD}</Text>
-            <Text style={styles.deductions2}>PEN: {fighter2Pen}</Text>
+        <View style={styles.roundBox}>
+          <Text style={styles.roundText}>{rounds} RD</Text>
+        </View>
+
+        <View style={styles.actionsBox}>
+          <Pressable style={styles.actionButton} onPress={handleEditCard}>
+            <Ionicons name="pencil" size={22} color="#333A3F" />
+            <Text 
+              style={styles.actionButtonText}
+            >Edit</Text>
+          </Pressable>
+          <Pressable style={styles.actionButton} onPress={() => setDeleteModalVisible(true)}>
+            <Ionicons name="close" size={24} color="#d32f2f" />
+            <Text style={[styles.actionButtonText, styles.deleteActionText]}>Delete</Text>
+          </Pressable>
+        </View>
+      </Pressable>
+
+      <Modal
+        animationType="fade"
+        transparent
+        visible={deleteModalVisible}
+        onRequestClose={() => setDeleteModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.deleteModal}>
+            <Text style={styles.modalTitle}>Delete scorecard?</Text>
+            <Text style={styles.modalText}>
+              Are you sure you want to delete {fighter1} vs {fighter2}?
+            </Text>
+            <View style={styles.modalActions}>
+              <Pressable style={[styles.modalButton, styles.cancelButton]} onPress={() => setDeleteModalVisible(false)}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </Pressable>
+              <Pressable style={[styles.modalButton, styles.confirmDeleteButton]} onPress={handleConfirmDelete}>
+                <Text style={styles.confirmDeleteText}>Delete</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
-      </View>
-
-      <View style={styles.roundBox}>
-        <Text style={styles.roundText}>{rounds} RD</Text>
-      </View>
-
-      <View style={styles.actionsBox}>
-        <Pressable style={styles.actionButton} onPress={handleEditCard}>
-          <Ionicons name="pencil" size={22} color="#333A3F" />
-          <Text 
-            style={styles.actionButtonText}
-          >Edit</Text>
-        </Pressable>
-        <Pressable style={styles.actionButton}>
-          <Ionicons name="close" size={24} color="#d32f2f" />
-          <Text style={[styles.actionButtonText, styles.deleteActionText]}>Delete</Text>
-        </Pressable>
-      </View>
-    </Pressable>
+      </Modal>
+    </>
   );
 }
 
@@ -244,5 +281,62 @@ const styles = StyleSheet.create({
   },
   deleteActionText: {
     color: '#d32f2f',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  deleteModal: {
+    width: '100%',
+    maxWidth: 340,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  modalTitle: {
+    color: '#333A3F',
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  modalText: {
+    color: '#333A3F',
+    fontSize: 15,
+    lineHeight: 21,
+    marginBottom: 20,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  modalButton: {
+    minWidth: 88,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+  cancelButton: {
+    backgroundColor: '#EEF1F3',
+  },
+  confirmDeleteButton: {
+    backgroundColor: '#d32f2f',
+  },
+  cancelButtonText: {
+    color: '#333A3F',
+    fontWeight: '700',
+  },
+  confirmDeleteText: {
+    color: '#fff',
+    fontWeight: '700',
   },
 });

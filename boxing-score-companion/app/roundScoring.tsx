@@ -13,13 +13,23 @@ export default function RoundScoringScreen() {
     const fighter1 = params.fighter1 || 'Fighter 1';
     const fighter2 = params.fighter2 || 'Fighter 2';
     
-    const [score, setScore] = useState(0);
-    const [leftDeductions, setLeftDeductions] = useState(0);
-    const [rightDeductions, setRightDeductions] = useState(0);
-    const [leftKnockdowns, setLeftKnockdowns] = useState(0);
-    const [rightKnockdowns, setRightKnockdowns] = useState(0);
-    const [leftScore, setLeftScore] = useState(10);
-    const [rightScore, setRightScore] = useState(10);
+    const getSavedRound = () => {
+    try {
+        const savedScores = params.savedScores ? JSON.parse(String(params.savedScores)) : {};
+        return savedScores[String(round)] ?? savedScores[Number(round)];
+    } catch {
+        return undefined;
+    }
+    };
+
+    const savedRound = getSavedRound();
+    const [score, setScore] = useState(Number(savedRound?.plusMinus ?? 0));
+    const [leftDeductions, setLeftDeductions] = useState(Number(savedRound?.leftDeductions ?? 0));
+    const [rightDeductions, setRightDeductions] = useState(Number(savedRound?.rightDeductions ?? 0));
+    const [leftKnockdowns, setLeftKnockdowns] = useState(Number(savedRound?.leftKnockdowns ?? 0));
+    const [rightKnockdowns, setRightKnockdowns] = useState(Number(savedRound?.rightKnockdowns ?? 0));
+    const [leftScore, setLeftScore] = useState(Number(savedRound?.left ?? 10));
+    const [rightScore, setRightScore] = useState(Number(savedRound?.right ?? 10));
 
     const leftPulseAnim = useRef<Animated.Value>(new Animated.Value(1)).current;
     const rightPulseAnim = useRef<Animated.Value>(new Animated.Value(1)).current;
@@ -120,8 +130,13 @@ export default function RoundScoringScreen() {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     handleScorePress('left');
                 }}
-            >
-                <Text style={styles.leftEvents}>Deductions: {leftDeductions} &nbsp;&nbsp;&nbsp;&nbsp; Knockdowns: {leftKnockdowns} </Text>
+                >
+                <Pressable>
+                    <Text style={styles.leftEvents}>Deductions: {leftDeductions}</Text><Text style={styles.leftDedUndo}>Hold to Undo</Text>
+                </Pressable>
+                <Pressable>
+                    <Text style={styles.leftEvents2}>Knockdowns: {leftKnockdowns}{"\n"}Hold to Undo</Text>
+                </Pressable>
                 { score > 0 &&
                     <Text style={styles.leftScore}>{score}<Ionicons name="caret-back" size={24} color="white" /></Text>
                 }
@@ -148,8 +163,6 @@ export default function RoundScoringScreen() {
                     <Animated.View style={[styles.fillOverlayLeft, { width: leftDeductProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '150%'] }) }]} />
                     <Text style={styles.buttonText}>Hold to{"\n"}Deduct</Text>
                 </Pressable>
-
-
 
                 {/* Left Knockdown  */}
                 <Pressable
@@ -242,11 +255,16 @@ export default function RoundScoringScreen() {
                             fighter1: params.fighter1,
                             fighter2: params.fighter2,
                             rounds: params.rounds,
+                            id: params.id,
                             savedScores: params.savedScores,
                             savedRound: String(round),
                             savedLeftScore: String(leftScore),
                             savedRightScore: String(rightScore),
                             savedPlusMinus: String(score),
+                            savedLeftDeductions: String(leftDeductions),
+                            savedRightDeductions: String(rightDeductions),
+                            savedLeftKnockdowns: String(leftKnockdowns),
+                            savedRightKnockdowns: String(rightKnockdowns),
                         },
                     });
                 }}
@@ -260,6 +278,10 @@ export default function RoundScoringScreen() {
 }
 
 const styles = StyleSheet.create({
+    buttonText: {
+        color: '#000',
+        zIndex: 1,
+    },
     container: {
         flex: 1,
         backgroundColor: '#fff',
@@ -326,13 +348,15 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 14,
         marginTop: 40,
+        zIndex: 1,
+    },
+    leftDedUndo: {
+        fontSize: 12,
+        left: 68,
+        top: 22,
+        color: '#000'
+    },
 
-        zIndex: 1,
-    },
-    buttonText: {
-        color: '#000',
-        zIndex: 1,
-    },
     kdButton: {
         position: 'absolute',
         // justifyContent: 'center',
@@ -355,15 +379,23 @@ const styles = StyleSheet.create({
     },
     leftEvents: {
         position: 'absolute',
-        color: 'white',
         left: 60,
-        textAlign: 'left',
+        marginTop: 3,
+        textAlign: 'center',
+    },
+    leftEvents2: {
+        position: 'absolute',
+        color: '#000',
+        left: 180,
+        top: -11,
+        textAlign: 'center',
+        
     },
     rightEvents: {
         position: 'absolute',
         color: 'white',
         right: 60,
-        textAlign: 'right',
+        textAlign: 'center',
     },
     leftName: {
         color: '#fff',
