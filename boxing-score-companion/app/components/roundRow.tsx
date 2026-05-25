@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
+import { Swipeable } from 'react-native-gesture-handler';
 
 type RoundRowProps = {
     roundNumber: number;
@@ -15,9 +16,11 @@ type RoundRowProps = {
     rounds: string;
     id?: string;
     savedScores: string;
+    onClearRound: (roundNumber: number) => void;
 };
 
-export default function RoundRow({ roundNumber, leftScore, rightScore, leftTotal, rightTotal, plusMinus, fighter1, fighter2, rounds, id, savedScores }: RoundRowProps) {
+export default function RoundRow({ roundNumber, leftScore, rightScore, leftTotal, rightTotal, plusMinus, fighter1, fighter2, rounds, id, savedScores, onClearRound }: RoundRowProps) {
+    const swipeableRef = React.useRef<Swipeable | null>(null);
     const plusMinusNumber = plusMinus && plusMinus !== '-' ? Number(plusMinus) : null;
 
     const plusMinusDisplay =
@@ -35,31 +38,46 @@ export default function RoundRow({ roundNumber, leftScore, rightScore, leftTotal
                 : plusMinusNumber < 0
                     ? [styles.plusMinus, styles.bluePlusMinus]
                     : styles.plusMinus;
+
+    const renderRightActions = () => (
+        <Pressable
+            style={styles.clearAction}
+            onPress={() => {
+                swipeableRef.current?.close();
+                onClearRound(roundNumber);
+            }}
+        >
+            <Text style={styles.clearActionText}>Clear{"\n"}Round</Text>
+        </Pressable>
+    );
+
     return (
-        <View style={styles.row}>
-            <Text style={styles.roundLabel}>RD {roundNumber}</Text>
-            <Text style={[styles.scoreText, styles.leftTotalScore]}>{leftTotal ?? '-'}</Text>
-            <Text style={[styles.scoreText, styles.leftRoundScore]}>{leftScore ?? '-'}</Text>
-            <Text style={[styles.scoreText, plusMinusStyle]}>{plusMinusDisplay}</Text>
-            <Text style={[styles.scoreText, styles.rightRoundScore]}>{rightScore ?? '-'}</Text>
-            <Text style={[styles.scoreText, styles.rightTotalScore]}>{rightTotal ?? '-'}</Text>
-            <Pressable
-                style={styles.button}
-                onPress={() => router.push({
-                    pathname: '/roundScoring',
-                    params: {
-                        roundNumber: String(roundNumber),
-                        fighter1,
-                        fighter2,
-                        rounds,
-                        id,
-                        savedScores,
-                    },
-                })}
-            >
-                <Text style={styles.buttonText}>Edit</Text>
-            </Pressable>
-        </View>
+        <Swipeable ref={swipeableRef} renderRightActions={renderRightActions} overshootRight={false}>
+            <View style={styles.row}>
+                <Text style={styles.roundLabel}>R{roundNumber}</Text>
+                <Text style={[styles.scoreText, styles.leftTotalScore]}>{leftTotal ?? '-'}</Text>
+                <Text style={[styles.scoreText, styles.leftRoundScore]}>{leftScore ?? '-'}</Text>
+                <Text style={[styles.scoreText, plusMinusStyle]}>{plusMinusDisplay}</Text>
+                <Text style={[styles.scoreText, styles.rightRoundScore]}>{rightScore ?? '-'}</Text>
+                <Text style={[styles.scoreText, styles.rightTotalScore]}>{rightTotal ?? '-'}</Text>
+                <Pressable
+                    style={styles.button}
+                    onPress={() => router.push({
+                        pathname: '/roundScoring',
+                        params: {
+                            roundNumber: String(roundNumber),
+                            fighter1,
+                            fighter2,
+                            rounds,
+                            id,
+                            savedScores,
+                        },
+                    })}
+                >
+                    <Text style={styles.buttonText}>Edit</Text>
+                </Pressable>
+            </View>
+        </Swipeable>
     );
 }
 
@@ -73,20 +91,41 @@ const styles = StyleSheet.create({
     },
     button: {
         backgroundColor: '#000',
-        paddingHorizontal: 16,
+        marginRight: 3,
+        paddingHorizontal: 15,
         paddingVertical: 10,
         borderRadius: 12,
     },
     buttonText: {   
         color: '#fff',
     },
+    clearAction: {
+        alignItems: 'center',
+        backgroundColor: '#D32F2F',
+        justifyContent: 'center',
+        // marginBottom: 5,
+        paddingHorizontal: 16,
+        
+        width: 82,
+    },
+    clearActionText: {
+        color: '#fff',
+        fontSize: 12,
+        fontWeight: '700',
+        textAlign: 'center',
+    },
     row: {
+        backgroundColor: '#fff',
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 5,
+        minHeight: 35,
+        // marginBottom: 5,
+        marginBottom: 0,
+
         borderColor: '#000',
         borderBottomWidth: 1,
-        paddingBottom: 5,
+        // paddingBottom: 5,
+        paddingVertical: 4,
     },
     roundLabel: {
         width: 50,

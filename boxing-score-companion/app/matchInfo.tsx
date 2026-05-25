@@ -51,7 +51,7 @@ export default function MatchInfoScreen() {
             }
         }
 
-        if (savedRound && savedLeftScore && savedRightScore && savedPlusMinus !== undefined) {
+        if (savedRound && savedLeftScore !== undefined && savedRightScore !== undefined && savedPlusMinus !== undefined){
             const roundNumber = Number(savedRound);
 
             currentScores[roundNumber] = {
@@ -183,6 +183,14 @@ export default function MatchInfoScreen() {
         });
     };
 
+    const handleClearRound = (roundNumber: number) => {
+        setRoundScores((currentScores) => {
+            const nextScores = { ...currentScores };
+            delete nextScores[roundNumber];
+            return nextScores;
+        });
+    };
+
     return (
         <View style={isLandscape ? styles.landscapeContainer : styles.container}>
             <Stack.Screen options={{ headerShown: false }} />
@@ -227,6 +235,7 @@ export default function MatchInfoScreen() {
                             rounds={String(rounds)}
                             id={id ? String(id) : undefined}
                             savedScores={JSON.stringify(roundScores)}
+                            onClearRound={handleClearRound}
                         />
                     );
                 })}
@@ -286,7 +295,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
-        padding: 24,
+        padding: 18,
         paddingTop: 75
     },
     landscapeContainer: {
