@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 
@@ -13,10 +13,11 @@ type RoundRowProps = {
     fighter1: string;
     fighter2: string;
     rounds: string;
+    id?: string;
     savedScores: string;
 };
 
-export default function RoundRow({ roundNumber, leftScore, rightScore, leftTotal, rightTotal, plusMinus, fighter1, fighter2, rounds, savedScores }: RoundRowProps) {
+export default function RoundRow({ roundNumber, leftScore, rightScore, leftTotal, rightTotal, plusMinus, fighter1, fighter2, rounds, id, savedScores }: RoundRowProps) {
     const plusMinusNumber = plusMinus && plusMinus !== '-' ? Number(plusMinus) : null;
 
     const plusMinusDisplay =
@@ -51,6 +52,7 @@ export default function RoundRow({ roundNumber, leftScore, rightScore, leftTotal
                         fighter1,
                         fighter2,
                         rounds,
+                        id,
                         savedScores,
                     },
                 })}
@@ -114,7 +116,7 @@ const styles = StyleSheet.create({
     rightRoundScore: {
         color: '#1976D2',
     },
-        rowContainer: {
+    rowContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',

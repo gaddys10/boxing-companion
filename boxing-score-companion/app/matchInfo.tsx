@@ -7,6 +7,7 @@ export default function MatchInfoScreen() {
     const router = useRouter();
     const { width, height } = useWindowDimensions();
     const { 
+        id,
         fighter1,
         fighter2,
         rounds,
@@ -32,17 +33,12 @@ export default function MatchInfoScreen() {
     };
 
     const [roundScores, setRoundScores] = useState<Record<number, RoundScore>>({});
-    const [fighter1Name, setFighter1Name] = useState(fighter1);
-    const [fighter2Name, setFighter2Name] = useState(fighter2);
-    const [selectedRounds, setSelectedRounds] = useState(rounds);
-    const [landscape, setLandscape] = useState(false);
     const exitProgress = useRef<Animated.Value>(new Animated.Value(0)).current;
 
 
     const isLandscape = width > height;
-    useEffect(() => {
-        setLandscape(isLandscape);
-    }, [height, width, isLandscape]);
+    const scorecardId = id ? Number(String(id)) : undefined;
+    const isEditingScorecard = scorecardId !== undefined && !Number.isNaN(scorecardId);
 
     useEffect(() => {
         let currentScores: Record<number, RoundScore> = {};
@@ -124,21 +120,8 @@ export default function MatchInfoScreen() {
         return total || '-';
     };
 
-    const getPlusMinus = (currentRound: number) => {
-        const leftTotal = getTotalScore('left', currentRound);
-        const rightTotal = getTotalScore('right', currentRound);
-
-        if (leftTotal === '-' || rightTotal === '-') return '-';
-
-        const diff = Number(leftTotal) - Number(rightTotal);
-
-        if (diff > 0) return `+${diff}`;
-        if (diff < 0) return String(diff);
-        return '0';
-    };
-
     const getScorecardTotals = () => {
-        return Object.values(roundScores).reduce(
+        return getSavedRoundScores().reduce(
             (totals, roundScore) => {
                 return {
                     fighter1Score: totals.fighter1Score + Number(roundScore.left || 0),
@@ -160,18 +143,40 @@ export default function MatchInfoScreen() {
         );
     };
 
+    const getSavedRoundScores = () => {
+        const selectedRoundCount = Number(rounds || 3);
+
+        return Array.from({ length: selectedRoundCount }, (_, index) => roundScores[index + 1]).filter(
+            (roundScore): roundScore is RoundScore => !!roundScore
+        );
+    };
+
+    const getSavedScores = () => {
+        const selectedRoundCount = Number(rounds || 3);
+        const savedRoundScores: Record<number, RoundScore> = {};
+
+        for (let round = 1; round <= selectedRoundCount; round++) {
+            if (roundScores[round]) {
+                savedRoundScores[round] = roundScores[round];
+            }
+        }
+
+        return savedRoundScores;
+    };
+
     const handleSaveScorecard = () => {
+        const savedRoundScores = getSavedScores();
         const totals = getScorecardTotals();
 
         router.push({
             pathname: '/',
             params: {
                 savedScorecard: JSON.stringify({
-                    id: Date.now(),
+                    id: isEditingScorecard ? scorecardId : Date.now(),
                     fighter1: String(fighter1 || 'Fighter 1'),
                     fighter2: String(fighter2 || 'Fighter 2'),
                     rounds: Number(rounds || 3),
-                    savedScores: JSON.stringify(roundScores),
+                    savedScores: JSON.stringify(savedRoundScores),
                     ...totals,
                 }),
             },
@@ -220,6 +225,7 @@ export default function MatchInfoScreen() {
                             fighter1={String(fighter1)}
                             fighter2={String(fighter2)}
                             rounds={String(rounds)}
+                            id={id ? String(id) : undefined}
                             savedScores={JSON.stringify(roundScores)}
                         />
                     );
@@ -235,7 +241,9 @@ export default function MatchInfoScreen() {
             >
                 <Animated.View 
                     style={[styles.fillOverlay, { width: exitProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
-                <Text style={isLandscape ? styles.landscapeButtonText : styles.buttonText}>Hold to Save & Exit Match</Text>
+                <Text style={isLandscape ? styles.landscapeButtonText : styles.buttonText}>
+                    {isEditingScorecard ? 'Hold to Save Changes' : 'Hold to Save & Exit Match'}
+                </Text>
             </Pressable>
         </View>
     );
@@ -250,7 +258,7 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         alignSelf: 'center',
         alignItems: 'center',
-        bottom: 25
+        bottom: 15
     },
     landscapeButton: {
         backgroundColor: '#D32F2F',
@@ -372,7 +380,6 @@ const styles = StyleSheet.create({
     rightHeader: {
         color: 'blue',
         width: '45%'
-
     },
     landscapeRightHeader: {
         color: '#1976D2',

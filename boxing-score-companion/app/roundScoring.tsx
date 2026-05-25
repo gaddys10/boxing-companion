@@ -13,13 +13,23 @@ export default function RoundScoringScreen() {
     const fighter1 = params.fighter1 || 'Fighter 1';
     const fighter2 = params.fighter2 || 'Fighter 2';
     
-    const [score, setScore] = useState(0);
-    const [leftDeductions, setLeftDeductions] = useState(0);
-    const [rightDeductions, setRightDeductions] = useState(0);
-    const [leftKnockdowns, setLeftKnockdowns] = useState(0);
-    const [rightKnockdowns, setRightKnockdowns] = useState(0);
-    const [leftScore, setLeftScore] = useState(10);
-    const [rightScore, setRightScore] = useState(10);
+    const getSavedRound = () => {
+    try {
+        const savedScores = params.savedScores ? JSON.parse(String(params.savedScores)) : {};
+        return savedScores[String(round)] ?? savedScores[Number(round)];
+    } catch {
+        return undefined;
+    }
+    };
+
+    const savedRound = getSavedRound();
+    const [score, setScore] = useState(Number(savedRound?.plusMinus ?? 0));
+    const [leftDeductions, setLeftDeductions] = useState(Number(savedRound?.leftDeductions ?? 0));
+    const [rightDeductions, setRightDeductions] = useState(Number(savedRound?.rightDeductions ?? 0));
+    const [leftKnockdowns, setLeftKnockdowns] = useState(Number(savedRound?.leftKnockdowns ?? 0));
+    const [rightKnockdowns, setRightKnockdowns] = useState(Number(savedRound?.rightKnockdowns ?? 0));
+    const [leftScore, setLeftScore] = useState(Number(savedRound?.left ?? 10));
+    const [rightScore, setRightScore] = useState(Number(savedRound?.right ?? 10));
 
     const leftPulseAnim = useRef<Animated.Value>(new Animated.Value(1)).current;
     const rightPulseAnim = useRef<Animated.Value>(new Animated.Value(1)).current;
@@ -242,6 +252,7 @@ export default function RoundScoringScreen() {
                             fighter1: params.fighter1,
                             fighter2: params.fighter2,
                             rounds: params.rounds,
+                            id: params.id,
                             savedScores: params.savedScores,
                             savedRound: String(round),
                             savedLeftScore: String(leftScore),

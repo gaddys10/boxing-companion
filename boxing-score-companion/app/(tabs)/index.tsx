@@ -58,8 +58,13 @@ export default function HomeScreen() {
       const scorecard = JSON.parse(scorecardParam) as Scorecard;
       lastSavedScorecard.current = scorecardParam;
       setSavedCards((currentCards) => {
-        if (currentCards.some((card) => card.id === scorecard.id)) {
-          return currentCards;
+        const existingCardIndex = currentCards.findIndex((card) => card.id === scorecard.id);
+
+        if (existingCardIndex !== -1) {
+          const nextCards = [...currentCards];
+          nextCards[existingCardIndex] = scorecard;
+          void AsyncStorage.setItem(SAVED_CARDS_KEY, JSON.stringify(nextCards));
+          return nextCards;
         }
 
         const nextCards = [scorecard, ...currentCards];
