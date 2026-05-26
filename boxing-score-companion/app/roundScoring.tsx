@@ -34,6 +34,11 @@ export default function RoundScoringScreen() {
     const leftPulseAnim = useRef<Animated.Value>(new Animated.Value(1)).current;
     const rightPulseAnim = useRef<Animated.Value>(new Animated.Value(1)).current;
     const leftDeductProgress = useRef<Animated.Value>(new Animated.Value(0)).current;
+    const leftDeductUndoProgress = useRef<Animated.Value>(new Animated.Value(0)).current;
+    const leftKDUndoProgress = useRef<Animated.Value>(new Animated.Value(0)).current;
+    const rightDeductUndoProgress = useRef<Animated.Value>(new Animated.Value(0)).current;
+    const rightKDUndoProgress = useRef<Animated.Value>(new Animated.Value(0)).current;
+
     const leftKdProgress = useRef<Animated.Value>(new Animated.Value(0)).current;
     const rightKdProgress = useRef<Animated.Value>(new Animated.Value(0)).current;
     const rightDeductProgress = useRef<Animated.Value>(new Animated.Value(0)).current;
@@ -131,11 +136,32 @@ export default function RoundScoringScreen() {
                     handleScorePress('left');
                 }}
                 >
-                <Pressable>
-                    <Text style={styles.leftEvents}>Deductions: {leftDeductions}</Text><Text style={styles.leftDedUndo}>Hold to Undo</Text>
+
+                {/* Undo left deductions */}
+                <Pressable
+                    onPress={() => {
+                        pulseAnimation(leftPulseAnim);
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        handleScorePress('left');
+                    }}
+                    onPressIn={() => startLongPressFill(leftDeductUndoProgress, 2000)}
+                    onPressOut={() => resetLongPressFill(leftDeductUndoProgress)}
+                    onLongPress={() => {
+                        void confirmHaptic();
+                        setLeftDeductions((current) => current > 0 ? current - 1 : 0);
+                    }}
+                    delayLongPress={1500}
+                    style={styles.undoDeductLeft}
+                >
+                    <Animated.View style={[styles.fillOverlayLeft, { width: leftDeductUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '150%'] }) }]} />
+                    <Text style={styles.leftEvents}>Deductions: {leftDeductions}</Text>
+                    <Text style={styles.leftDedUndo}>Hold to Undo</Text>
                 </Pressable>
+
+
                 <Pressable>
-                    <Text style={styles.leftEvents2}>Knockdowns: {leftKnockdowns}{"\n"}Hold to Undo</Text>
+                    <Text style={styles.leftEvents2}>Knockdowns: {leftKnockdowns}</Text>
+                    <Text style={styles.leftKdUndo}>Hold to Undo</Text>
                 </Pressable>
                 { score > 0 &&
                     <Text style={styles.leftScore}>{score}<Ionicons name="caret-back" size={24} color="white" /></Text>
@@ -294,6 +320,35 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         marginBottom: 20,
     },
+    leftEvents: {
+        color: '#000',
+        fontSize: 12,
+        textAlign: 'center',
+    },
+    undoDeductLeft: {
+        alignItems: 'center',
+        backgroundColor: 'gold',
+        justifyContent: 'center',
+        gap: 2,
+        overflow: 'hidden',
+        height: 40,
+        position: 'absolute',
+        left: 50,
+        width: '26%',
+        borderBottomLeftRadius: 15,
+        borderBottomRightRadius: 15,
+    },
+    leftDedUndo: {
+        color: '#000',
+        fontSize: 11,
+        textAlign: 'center',
+    },
+    leftKdUndo: {
+        fontSize: 12,
+        left: 191,
+        top: 8,
+        color: '#000'
+    },
     deductLeft: {
         position: 'absolute',
         bottom: 0,
@@ -350,12 +405,6 @@ const styles = StyleSheet.create({
         marginTop: 40,
         zIndex: 1,
     },
-    leftDedUndo: {
-        fontSize: 12,
-        left: 68,
-        top: 22,
-        color: '#000'
-    },
 
     kdButton: {
         position: 'absolute',
@@ -377,12 +426,7 @@ const styles = StyleSheet.create({
         width: '50%',
         position: 'absolute',
     },
-    leftEvents: {
-        position: 'absolute',
-        left: 60,
-        marginTop: 3,
-        textAlign: 'center',
-    },
+
     leftEvents2: {
         position: 'absolute',
         color: '#000',

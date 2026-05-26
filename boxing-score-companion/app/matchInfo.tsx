@@ -39,6 +39,7 @@ export default function MatchInfoScreen() {
     const isLandscape = width > height;
     const scorecardId = id ? Number(String(id)) : undefined;
     const isEditingScorecard = scorecardId !== undefined && !Number.isNaN(scorecardId);
+    const selectedRoundCount = Number(rounds || 3);
 
     useEffect(() => {
         let currentScores: Record<number, RoundScore> = {};
@@ -120,6 +121,13 @@ export default function MatchInfoScreen() {
         return total || '-';
     };
 
+    const latestScoredRound = Array.from({ length: selectedRoundCount }, (_, index) => index + 1)
+        .filter((roundNumber) => isRoundScored(roundNumber))
+        .pop();
+
+    const fighter1LatestTotal = latestScoredRound ? String(getTotalScore('left', latestScoredRound)) : '-';
+    const fighter2LatestTotal = latestScoredRound ? String(getTotalScore('right', latestScoredRound)) : '-';
+
     const getScorecardTotals = () => {
         return getSavedRoundScores().reduce(
             (totals, roundScore) => {
@@ -164,9 +172,23 @@ export default function MatchInfoScreen() {
         return savedRoundScores;
     };
 
+    const scorecardTotals = getScorecardTotals();
+    const getTotalEventsText = (knockdowns: number, penalties: number) => {
+        const events = [];
+
+        if (knockdowns > 0) {
+            events.push(`KD ${knockdowns}`);
+        }
+
+        if (penalties > 0) {
+            events.push(`PEN ${penalties}`);
+        }
+
+        return events.join(' · ');
+    };
+
     const handleSaveScorecard = () => {
         const savedRoundScores = getSavedScores();
-        const totals = getScorecardTotals();
 
         router.push({
             pathname: '/',
@@ -177,7 +199,7 @@ export default function MatchInfoScreen() {
                     fighter2: String(fighter2 || 'Fighter 2'),
                     rounds: Number(rounds || 3),
                     savedScores: JSON.stringify(savedRoundScores),
-                    ...totals,
+                    ...scorecardTotals,
                 }),
             },
         });
@@ -200,6 +222,23 @@ export default function MatchInfoScreen() {
                 <Text style={isLandscape ? [styles.landscapeFighterText, styles.landscapeVsText] : [styles.fighterText, styles.vsText]}>vs</Text>
                 <Text style={isLandscape ? [styles.landscapeFighterText, styles.landscapeFighter2Name] : [styles.fighterText, styles.fighter2Name]}>{fighter2}</Text>
             </View>
+
+            <View style={isLandscape ? styles.landscapePointHeader : styles.pointHeader}>
+                <Text style={styles.fighter1PointHeader}>{fighter1LatestTotal}</Text>
+                <Text style={styles.vsPointHeader}></Text>
+                <Text style={styles.fighter2PointHeader}>{fighter2LatestTotal}</Text>
+            </View>
+
+            <View style={isLandscape ? styles.landscapeTotalEvents : styles.totalEvents}>
+                <Text style={[styles.totalEventsText, styles.fighter1TotalEvents]}>
+                    {getTotalEventsText(scorecardTotals.fighter1KD, scorecardTotals.fighter1Pen)}
+                </Text>
+                <Text style={styles.vsTotalEvents}></Text>
+                <Text style={[styles.totalEventsText, styles.fighter2TotalEvents]}>
+                    {getTotalEventsText(scorecardTotals.fighter2KD, scorecardTotals.fighter2Pen)}
+                </Text>
+            </View>
+
             <View style={isLandscape ? styles.landscapeHeaderRow : styles.headerRow}>
                 <Text
                     numberOfLines={1}
@@ -218,7 +257,6 @@ export default function MatchInfoScreen() {
                 
                 {Array.from({ length: parseInt(rounds as string) }).map((_, index) => {
                     const roundNumber = index + 1;
-
                     return (
                         <RoundRow
                             key={roundNumber}
@@ -229,6 +267,10 @@ export default function MatchInfoScreen() {
                             rightTotal={isRoundScored(roundNumber) ? String(getTotalScore('right', roundNumber)) : '-'}
                             // plusMinus={isRoundScored(roundNumber) ? String(getPlusMinus(roundNumber)) : '-'}
                             plusMinus={isRoundScored(roundNumber) ? roundScores[roundNumber]?.plusMinus : '-'}
+                            leftKds={roundScores[roundNumber]?.leftKnockdowns}
+                            leftPen={roundScores[roundNumber]?.leftDeductions}
+                            rightKds={roundScores[roundNumber]?.rightKnockdowns}
+                            rightPen={roundScores[roundNumber]?.rightDeductions}
                             // savedPlusMinus={savedPlusMinusForRound}
                             fighter1={String(fighter1)}
                             fighter2={String(fighter2)}
@@ -267,7 +309,7 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         alignSelf: 'center',
         alignItems: 'center',
-        bottom: 15
+        bottom: 5
     },
     landscapeButton: {
         backgroundColor: '#D32F2F',
@@ -282,7 +324,7 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         color: '#fff',
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: '700',
         zIndex: 1
     },
@@ -296,7 +338,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#fff',
         padding: 18,
-        paddingTop: 75
+        paddingTop: 70
     },
     landscapeContainer: {
         flex: 1,
@@ -306,7 +348,7 @@ const styles = StyleSheet.create({
     },
     fighter1Name: {
         color: '#D32F2F',
-        textAlign: 'left',
+        textAlign: 'center',
     },
     landscapeFighter1Name: {
         color: '#D32F2F',
@@ -314,7 +356,7 @@ const styles = StyleSheet.create({
     },
     fighter2Name: {
         color: '#1976D2',
-        textAlign: 'right',
+        textAlign: 'center',
     },
     landscapeFighter2Name: {
         color: '#1976D2',
@@ -335,11 +377,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         // justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 12,
+        marginBottom: -6,
         marginHorizontal: 0,
         paddingBottom: 10,
-        marginLeft: 31,
-        width: '77.5%'
+        marginLeft: 18,
+        width: '82%'
     },
     landscapeHeaderRow: {
         flexDirection: 'row',
@@ -393,6 +435,72 @@ const styles = StyleSheet.create({
     landscapeRightHeader: {
         color: '#1976D2',
     },
+    pointHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 10,
+        width: '85%',
+        marginLeft: 21,
+    },
+    landscapePointHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 3,
+        width: '80%',
+        alignSelf: 'center',
+    },
+    fighter1PointHeader: {
+        flex: 1,
+        color: '#D32F2F',
+        fontSize: 24,
+        fontWeight: '700',
+        textAlign: 'center',
+    },
+    vsPointHeader: {
+        flex: 1,
+    },
+    fighter2PointHeader: {
+        flex: 1,
+        color: '#1976D2',
+        fontSize: 24,
+        fontWeight: '700',
+        textAlign: 'center',
+    },
+    totalEvents: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 25,
+        width: '85%',
+        marginLeft: 22,
+    },
+    landscapeTotalEvents: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 18,
+        width: '80%',
+        alignSelf: 'center',
+    },
+    totalEventsText: {
+        flex: 1,
+        color: '#333',
+        fontSize: 10,
+        fontWeight: '500',
+        textAlign: 'center',
+    },
+    fighter1TotalEvents: {
+        color: '#D32F2F',
+        width: '45%'
+    },
+    vsTotalEvents: {
+        flex: 1,
+    },
+    fighter2TotalEvents: {
+        color: '#1976D2',
+    },
     rowContainer: {
         flex: 1,
         marginBottom: 16,
@@ -415,9 +523,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 50,
+        marginBottom: 12,
         width: '85%',
-        marginLeft: 25,
+        marginLeft: 21,
         marginHorizontal: 0,
     },
     landscapeTopDescription: {

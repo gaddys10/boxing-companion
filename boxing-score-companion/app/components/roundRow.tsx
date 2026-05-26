@@ -10,6 +10,10 @@ type RoundRowProps = {
     leftTotal?: string;
     rightTotal?: string;
     plusMinus?: string;
+    leftKds?: any;
+    leftPen?: any;
+    rightKds?: any;
+    rightPen?: any;
     savedPlusMinus?: string;
     fighter1: string;
     fighter2: string;
@@ -19,7 +23,24 @@ type RoundRowProps = {
     onClearRound: (roundNumber: number) => void;
 };
 
-export default function RoundRow({ roundNumber, leftScore, rightScore, leftTotal, rightTotal, plusMinus, fighter1, fighter2, rounds, id, savedScores, onClearRound }: RoundRowProps) {
+export default function RoundRow({
+    roundNumber,
+    leftScore,
+    rightScore,
+    leftTotal,
+    rightTotal,
+    plusMinus,
+    leftKds,
+    leftPen,
+    rightKds,
+    rightPen,
+    fighter1,
+    fighter2,
+    rounds,
+    id,
+    savedScores,
+    onClearRound,
+}: RoundRowProps) {
     const swipeableRef = React.useRef<Swipeable | null>(null);
     const plusMinusNumber = plusMinus && plusMinus !== '-' ? Number(plusMinus) : null;
 
@@ -77,6 +98,28 @@ export default function RoundRow({ roundNumber, leftScore, rightScore, leftTotal
                     <Text style={styles.buttonText}>Edit</Text>
                 </Pressable>
             </View>
+            <View style={styles.roundEvents}>
+                {Number(leftKds) > 0 && Number(leftPen) > 0 && (
+                    <Text style={styles.roundEventsText}>KD&nbsp;&nbsp;&nbsp;{leftKds}{"\n"}PEN{leftPen}</Text>
+                )}
+                {Number(leftKds) > 0 && Number(leftPen) === 0 && (
+                    <Text style={styles.roundEventsText}>KD{leftKds}</Text>
+                )}
+                {Number(leftKds) === 0 && Number(leftPen) > 0 && (
+                    <Text style={styles.roundEventsText}>PEN{leftPen}</Text>
+                )}
+            </View>
+            <View style={styles.roundEvents2}>
+                {Number(rightKds) > 0 && Number(rightPen) > 0 && (
+                    <Text style={styles.roundEventsText}>KD&nbsp;&nbsp;{rightKds}{"\n"}PEN{rightPen}</Text>
+                )}
+                {Number(rightKds) > 0 && Number(rightPen) === 0 && (
+                    <Text style={styles.roundEventsText}>KD{rightKds}</Text>
+                )}
+                {Number(rightKds) === 0 && Number(rightPen) > 0 && (
+                    <Text style={styles.roundEventsText}>PEN{rightPen}</Text>
+                )}
+            </View>
         </Swipeable>
     );
 }
@@ -85,14 +128,32 @@ const styles = StyleSheet.create({
     redPlusMinus: {
         color: '#D32F2F',
     },
-
+    roundEvents: {
+        position: 'absolute',
+        left: '23%',
+        top: 11.5,
+        height: 20,
+        justifyContent: 'center'
+    },
+    roundEvents2: {
+        position: 'absolute',
+        left: '67%',
+        top: 11.5,
+        height: 20,
+        justifyContent: 'center'
+    },
+    roundEventsText: {
+        fontSize: 7.5,
+        color: '#333',
+        fontWeight: 600
+    },
     bluePlusMinus: {
         color: '#1976D2',
     },
     button: {
         backgroundColor: '#000',
         marginRight: 3,
-        paddingHorizontal: 15,
+        paddingHorizontal: 13,
         paddingVertical: 10,
         borderRadius: 12,
     },
@@ -121,17 +182,18 @@ const styles = StyleSheet.create({
         minHeight: 35,
         // marginBottom: 5,
         marginBottom: 0,
-
         borderColor: '#000',
         borderBottomWidth: 1,
         // paddingBottom: 5,
-        paddingVertical: 4,
+        paddingVertical: 3.99,
     },
     roundLabel: {
         width: 50,
         textAlign: 'center',
         fontSize: 16,
         fontWeight: '700',
+        marginLeft: -8,
+        marginRight: -5
     },
     scoreText: {
         flex: 1,
