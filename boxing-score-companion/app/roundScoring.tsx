@@ -14,12 +14,12 @@ export default function RoundScoringScreen() {
     const fighter2 = params.fighter2 || 'Fighter 2';
     
     const getSavedRound = () => {
-    try {
-        const savedScores = params.savedScores ? JSON.parse(String(params.savedScores)) : {};
-        return savedScores[String(round)] ?? savedScores[Number(round)];
-    } catch {
-        return undefined;
-    }
+        try {
+            const savedScores = params.savedScores ? JSON.parse(String(params.savedScores)) : {};
+            return savedScores[String(round)] ?? savedScores[Number(round)];
+        } catch {
+            return undefined;
+        }
     };
 
     const savedRound = getSavedRound();
@@ -66,7 +66,7 @@ export default function RoundScoringScreen() {
 
     useEffect(() => {
         // Lock to landscape mode
-        ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+        // ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
 
         // Cleanup: restore default orientation when leaving screen
         return () => { ScreenOrientation.unlockAsync(); };
@@ -153,22 +153,37 @@ export default function RoundScoringScreen() {
                     delayLongPress={1500}
                     style={styles.undoDeductLeft}
                 >
-                    <Animated.View style={[styles.fillOverlayLeft, { width: leftDeductUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '150%'] }) }]} />
+                    <Animated.View style={[styles.fillOverlayTopLeft, { width: leftDeductUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '150%'] }) }]} />
                     <Text style={styles.leftEvents}>Deductions: {leftDeductions}</Text>
                     <Text style={styles.leftDedUndo}>Hold to Undo</Text>
                 </Pressable>
 
-
-                <Pressable>
-                    <Text style={styles.leftEvents2}>Knockdowns: {leftKnockdowns}</Text>
-                    <Text style={styles.leftKdUndo}>Hold to Undo</Text>
+                {/* undo left knockdowns  */}
+                <Pressable
+                    onPress={() => {
+                        pulseAnimation(leftPulseAnim);
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        handleScorePress('left');
+                    }}
+                    onPressIn={() => startLongPressFill(leftKDUndoProgress, 2000)}
+                    onPressOut={() => resetLongPressFill(leftKDUndoProgress)}
+                    onLongPress={() => {
+                        void confirmHaptic();
+                        setLeftKnockdowns((current) => current > 0 ? current - 1 : 0);
+                    }}
+                    style={styles.undoKDLeft}
+                    delayLongPress={1500}>
+                        <Animated.View style={[styles.fillOverlayTopLeft, { width: leftKDUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
+                        <Text style={styles.leftEvents2}>Knockdowns: {leftKnockdowns}</Text>
+                        <Text style={styles.leftKdUndo}>Hold to Undo</Text>
                 </Pressable>
+
+
                 { score > 0 &&
                     <Text style={styles.leftScore}>{score}<Ionicons name="caret-back" size={24} color="white" /></Text>
                 }
                 <Text style={styles.leftName}>{fighter1}</Text>
                 <Animated.Text style={[ styles.plusSign, { transform: [{ scale: leftPulseAnim }] }]} >+</Animated.Text>
-
 
                 {/* Left PEN */}
                 <Pressable
@@ -217,10 +232,51 @@ export default function RoundScoringScreen() {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 handleScorePress('right');
             }}>
-                <Text style={styles.rightEvents}>Knockdowns: {rightKnockdowns} &nbsp;&nbsp;&nbsp;&nbsp; Deductions: {rightDeductions}</Text>
+
+                {/* undo right knockdowns */}
+                <Pressable
+                    onPress={() => {
+                        pulseAnimation(rightPulseAnim);
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        handleScorePress('right');
+                    }}
+                    onPressIn={() => startLongPressFill(rightKDUndoProgress, 2000)}
+                    onPressOut={() => resetLongPressFill(rightKDUndoProgress)}
+                    onLongPress={() => {
+                        void confirmHaptic();
+                        setLeftKnockdowns((current) => current > 0 ? current - 1 : 0);
+                    }}
+                    style={styles.undoKDright}
+                    delayLongPress={1500}>
+                        <Animated.View style={[styles.fillOverlayTopLeft, { width: rightKDUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
+                        <Text style={styles.rightEvents2}>Knockdowns: {rightKnockdowns}</Text>
+                        <Text style={styles.rightKdUndo}>Hold to Undo</Text>
+                </Pressable>
                 { score < 0 &&
                     <Text style={styles.rightScore}><Ionicons name="caret-forward" size={24} color="white" />{absScore}</Text>
                 }
+
+                {/* Undo right deductions */}
+                <Pressable
+                    onPress={() => {
+                        pulseAnimation(rightPulseAnim);
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        handleScorePress('right');
+                    }}
+                    onPressIn={() => startLongPressFill(rightDeductUndoProgress, 2000)}
+                    onPressOut={() => resetLongPressFill(rightDeductUndoProgress)}
+                    onLongPress={() => {
+                        void confirmHaptic();
+                        setRightDeductions((current) => current > 0 ? current - 1 : 0);
+                    }}
+                    delayLongPress={1500}
+                    style={styles.undoDeductRight}
+                >
+                    <Animated.View style={[styles.fillOverlayTopLeft, { width: rightDeductUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '150%'] }) }]} />
+                    <Text style={styles.rightDedEvents}>Deductions: {rightDeductions}</Text>
+                    <Text style={styles.leftDedUndo}>Hold to Undo</Text>
+                </Pressable>
+
                 <Text style={styles.rightName}>{fighter2}</Text>
                 <Animated.Text style={[styles.plusSign, { transform: [{ scale: rightPulseAnim }] }]} >+</Animated.Text>
 
@@ -338,16 +394,59 @@ const styles = StyleSheet.create({
         borderBottomLeftRadius: 15,
         borderBottomRightRadius: 15,
     },
+    undoDeductRight: {
+        alignItems: 'center',
+        backgroundColor: 'gold',
+        justifyContent: 'center',
+        gap: 2,
+        overflow: 'hidden',
+        height: 40,
+        position: 'absolute',
+        left: 255,
+        width: '26%',
+        borderBottomLeftRadius: 15,
+        borderBottomRightRadius: 15,
+    },
+    undoKDLeft: {
+        alignItems: 'center',
+        backgroundColor: 'gold',
+        justifyContent: 'center',
+        height: 40,
+        overflow: 'hidden',
+        position: 'absolute',
+        left: 175,
+        width: '26%',
+        borderBottomLeftRadius: 15,
+        borderBottomRightRadius: 15,
+    },
+    undoKDright: {
+        alignItems: 'center',
+        backgroundColor: 'gold',
+        justifyContent: 'center',
+        height: 40,
+        overflow: 'hidden',
+        position: 'absolute',
+        left: 130,
+        width: '26%',
+        borderBottomLeftRadius: 15,
+        borderBottomRightRadius: 15,
+    },
     leftDedUndo: {
         color: '#000',
         fontSize: 11,
         textAlign: 'center',
     },
     leftKdUndo: {
-        fontSize: 12,
-        left: 191,
+        fontSize: 11,
+        // left: 191,
         top: 8,
-        color: '#000'
+        color: '#000',
+    },
+    rightKdUndo: {
+        fontSize: 11,
+        // left: 191,
+        top: 8,
+        color: '#000',
     },
     deductLeft: {
         position: 'absolute',
@@ -430,16 +529,32 @@ const styles = StyleSheet.create({
     leftEvents2: {
         position: 'absolute',
         color: '#000',
-        left: 180,
-        top: -11,
+        left: 12,
+        top: 5,
         textAlign: 'center',
-        
+        fontSize: 12
     },
     rightEvents: {
         position: 'absolute',
         color: 'white',
-        right: 60,
+        top: 8,
+        left: 0,
+        right: 0,
         textAlign: 'center',
+    },
+    rightDedEvents: {
+        color: '#000',
+        fontSize: 12,
+        textAlign: 'center',
+        zIndex: 1,
+    },
+    rightEvents2: {
+        position: 'absolute',
+        color: '#000',
+        left: 12,
+        top: 5,
+        textAlign: 'center',
+        fontSize: 12
     },
     leftName: {
         color: '#fff',
@@ -513,6 +628,13 @@ const styles = StyleSheet.create({
         backgroundColor: 'black',
         opacity: 0.35,
         borderTopRightRadius: 10
+    },
+    fillOverlayTopLeft: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'black',
+        opacity: 0.35,
+        borderBottomLeftRadius: 15,
+        borderBottomRightRadius: 10
     }
 
 });

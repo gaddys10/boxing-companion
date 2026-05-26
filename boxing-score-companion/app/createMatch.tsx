@@ -37,7 +37,7 @@ export default function CreateMatch() {
         <View style={isLandscape ? styles.landscapeContainer : styles.container}>
             <Stack.Screen options={{ headerShown: false }} />
             <Pressable style={styles.backBox} onPress={() => router.dismissTo('/')}>
-                <Ionicons style={styles.backIcon} name='caret-back' size={24} color={'#fff'} />
+                <Ionicons style={styles.backIcon} name='caret-back' size={18} color={'#fff'} />
                 <Text style={styles.backText}>Back to Menu</Text>
             </Pressable>
             <Text style={isLandscape ? styles.landscapeTitle : styles.title}>{title}</Text>
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
         top: 75,
     },
     backIcon:{
-        top: 2,
+        top: 4,
         marginRight: 2
     },
     backText: {

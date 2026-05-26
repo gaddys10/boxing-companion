@@ -247,7 +247,6 @@ export default function MatchInfoScreen() {
                     Total
                 </Text>
                 <Text style={isLandscape ? [styles.landscapeHeaderText, styles.landscapeLeftHeader] : [styles.headerText, styles.leftRound]}>Round</Text>
-                
                 <Text style={isLandscape ? styles.landscapeHeaderText : styles.headerText}>+/-</Text>
                 <Text style={isLandscape ? [styles.landscapeHeaderText, styles.landscapeRightHeader] : [styles.headerText, styles.rightRound]}>Round</Text>
                 <Text style={isLandscape ? [styles.landscapeHeaderText, styles.landscapeRightHeader] : [styles.headerText, styles.rightTotal]}>Total</Text>
