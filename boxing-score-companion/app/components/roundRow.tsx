@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
         borderColor: '#000',
         borderBottomWidth: 1,
         // paddingBottom: 5,
-        paddingVertical: 3.99,
+        paddingVertical: 3.95,
     },
     roundLabel: {
         width: 50,

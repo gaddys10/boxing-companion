@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         marginBottom: 10,
         width: '85%',
-        marginLeft: 21,
+        marginLeft: 23,
     },
     landscapePointHeader: {
         flexDirection: 'row',
@@ -525,7 +525,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         marginBottom: 12,
         width: '85%',
-        marginLeft: 21,
+        marginLeft: 23,
         marginHorizontal: 0,
     },
     landscapeTopDescription: {
