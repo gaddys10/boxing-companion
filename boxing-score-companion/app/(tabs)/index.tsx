@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SavedCard from '../components/savedCard';
+import LandscapeSavedCard from '../components/landscapeSavedCard';
 const tIcon = require('../../assets/images/flatwhitet.png');
 
 const SAVED_CARDS_KEY = 'savedScorecards';
@@ -116,26 +117,52 @@ export default function HomeScreen() {
           />
         </View>
       </View>
+      {isLandscape && 
+        <View style={isLandscape ? styles.landscapeSavedCardContainer : styles.savedCardContainer}>
+          
+          {savedCards.map((card) => (
+            <LandscapeSavedCard
+              key={card.id}
+              id={card.id}
+              fighter1={card.fighter1}
+              fighter2={card.fighter2}
+              fighter1Score={card.fighter1Score}
+              fighter2Score={card.fighter2Score}
+              fighter1KD={card.fighter1KD}
+              fighter2KD={card.fighter2KD}
+              fighter1Pen={card.fighter1Pen}
+              fighter2Pen={card.fighter2Pen}
+              rounds={card.rounds}
+              savedScores={card.savedScores}
+              onDelete={handleDeleteCard}
+            />
+          ))}
 
-      <View style={isLandscape ? styles.landscapeSavedCardContainer : styles.savedCardContainer}>
-        {savedCards.map((card) => (
-          <SavedCard
-            key={card.id}
-            id={card.id}
-            fighter1={card.fighter1}
-            fighter2={card.fighter2}
-            fighter1Score={card.fighter1Score}
-            fighter2Score={card.fighter2Score}
-            fighter1KD={card.fighter1KD}
-            fighter2KD={card.fighter2KD}
-            fighter1Pen={card.fighter1Pen}
-            fighter2Pen={card.fighter2Pen}
-            rounds={card.rounds}
-            savedScores={card.savedScores}
-            onDelete={handleDeleteCard}
-          />
-        ))}
-      </View>
+        </View>
+      }
+      {!isLandscape &&
+        <View style={isLandscape ? styles.landscapeSavedCardContainer : styles.savedCardContainer}>
+            
+            {savedCards.map((card) => (
+              <SavedCard
+                key={card.id}
+                id={card.id}
+                fighter1={card.fighter1}
+                fighter2={card.fighter2}
+                fighter1Score={card.fighter1Score}
+                fighter2Score={card.fighter2Score}
+                fighter1KD={card.fighter1KD}
+                fighter2KD={card.fighter2KD}
+                fighter1Pen={card.fighter1Pen}
+                fighter2Pen={card.fighter2Pen}
+                rounds={card.rounds}
+                savedScores={card.savedScores}
+                onDelete={handleDeleteCard}
+              />
+            ))}
+
+        </View>
+      }
 
       <Pressable 
         style={isLandscape ? styles.landscapeButton : styles.button}
@@ -276,7 +303,11 @@ const styles = StyleSheet.create({
     marginLeft: -5
   },
   landscapeSavedCardContainer: {
-    top: '-1%'
+    top: '-6%',
+    width: '91.5%',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
   },
   landscapeSearchBox: {
     width: '45%',
