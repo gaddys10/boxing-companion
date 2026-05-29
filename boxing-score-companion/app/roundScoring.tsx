@@ -252,6 +252,7 @@ export default function RoundScoringScreen() {
                         <Text style={styles.rightEvents2}>Knockdowns: {rightKnockdowns}</Text>
                         <Text style={styles.rightKdUndo}>Hold to Undo</Text>
                 </Pressable>
+
                 { score < 0 &&
                     <Text style={styles.rightScore}><Ionicons name="caret-forward" size={24} color="white" />{absScore}</Text>
                 }
@@ -279,7 +280,6 @@ export default function RoundScoringScreen() {
 
                 <Text style={styles.rightName}>{fighter2}</Text>
                 <Animated.Text style={[styles.plusSign, { transform: [{ scale: rightPulseAnim }] }]} >+</Animated.Text>
-
 
                 {/* Right Knockdown */}
                 <Pressable
@@ -330,7 +330,6 @@ export default function RoundScoringScreen() {
                 onPressOut={() => resetLongPressFill(exitProgress)}
                 onLongPress={() => {
                     void tripleHaptic(Haptics.ImpactFeedbackStyle.Medium);
-
                     router.replace({
                         pathname: '/matchInfo',
                         params: {
@@ -370,16 +369,87 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
     },
+        deductLeft: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        backgroundColor: 'gold',
+        width: 90,
+        height: 58,
+        paddingLeft: 30,
+        paddingTop: 10,
+        borderTopRightRadius: 10,
+    },
+    deductLeftText: {
+        //move text to right of box
+        marginLeft: 10,
+        position: 'absolute',
+        textAlign: 'right',
+    },
+    deductRight: {
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+        backgroundColor: 'gold',
+        width: 90,
+        height: 58,
+        borderTopLeftRadius: 10,
+        overflow: 'hidden',
+        paddingLeft: 5,
+        paddingTop: 1
+    },
+    deductRightText: {
+        textAlign: 'left',
+        top: 8,
+        left: 10,
+    },
     description: {
         color: '#333',
         fontSize: 14,
         fontWeight: '600',
         marginBottom: 20,
     },
+        exitButton: {
+        backgroundColor: 'gold',
+        width: 225,
+        height: 75,
+        borderRadius: 25,
+        justifyContent: 'center',
+        alignItems: 'center',
+        fontSize: 36,
+        top: '-12%',
+        left: '45%',
+        transform: [{ translateX: -75 }],
+        overflow: 'hidden',
+    },
+    exitButtonText: {   
+        color: '#000',
+        textAlign: 'center',
+        fontSize: 14,
+        marginTop: 40,
+        zIndex: 1,
+    },
     leftEvents: {
         color: '#000',
         fontSize: 12,
         textAlign: 'center',
+    },
+    leftDedUndo: {
+        color: '#000',
+        fontSize: 11,
+        textAlign: 'center',
+    },
+    leftKdUndo: {
+        fontSize: 11,
+        // left: 191,
+        top: 8,
+        color: '#000',
+    },
+    rightKdUndo: {
+        fontSize: 11,
+        // left: 191,
+        top: 8,
+        color: '#000',
     },
     undoDeductLeft: {
         alignItems: 'center',
@@ -431,80 +501,6 @@ const styles = StyleSheet.create({
         borderBottomLeftRadius: 15,
         borderBottomRightRadius: 15,
     },
-    leftDedUndo: {
-        color: '#000',
-        fontSize: 11,
-        textAlign: 'center',
-    },
-    leftKdUndo: {
-        fontSize: 11,
-        // left: 191,
-        top: 8,
-        color: '#000',
-    },
-    rightKdUndo: {
-        fontSize: 11,
-        // left: 191,
-        top: 8,
-        color: '#000',
-    },
-    deductLeft: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        backgroundColor: 'gold',
-        width: 90,
-        height: 58,
-        paddingLeft: 30,
-        paddingTop: 10,
-        borderTopRightRadius: 10,
-    },
-    deductLeftText: {
-        //move text to right of box
-        marginLeft: 10,
-        position: 'absolute',
-        textAlign: 'right',
-        // top: 8,
-        // left: 90,
-    },
-    deductRight: {
-        position: 'absolute',
-        bottom: 0,
-        right: 0,
-        backgroundColor: 'gold',
-        width: 90,
-        height: 58,
-        borderTopLeftRadius: 10,
-        overflow: 'hidden',
-        paddingLeft: 5,
-        paddingTop: 1
-    },
-    deductRightText: {
-        textAlign: 'left',
-        top: 8,
-        left: 10,
-    },
-    exitButton: {
-        backgroundColor: 'gold',
-        width: 225,
-        height: 75,
-        borderRadius: 25,
-        justifyContent: 'center',
-        alignItems: 'center',
-        fontSize: 36,
-        top: '-12%',
-        left: '45%',
-        transform: [{ translateX: -75 }],
-        overflow: 'hidden',
-    },
-    exitButtonText: {   
-        color: '#000',
-        textAlign: 'center',
-        fontSize: 14,
-        marginTop: 40,
-        zIndex: 1,
-    },
-
     kdButton: {
         position: 'absolute',
         // justifyContent: 'center',
@@ -525,30 +521,7 @@ const styles = StyleSheet.create({
         width: '50%',
         position: 'absolute',
     },
-
     leftEvents2: {
-        position: 'absolute',
-        color: '#000',
-        left: 12,
-        top: 5,
-        textAlign: 'center',
-        fontSize: 12
-    },
-    rightEvents: {
-        position: 'absolute',
-        color: 'white',
-        top: 8,
-        left: 0,
-        right: 0,
-        textAlign: 'center',
-    },
-    rightDedEvents: {
-        color: '#000',
-        fontSize: 12,
-        textAlign: 'center',
-        zIndex: 1,
-    },
-    rightEvents2: {
         position: 'absolute',
         color: '#000',
         left: 12,
@@ -563,16 +536,6 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 50,
     },
-
-    plusSign: {
-        position: 'absolute',
-        top: '32%',
-        left: '40%',
-        transform: [{ translateX: -50 }, { translateY: -50 }],
-        fontSize: 120,
-        color: 'white',
-        fontWeight: 'bold',
-    },
     leftkd: {
         bottom: -20,
         left: '50%',
@@ -586,10 +549,14 @@ const styles = StyleSheet.create({
         fontSize: 24,
         textAlign: 'right'
     },
-    rightkd: {
-        bottom: -10,
+    plusSign: {
+        position: 'absolute',
+        top: '32%',
         left: '40%',
-        paddingBottom: 10
+        transform: [{ translateX: -50 }, { translateY: -50 }],
+        fontSize: 120,
+        color: 'white',
+        fontWeight: 'bold',
     },
     rightArea: {
         backgroundColor: '#307Fb6',
@@ -597,6 +564,33 @@ const styles = StyleSheet.create({
         width: '50%',
         position: 'absolute',
         right: 0,
+    },
+    rightDedEvents: {
+        color: '#000',
+        fontSize: 12,
+        textAlign: 'center',
+        zIndex: 1,
+    },
+    rightEvents: {
+        position: 'absolute',
+        color: 'white',
+        top: 8,
+        left: 0,
+        right: 0,
+        textAlign: 'center',
+    },
+    rightEvents2: {
+        position: 'absolute',
+        color: '#000',
+        left: 12,
+        top: 5,
+        textAlign: 'center',
+        fontSize: 12
+    },
+    rightkd: {
+        bottom: -10,
+        left: '40%',
+        paddingBottom: 10
     },
     rightName: {
         color: '#fff',
@@ -618,6 +612,7 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         marginBottom: 20,
     },
+
     fillOverlay: {
         ...StyleSheet.absoluteFillObject,
         backgroundColor: 'black',

@@ -125,28 +125,6 @@ export default function RoundRow({
 }
 
 const styles = StyleSheet.create({
-    redPlusMinus: {
-        color: '#D32F2F',
-    },
-    roundEvents: {
-        position: 'absolute',
-        left: '23%',
-        top: 11.5,
-        height: 20,
-        justifyContent: 'center'
-    },
-    roundEvents2: {
-        position: 'absolute',
-        left: '67%',
-        top: 11.5,
-        height: 20,
-        justifyContent: 'center'
-    },
-    roundEventsText: {
-        fontSize: 7.5,
-        color: '#333',
-        fontWeight: 600
-    },
     bluePlusMinus: {
         color: '#1976D2',
     },
@@ -175,6 +153,52 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         textAlign: 'center',
     },
+    leftRoundScore: {
+        color: '#D32F2F',
+    },
+    leftTotalScore: {
+        color: '#D32F2F',
+    },
+    plusMinus: {
+        color: '#000',
+    },
+    redPlusMinus: {
+        color: '#D32F2F',
+    },
+    rightTotalScore: {
+        color: '#1976D2',
+        marginLeft: 0
+    },
+    rightRoundScore: {
+        color: '#1976D2',
+    },
+    roundEvents: {
+        position: 'absolute',
+        left: '23%',
+        top: 11.5,
+        height: 20,
+        justifyContent: 'center'
+    },
+    roundEvents2: {
+        position: 'absolute',
+        left: '67%',
+        top: 11.5,
+        height: 20,
+        justifyContent: 'center'
+    },
+    roundEventsText: {
+        fontSize: 7.5,
+        color: '#333',
+        fontWeight: 600
+    },
+    roundLabel: {
+        width: 50,
+        textAlign: 'center',
+        fontSize: 16,
+        fontWeight: '700',
+        marginLeft: -8,
+        marginRight: -5
+    },
     row: {
         backgroundColor: '#fff',
         flexDirection: 'row',
@@ -187,13 +211,11 @@ const styles = StyleSheet.create({
         // paddingBottom: 5,
         paddingVertical: 3.95,
     },
-    roundLabel: {
-        width: 50,
-        textAlign: 'center',
-        fontSize: 16,
-        fontWeight: '700',
-        marginLeft: -8,
-        marginRight: -5
+    rowContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
     },
     scoreText: {
         flex: 1,
@@ -201,26 +223,4 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '700',
     },
-    leftRoundScore: {
-        color: '#D32F2F',
-    },
-    leftTotalScore: {
-        color: '#D32F2F',
-    },
-    plusMinus: {
-        color: '#000',
-    },
-    rightTotalScore: {
-        color: '#1976D2',
-        marginLeft: 0
-    },
-    rightRoundScore: {
-        color: '#1976D2',
-    },
-    rowContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 20,
-    }
 });

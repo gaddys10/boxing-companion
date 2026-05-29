@@ -3,7 +3,7 @@
     "name": "Boxing Score Companion",
     "slug": "boxing-score-companion",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/flatwhiteicon.png",
     "scheme": "boxingscorecompanion",
     "userInterfaceStyle": "automatic",

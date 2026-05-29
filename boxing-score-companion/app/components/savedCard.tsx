@@ -31,6 +31,7 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
           title: 'Edit Scorecard Details',
           backText: 'Menu',
           buttonText: "Edit Scores",
+          isEdit: "true",
           fighter1,
           fighter2,
           fighter1Score,
@@ -142,16 +143,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     marginBottom: 17,
   },
-  savedCardInfoRows: {
-    width: '66%',
-    height: '100%',
-  },
-  savedCardInfoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    height: '50%',
-  },
+  
   f1NameBox: {
     height: '100.5%',
     backgroundColor: '#D32F2F',
@@ -168,7 +160,6 @@ const styles = StyleSheet.create({
     paddingTop: '2.5%',
     paddingLeft: '4%',
     paddingRight: '4%',
-
     borderBottomLeftRadius: 15,
   },
   fighter1: {
@@ -178,6 +169,24 @@ const styles = StyleSheet.create({
   fighter2: {
     color: '#fff',
     fontSize: 14,
+  },
+  f1Score: {
+    color: '#D32f2f',
+    fontSize: 24,
+  },
+  f2Score: {
+    color: '#322fd3',
+    fontSize: 24,
+  },
+  savedCardInfoRows: {
+    width: '66%',
+    height: '100%',
+  },
+  savedCardInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    height: '50%',
   },
   scoreBox1: {
     height: '100%',
@@ -189,7 +198,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#8c8c8c',
     borderBottomWidth: 1,
   },
-    scoreBox2: {
+  scoreBox2: {
     height: '100%',
     width: '37%',
     alignContent: 'center',
@@ -197,14 +206,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingTop: 0,
   },
-  f1Score: {
-    color: '#D32f2f',
-    fontSize: 24,
-  },
-  f2Score: {
-    color: '#322fd3',
-    fontSize: 24,
-  },
+
   eventBox1: {
     height: '100%',
     width: '23%',

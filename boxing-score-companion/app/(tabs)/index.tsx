@@ -92,19 +92,20 @@ export default function HomeScreen() {
 
   return (
     <View style={isLandscape ? styles.landscapeContainer : styles.container}>
-      <View style={styles.titleBigContainer}>
+      <View style={isLandscape? styles.landscapeTitleBigContainer : styles.titleBigContainer}>
         <View style={styles.titleRight}>
-          <Text style={styles.title}>Boxing</Text> 
+          <Text style={isLandscape ? styles.landscapeTitle : styles.title}>Boxing</Text> 
           <View style={styles.title2Container}>
-            <Text style={styles.title2}>
+            <Text style={isLandscape? styles.landscapeTitle2 : styles.title2}>
               Score
             </Text>
           </View>
-          <Text style={styles.title3}> Companion</Text>
+          <Text style={isLandscape ? styles.landscapeTitle3 : styles.title3}> Companion</Text>
         </View>
-        <Image source={tIcon} style={styles.icon} resizeMode="contain" />
+        <Image source={tIcon} style={isLandscape ? styles.landscapeIcon : styles.icon} resizeMode="contain" />
       </View>
-      <View style={styles.searchBox}>
+
+      <View style={isLandscape ? styles.landscapeSearchBox : styles.searchBox }>
         {/* <Text style={styles.search}> Search Cards</Text> */}
         <View style={styles.searchInputBox}>
           <Ionicons name="search" style={styles.searchIcon} />
@@ -115,7 +116,8 @@ export default function HomeScreen() {
           />
         </View>
       </View>
-      <View style={styles.savedCardContainer}>
+
+      <View style={isLandscape ? styles.landscapeSavedCardContainer : styles.savedCardContainer}>
         {savedCards.map((card) => (
           <SavedCard
             key={card.id}
@@ -134,6 +136,7 @@ export default function HomeScreen() {
           />
         ))}
       </View>
+
       <Pressable 
         style={isLandscape ? styles.landscapeButton : styles.button}
         onPress={handleStartFight}
@@ -155,24 +158,10 @@ const styles = StyleSheet.create({
     bottom: 50,
     position: 'absolute'
   },
-    container: {
+  container: {
     flex: 1,
     backgroundColor: '#307Fb6',
     alignItems: 'center'
-  },
-  landscapeContainer: {
-    flex: 1,
-    backgroundColor: '#307Fb6',
-    alignItems: 'center',
-    padding: 24,
-    paddingTop: 25,
-  },
-  landscapeButton: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 12,
-    marginTop: 25,
   },
   buttonText: {
     color: '#111',
@@ -195,7 +184,6 @@ const styles = StyleSheet.create({
   },
   searchBox: {
     width: '45%',
-    color: 'pink',
     height: 50,
     top: 230,
     left: -85
@@ -261,4 +249,71 @@ const styles = StyleSheet.create({
   titleRight: {
     marginLeft: 0,
   },
+
+  //Landscape styles
+
+  landscapeButton: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+    // marginTop: 25,
+    top: '6.5%',
+    right: '8%',
+    position: 'absolute'
+  },
+  landscapeContainer: {
+    flex: 1,
+    backgroundColor: '#307Fb6',
+    alignItems: 'center',
+    padding: 24,
+    paddingTop: 25,
+  },
+  landscapeIcon: {
+    width: 80,
+    height: 80,
+    marginBottom: 45,
+    marginLeft: -5
+  },
+  landscapeSavedCardContainer: {
+    top: '-1%'
+  },
+  landscapeSearchBox: {
+    width: '45%',
+    height: 50,
+    top: '20%',
+    left: '-23.25%',
+  },
+  landscapeTitleBigContainer: {
+    top: '1.5%',
+    position: 'absolute',
+    left: 50,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+  },
+  landscapeTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 3,
+    marginLeft: 7
+  },
+  landscapeTitle2: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  landscapeTitle3: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 50,
+    marginLeft: 3
+  },
+  
+  landscapeButtonText: {},
+  landscapeSearch: {},
+  
+  landscapeTitleContainer: {},
 });
