@@ -179,10 +179,10 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: '#fff',
     paddingHorizontal: 24,
-    paddingVertical: 14,
+    paddingVertical: 12,
     borderRadius: 12,
     marginTop: 50,
-    bottom: 50,
+    bottom: 35,
     position: 'absolute'
   },
   container: {
@@ -192,17 +192,17 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#111',
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '700',
   },
   icon: {
-    width: 120,
-    height: 120,
+    width: 110,
+    height: 110,
     marginBottom: 36,
     marginLeft: -5
   },
   savedCardContainer: {
-    top: 140,
+    top: 130,
   },
   search: {
     color: "#fff",
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
   searchBox: {
     width: '45%',
     height: 50,
-    top: 230,
+    top: 215,
     left: -85
   },
   searchIcon: {
@@ -233,14 +233,14 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#fff',
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '700',
     marginBottom: 3,
     marginLeft: 7
   },
   title2: {
     color: '#fff',
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '700',
   },
   title2Container: {
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   },
   title3: {
     color: '#fff',
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '700',
     marginBottom: 50,
   },
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
   landscapeButton: {
     backgroundColor: '#fff',
     paddingHorizontal: 24,
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderRadius: 12,
     // marginTop: 25,
     top: '6.5%',
@@ -297,8 +297,8 @@ const styles = StyleSheet.create({
     paddingTop: 25,
   },
   landscapeIcon: {
-    width: 80,
-    height: 80,
+    width: 60,
+    height: 60,
     marginBottom: 45,
     marginLeft: -5
   },
@@ -310,13 +310,13 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   landscapeSearchBox: {
-    width: '45%',
+    width: '35%',
     height: 50,
-    top: '20%',
-    left: '-23.25%',
+    top: '18%',
+    left: '-28.25%',
   },
   landscapeTitleBigContainer: {
-    top: '1.5%',
+    top: '4%',
     position: 'absolute',
     left: 50,
     alignItems: 'center',
@@ -325,19 +325,19 @@ const styles = StyleSheet.create({
   },
   landscapeTitle: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '700',
     marginBottom: 3,
     marginLeft: 7
   },
   landscapeTitle2: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '700',
   },
   landscapeTitle3: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '700',
     marginBottom: 50,
     marginLeft: 3

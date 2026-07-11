@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { Swipeable } from 'react-native-gesture-handler';
-import { Ionicons } from '@expo/vector-icons';
 
 type RoundRowProps = {
     roundNumber: number;
@@ -24,7 +23,7 @@ type RoundRowProps = {
     onClearRound: (roundNumber: number) => void;
 };
 
-export default function RoundRow({
+export default function LandscapeRoundRow({
     roundNumber,
     leftScore,
     rightScore,
@@ -82,6 +81,30 @@ export default function RoundRow({
                 <Text style={[styles.scoreText, plusMinusStyle]}>{plusMinusDisplay}</Text>
                 <Text style={[styles.scoreText, styles.rightRoundScore]}>{rightScore ?? '-'}</Text>
                 <Text style={[styles.scoreText, styles.rightTotalScore]}>{rightTotal ?? '-'}</Text>
+                <View style={styles.eventsRow}>
+                    <View style={styles.roundEvents}>
+                        {Number(leftKds) > 0 && Number(leftPen) > 0 && (
+                            <Text style={styles.roundEventsText}>KD&nbsp;&nbsp;&nbsp;{leftKds}{"\n"}PEN{leftPen}</Text>
+                        )}
+                        {Number(leftKds) > 0 && Number(leftPen) === 0 && (
+                            <Text style={styles.roundEventsText}>KD{leftKds}</Text>
+                        )}
+                        {Number(leftKds) === 0 && Number(leftPen) > 0 && (
+                            <Text style={styles.roundEventsText}>PEN{leftPen}</Text>
+                        )}
+                    </View>
+                    <View style={styles.roundEvents2}>
+                        {Number(rightKds) > 0 && Number(rightPen) > 0 && (
+                            <Text style={styles.roundEventsText}>KD&nbsp;&nbsp;{rightKds}{"\n"}PEN{rightPen}</Text>
+                        )}
+                        {Number(rightKds) > 0 && Number(rightPen) === 0 && (
+                            <Text style={styles.roundEventsText}>KD{rightKds}</Text>
+                        )}
+                        {Number(rightKds) === 0 && Number(rightPen) > 0 && (
+                            <Text style={styles.roundEventsText}>PEN{rightPen}</Text>
+                        )}
+                    </View>
+                </View>
                 <Pressable
                     style={styles.button}
                     onPress={() => router.push({
@@ -96,30 +119,8 @@ export default function RoundRow({
                         },
                     })}
                 >
-                    <Ionicons name="pencil" size={18} color="#fff" />
+                    <Text style={styles.buttonText}>Edit</Text>
                 </Pressable>
-            </View>
-            <View style={styles.roundEvents}>
-                {Number(leftKds) > 0 && Number(leftPen) > 0 && (
-                    <Text style={styles.roundEventsText}>KD&nbsp;&nbsp;&nbsp;{leftKds}{"\n"}PEN{leftPen}</Text>
-                )}
-                {Number(leftKds) > 0 && Number(leftPen) === 0 && (
-                    <Text style={styles.roundEventsText}>KD{leftKds}</Text>
-                )}
-                {Number(leftKds) === 0 && Number(leftPen) > 0 && (
-                    <Text style={styles.roundEventsText}>PEN{leftPen}</Text>
-                )}
-            </View>
-            <View style={styles.roundEvents2}>
-                {Number(rightKds) > 0 && Number(rightPen) > 0 && (
-                    <Text style={styles.roundEventsText}>KD&nbsp;&nbsp;{rightKds}{"\n"}PEN{rightPen}</Text>
-                )}
-                {Number(rightKds) > 0 && Number(rightPen) === 0 && (
-                    <Text style={styles.roundEventsText}>KD{rightKds}</Text>
-                )}
-                {Number(rightKds) === 0 && Number(rightPen) > 0 && (
-                    <Text style={styles.roundEventsText}>PEN{rightPen}</Text>
-                )}
             </View>
         </Swipeable>
     );
@@ -130,22 +131,22 @@ const styles = StyleSheet.create({
         color: '#1976D2',
     },
     button: {
-        backgroundColor: '#333',
-        marginRight: 3,
-        paddingHorizontal: 8,
-        paddingVertical: 8,
+        backgroundColor: '#000',
+        marginTop: 10,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
         borderRadius: 12,
+        alignSelf: 'center',
     },
-    buttonText: {   
-        color: '#333',
+    buttonText: {
+        color: '#fff',
+        fontWeight: '700',
     },
     clearAction: {
         alignItems: 'center',
         backgroundColor: '#D32F2F',
         justifyContent: 'center',
-        // marginBottom: 5,
         paddingHorizontal: 16,
-        
         width: 82,
     },
     clearActionText: {
@@ -168,59 +169,57 @@ const styles = StyleSheet.create({
     },
     rightTotalScore: {
         color: '#1976D2',
-        marginLeft: 0
     },
     rightRoundScore: {
         color: '#1976D2',
     },
     roundEvents: {
-        position: 'absolute',
-        left: '21%',
-        top: 11.5,
-        height: 20,
-        justifyContent: 'center'
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 4,
+        paddingHorizontal: 8,
     },
     roundEvents2: {
-        position: 'absolute',
-        left: '70.5%',
-        top: 11.5,
-        height: 20,
-        justifyContent: 'center'
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 4,
+        paddingHorizontal: 8,
     },
     roundEventsText: {
-        fontSize: 7.5,
+        fontSize: 10,
         color: '#333',
-        fontWeight: 600
+        fontWeight: '600',
+        textAlign: 'center',
     },
     roundLabel: {
-        width: 50,
-        textAlign: 'center',
-        fontSize: 12,
-        fontWeight: '700',
-        marginLeft: -12,
-        marginRight: -13
-    },
-    row: {
-        backgroundColor: '#fff',
-        flexDirection: 'row',
-        alignItems: 'center',
-        minHeight: 35,
-        marginBottom: 0,
-        borderColor: '#000',
-        borderBottomWidth: 1,
-        // paddingBottom: 5,
-        paddingVertical: 3.95,
-    },
-    rowContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    scoreText: {
-        flex: 1,
+        width: 60,
         textAlign: 'center',
         fontSize: 16,
         fontWeight: '700',
+        marginBottom: 4,
+        alignSelf: 'center',
+    },
+    row: {
+        backgroundColor: '#fff',
+        flexDirection: 'column',
+        alignItems: 'center',
+        paddingVertical: 8,
+        paddingHorizontal: 5,
+        borderColor: '#000',
+        borderBottomWidth: 1,
+        width: '20%'
+    },
+    eventsRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '100%',
+        marginTop: 8,
+    },
+    scoreText: {
+        width: '50%',
+        textAlign: 'center',
+        fontSize: 16,
+        fontWeight: '700',
+        marginVertical: 2,
     },
 });

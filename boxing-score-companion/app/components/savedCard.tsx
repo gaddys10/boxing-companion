@@ -88,13 +88,13 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
 
         <View style={styles.actionsBox}>
           <Pressable style={styles.actionButton} onPress={handleEditCard}>
-            <Ionicons name="pencil" size={22} color="#333A3F" />
+            <Ionicons name="pencil" size={18} color="#333A3F" />
             <Text 
               style={styles.actionButtonText}
             >Edit</Text>
           </Pressable>
           <Pressable style={styles.actionButton} onPress={() => setDeleteModalVisible(true)}>
-            <Ionicons name="close" size={24} color="#d32f2f" />
+            <Ionicons name="close" size={22} color="#d32f2f" />
             <Text style={[styles.actionButtonText, styles.deleteActionText]}>Delete</Text>
           </Pressable>
         </View>

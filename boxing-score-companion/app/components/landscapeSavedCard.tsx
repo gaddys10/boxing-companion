@@ -58,7 +58,7 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
 
 
                     {/* Fighter name row -- Row 1  */}
-                    <View style={styles.savedCardInfoRow}>
+                    <View style={styles.savedCardNameRow}>
                         <View style={styles.f1NameBox}>
                             <Text style={styles.fighter1}>{fighter1}</Text>
                         </View>
@@ -67,8 +67,15 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
                         </View>
                     </View>
 
-                    {/* Score row -- Row 2  */}
-                    <View style={styles.savedCardInfoRow2}>
+                     {/* Round row -- Row 2 */}
+                    <View style={styles.savedCardRoundRow}>
+                        <View style={styles.roundBox}>
+                            <Text style={styles.roundText}>{rounds} RD</Text>
+                        </View>
+                    </View>
+
+                    {/* Score row -- Row 3  */}
+                    <View style={styles.savedCardScoreRow}>
                         <View style={styles.scoreBox1}>
                             <Text style={styles.f1Score}>{fighter1Score}</Text>
                         </View>
@@ -79,32 +86,25 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
                     </View>
 
                     {/* Event Row -- Row 3  */}
-                    <View style={styles.savedCardInfoRow3}>
+                    <View style={styles.savedCardEventRow}>
                         <View style={styles.eventBox1}>
-                            <Text style={styles.knockdowns1}>KD: {fighter1KD}&nbsp;&nbsp;&nbsp;PEN: {fighter1Pen}</Text>
+                            <Text style={styles.knockdowns1}>KD: &nbsp;&nbsp;{fighter1KD}{"\n"}PEN: {fighter1Pen}</Text>
                             {/* <Text style={styles.deductions1}>PEN: {fighter1Pen}</Text> */}
                         </View>
                         <View style={styles.eventBox2}>
-                            <Text style={styles.knockdowns2}>KD: {fighter2KD}&nbsp;&nbsp;&nbsp;PEN: {fighter2Pen}</Text>
+                            <Text style={styles.knockdowns2}>KD: &nbsp;&nbsp;{fighter2KD}{"\n"}PEN: {fighter2Pen}</Text>
                             {/* <Text style={styles.deductions2}>PEN: {fighter2Pen}</Text> */}
                         </View>
                     </View>
 
-                    {/* Round row -- Row 4 */}
-                    <View style={styles.savedCardInfoRow4}>
-                        <View style={styles.roundBox}>
-                            <Text style={styles.roundText}>{rounds} RD</Text>
-                        </View>
-                    </View>
-
                     {/* Action Row -- Row 5  */}
-                    <View style={styles.savedCardInfoRow5}>
+                    <View style={styles.savedCardActionRow}>
                         <Pressable style={styles.actionButton} onPress={handleEditCard}>
-                            <Ionicons name="pencil" size={18} color="#333A3F" />
+                            {/* <Ionicons name="pencil" size={17} color="#333A3F" /> */}
                             <Text style={styles.actionButtonText}>Edit</Text>
                         </Pressable>
-                        <Pressable style={styles.actionButton} onPress={() => setDeleteModalVisible(true)}>
-                            <Ionicons name="close" size={20} color="#d32f2f" />
+                        <Pressable style={[styles.actionButton, styles.deleteActionButton]} onPress={() => setDeleteModalVisible(true)}>
+                            {/* <Ionicons name="close" size={20} color="#d32f2f" /> */}
                             <Text style={[styles.actionButtonText, styles.deleteActionText]}>Delete</Text>
                         </Pressable>
                     </View>
@@ -137,175 +137,6 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
 }
 
 const styles = StyleSheet.create({
-    savedCard: {
-        width: '24%',
-        height: '75%',
-        backgroundColor: 'white',
-        flexDirection: 'row',
-        alignItems: 'center',
-        top: 100,
-        borderRadius: 15,
-        overflow: 'hidden',
-        boxShadow: '2',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 3, height: 3 },
-        shadowOpacity: 0.7,
-        shadowRadius: 3,
-        marginBottom: 17,
-        paddingBottom: 10,
-        marginRight: 15
-    },
-    
-    f1NameBox: {
-        height: '100.5%',
-        backgroundColor: '#D32F2F',
-        width: '50.5%',
-        paddingTop: '2.5%',
-        paddingLeft: '4%',
-        paddingRight: '4%',
-        borderTopLeftRadius: 15,
-        
-    },
-    f2NameBox: {
-        height: '100.5%',
-        backgroundColor: '#322fd3',
-        width: '50%',
-        paddingTop: '2.5%',
-        paddingLeft: '4%',
-        paddingRight: '4%',
-        borderTopRightRadius: 15,
-    },
-    fighter1: {
-        color: '#fff',
-        fontSize: 14,
-    },
-    fighter2: {
-        color: '#fff',
-        fontSize: 14,
-    },
-    f1Score: {
-        color: '#D32f2f',
-        fontSize: 24,
-        
-
-    },
-    f2Score: {
-        color: '#322fd3',
-        fontSize: 24,
-    },
-    savedCardInfoRows: {
-        width: '100%',
-        height: '100%',
-    },
-    savedCardInfoRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        width: '100%',
-        height: '24%',
-    },
-    savedCardInfoRow2: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        width: '100%',
-        height: '25%',
-    },
-    savedCardInfoRow3: {
-        flexDirection: 'row',
-        width: '100%',
-        height: '14%',
-    },
-    savedCardInfoRow4: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        width: '100%',
-        height: '17%',
-    },
-    savedCardInfoRow5: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '100%',
-        height: '20%',
-        backgroundColor: '#fff',
-        borderBottomLeftRadius: 15,
-        borderBottomRightRadius: 15,
-    },
-    scoreBox1: {
-        height: '100%',
-        width: '50.5%',
-        alignContent: 'center',
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingTop: 0,
-        // borderBottomColor: '#8c8c8c',
-        // borderBottomWidth: 1,
-        borderRightWidth: 1,
-        borderColor: '#333'
-    },
-    scoreBox2: {
-        height: '50%',
-        width: '50%',
-        alignContent: 'center',
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingTop: 0,
-    },
-
-    eventBox1: {
-        height: '100%',
-        width: '50.5%',
-        // borderBottomWidth: 1,
-        // borderBottomColor: '#8c8c8c',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRightWidth: 1,
-        borderColor: '#333'
-    },
-    eventBox2: {
-        height: '100%',
-        width: '50%',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    knockdowns1: {
-        color: '#D32f2f',
-        fontSize: 12,
-        textAlign: 'center',
-    },
-    deductions1: {
-        color: '#d32f2f',
-        position: 'absolute',
-            fontSize: 12,
-
-        left: 3,
-        top: 24,
-    },
-    knockdowns2: {
-        color: '#322fd3',
-        fontSize: 12,
-        textAlign: 'center',
-    },
-    deductions2: {
-        color: '#322fd3',
-        position: 'absolute',
-        left: 3,
-        top: 24,
-            fontSize: 12,
-
-    },
-    roundBox: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '100%',
-        height: '100%',
-        marginRight: -5,
-        marginLeft: 5,
-        textAlign: 'center'
-    },
-    roundText: {
-        fontWeight: '700',
-        color: "#333A3F"
-    },
     actionsBox: {
         backgroundColor: '#fff',
         flex: 1,
@@ -315,7 +146,6 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 15,
         borderBottomRightRadius: 15,
         borderBottomLeftRadius: 15,
-
         paddingRight: 3,
         flexDirection: 'row'
     },
@@ -325,20 +155,34 @@ const styles = StyleSheet.create({
         flex: 1,
         height: '100%',
         minWidth: 0,
+        paddingVertical: 0,
     },
     actionButtonText: {
         color: '#333A3F',
         fontSize: 12,
+        // textDecorationLine: 'underline',
+        borderBottomWidth: 1
+    },
+    deductions1: {
+        color: '#d32f2f',
+        position: 'absolute',
+        fontSize: 12,
+        left: 3,
+        top: 24,
+    },
+    deductions2: {
+        color: '#322fd3',
+        position: 'absolute',
+        left: 3,
+        top: 24,
+        fontSize: 12,
+    },
+    deleteActionButton: {
+        borderBottomColor: '#d32f2f'
     },
     deleteActionText: {
         color: '#d32f2f',
-    },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.45)',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 24,
+        borderBottomColor: '#d32f2f'
     },
     deleteModal: {
         width: '100%',
@@ -352,17 +196,76 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
         elevation: 6,
     },
-    modalTitle: {
-        color: '#333A3F',
-        fontSize: 20,
-        fontWeight: '700',
-        marginBottom: 8,
+    eventBox1: {
+        height: '100%',
+        width: '50.5%',
+        // borderBottomWidth: 1,
+        // borderBottomColor: '#8c8c8c',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRightWidth: 1,
+        borderColor: '#767676'
     },
-    modalText: {
-        color: '#333A3F',
-        fontSize: 15,
-        lineHeight: 21,
-        marginBottom: 20,
+    eventBox2: {
+        height: '100%',
+        width: '50%',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    f1NameBox: {
+        height: '100.5%',
+        backgroundColor: '#D32F2F',
+        width: '50.5%',
+        paddingHorizontal: '4%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderTopLeftRadius: 15,
+    },
+    f1Score: {
+        color: '#D32f2f',
+        fontSize: 32,
+        fontWeight: '700',
+        lineHeight: 32,
+        textAlign: 'center',
+        marginTop: 5
+    },
+    f2NameBox: {
+        height: '100.5%',
+        backgroundColor: '#322fd3',
+        width: '50%',
+        paddingHorizontal: '4%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderTopRightRadius: 15,
+    },
+    f2Score: {
+        color: '#322fd3',
+        fontSize: 32,
+        fontWeight: '700',
+        lineHeight: 32,
+        textAlign: 'center',
+        marginTop: 5
+
+    },
+    fighter1: {
+        color: '#fff',
+        fontSize: 13,
+        textAlign: 'center',
+    },
+    fighter2: {
+        color: '#fff',
+        fontSize: 13,
+        textAlign: 'center',
+    },
+    knockdowns1: {
+        color: '#D32f2f',
+        fontSize: 12,
+        textAlign: 'center',
+    },
+    knockdowns2: {
+        color: '#322fd3',
+        fontSize: 12,
+        textAlign: 'center',
     },
     modalActions: {
         flexDirection: 'row',
@@ -376,6 +279,131 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginLeft: 10,
     },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.45)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 24,
+    },   
+    modalText: {
+        color: '#333A3F',
+        fontSize: 15,
+        lineHeight: 21,
+        marginBottom: 20,
+    }, 
+    modalTitle: {
+        color: '#333A3F',
+        fontSize: 20,
+        fontWeight: '700',
+        marginBottom: 8,
+    },
+    roundBox: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        height: '100%',
+        textAlign: 'center',
+        paddingHorizontal: 8,
+    },
+    roundText: {
+        fontWeight: '700',
+        color: '#333A3F',
+        fontSize: 12,
+        textAlign: 'center',
+    },
+    savedCard: {
+        width: '24%',
+        maxHeight: '83%',
+        backgroundColor: 'white',
+        flexDirection: 'row',
+        alignItems: 'center',
+        top: 90,
+        borderRadius: 15,
+        overflow: 'hidden',
+        boxShadow: '2',
+        shadowColor: '#11334b',
+        shadowOffset: { width: 3, height: 3 },
+        shadowOpacity: 0.7,
+        shadowRadius: 3,
+        marginBottom: 17,
+        marginRight: 15
+    },
+    savedCardActionRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        height: '19%',
+        // paddingVertical: 2,
+        backgroundColor: '#fff',
+        borderBottomLeftRadius: 15,
+        borderBottomRightRadius: 15,
+    },
+    savedCardEventRow: {
+        flexDirection: 'row',
+        width: '100%',
+        height: '22%',
+        marginTop: -7,
+        borderBottomWidth: 1,
+        borderColor: '#767676'
+    },
+    savedCardNameRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '100%',
+        height: '22%',
+    },
+    savedCardScoreRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '100%',
+        height: '22%',
+        // paddingTop: '3%',
+        marginBottom: 0
+    },
+    savedCardRoundRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '33%',
+        height: '10%',
+        alignSelf: 'center',
+        backgroundColor: 'transparent',
+        borderBottomWidth: 1,
+        borderLeftWidth: 1,
+        borderRightWidth: 1,
+        borderTopLeftRadius: 0,
+        borderTopRightRadius: 0,
+        borderRadius: 5
+    },
+
+    savedCardInfoRows: {
+        width: '100%',
+        height: '100%',
+    },
+    scoreBox1: {
+        height: '100%',
+        width: '50.5%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 2,
+        borderRightWidth: 1,
+        borderColor: '#767676',
+        paddingTop: '3%'
+    },
+    scoreBox2: {
+        height: '100%',
+        width: '50%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 2,
+        paddingTop: '3%'
+
+    },
+
+
+
     cancelButton: {
         backgroundColor: '#EEF1F3',
     },

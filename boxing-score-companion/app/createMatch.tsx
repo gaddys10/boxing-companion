@@ -25,7 +25,7 @@ export default function CreateMatch() {
     const [fighter2Name, setFighter2Name] = useState(fighter2);
     const [selectedRounds, setSelectedRounds] = useState(roundAmount);
     const buttonText = String(params.buttonText || "Start Match");
-    const rounds = [3, 4, 5, 6, 8, 10, 12];
+    const rounds = [1, 3, 4, 5, 6, 8, 10, 12];
     const { width, height } = useWindowDimensions();
     const id = params.id ? String(params.id) : undefined;
     let isLandscape = width > height;
