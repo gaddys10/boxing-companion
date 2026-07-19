@@ -24,7 +24,7 @@ type RoundRowProps = {
     onClearRound: (roundNumber: number) => void;
 };
 
-export default function RoundRow({
+export default function LandscapeRoundRow({
     roundNumber,
     leftScore,
     rightScore,
@@ -61,15 +61,6 @@ export default function RoundRow({
                     ? [styles.plusMinus, styles.bluePlusMinus]
                     : styles.plusMinus;
 
-    const plusMinusContainerStyle =
-        plusMinusNumber === null
-            ? [styles.plusMinusContainer, styles.neutralPlusMinusContainer]
-            : plusMinusNumber > 0
-                ? [styles.plusMinusContainer, styles.redPlusMinusContainer]
-                : plusMinusNumber < 0
-                    ? [styles.plusMinusContainer, styles.bluePlusMinusContainer]
-                    : [styles.plusMinusContainer, styles.neutralPlusMinusContainer];
-
     const roundLabelColor =
         plusMinusNumber === null
             ? '#b0b0b0'
@@ -103,9 +94,7 @@ export default function RoundRow({
                 {plusMinusNumber !== null && plusMinusNumber > 0 && (
                     <Ionicons name="triangle" style={styles.leftTriangle} />
                 )}
-                <View style={plusMinusContainerStyle}>
-                    <Text style={[styles.scoreText, plusMinusStyle]}>{plusMinusDisplay}</Text>
-                </View>
+                <Text style={[styles.scoreText, plusMinusStyle]}>{plusMinusDisplay}</Text>
 
                 {plusMinusNumber !== null && plusMinusNumber < 0 && (
                     <Ionicons name="triangle" style={styles.rightTriangle} />
@@ -157,17 +146,13 @@ export default function RoundRow({
 
 const styles = StyleSheet.create({
     bluePlusMinus: {
-        color: '#fff',
-    },
-    bluePlusMinusContainer: {
-        backgroundColor: '#1976D2',
+        color: '#1976D2',
     },
     button: {
         backgroundColor: 'white',
         marginRight: 5,
         paddingHorizontal: 8,
-        marginTop: 2,
-        paddingVertical: 5,
+        paddingBottom: 5,
         borderRadius: 12,
     },
     buttonText: {   
@@ -199,44 +184,24 @@ const styles = StyleSheet.create({
     },
     leftTriangle: {
         position: 'absolute',
-        left: '41.5%',
+        left: '35%',
         height: 9,
-        top: 15,
-        transform: [{ rotate: '-90deg' }],
+        top: '45%',
         color: "#d32f2f"
     },
     rightTriangle: {
         position: 'absolute',
-        left: '55%',
-        top: 15,
-        transform: [{ rotate: '90deg' }],
+        transform: [{ rotate: '180deg' }],
+        left: '35.5%',
+        top: '56%',
         height: 9,
         color: "#1976D2"
     },
     plusMinus: {
-        color: '#fff',
-        fontSize: 14,
-        flex: 0,
-    },
-    plusMinusContainer: {
-        alignSelf: 'center',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: 999,
-        paddingHorizontal: 8,
-        paddingVertical: 2,
-        minHeight: 24,
-        minWidth: 34,
-        marginHorizontal: 4,
-    },
-    neutralPlusMinusContainer: {
-        backgroundColor: '#b0b0b0',
+        color: '#000',
     },
     redPlusMinus: {
-        color: '#fff',
-    },
-    redPlusMinusContainer: {
-        backgroundColor: '#D32F2F',
+        color: '#D32F2F',
     },
     rightTotalScore: {
         color: '#1976D2',
@@ -247,15 +212,15 @@ const styles = StyleSheet.create({
     },
     roundEvents: {
         position: 'absolute',
-        left: '24.5%',
-        // top: 11.5,
+        left: '27.5%',
+        top: '22.75%',
         height: 42,
         justifyContent: 'center'
     },
     roundEvents2: {
         position: 'absolute',
-        left: '69%',
-        // top: 11.5,
+        left: '27.5%',
+        top: '64.5%',
         height: 42,
         justifyContent: 'center'
     },
@@ -265,7 +230,7 @@ const styles = StyleSheet.create({
         fontWeight: 600
     },
     roundLabel: {
-        width: 40,
+        // width: 40,
         textAlign: 'center',
         fontSize: 12,
         fontWeight: '700',
@@ -274,27 +239,33 @@ const styles = StyleSheet.create({
     roundLabelContainer: {
         justifyContent: 'center',
         alignItems: 'center',
-        paddingHorizontal: 0,
         borderTopLeftRadius: 15,
-        borderBottomLeftRadius: 15,
-        height: '150%',
+        borderTopRightRadius: 15,
+        width: '109%',
+        paddingVertical: '25%',
+        marginBottom: '70%',
+        // height: '10%'
+        // height: '150%',
         // minHeight: 51,
     },
     row: {
         backgroundColor: '#fff',
-        flexDirection: 'row',
+        flexDirection: 'column',
         alignItems: 'center',
-        minHeight: 40,
+        // justifyContent: 'space-between',
+        gap:0,
+        height: '99%',
         marginBottom: 4.5,
         marginHorizontal: '.5%',
-        marginRight: '2%',
+        marginRight: '0.5%',
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
         borderRadius: 15,
         // paddingVertical: 2,
         overflow: 'hidden',
         boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
-        height: 40,
+        width: 40,
+        paddingBottom: 5
     },
     rowContainer: {
         flexDirection: 'row',

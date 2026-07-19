@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, TextInput, Image, useWindowDimensions } from 'react-native';
+import { View, Text, Pressable, StyleSheet, TextInput, Image, useWindowDimensions, ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SavedCard from '../components/savedCard';
+import LandscapeSavedCard from '../components/landscapeSavedCard';
 const tIcon = require('../../assets/images/flatwhitet.png');
 
 const SAVED_CARDS_KEY = 'savedScorecards';
@@ -28,6 +29,8 @@ export default function HomeScreen() {
   const lastSavedScorecard = useRef<string | null>(null);
   const [savedCards, setSavedCards] = useState<Scorecard[]>([]);
   const [hasLoadedSavedCards, setHasLoadedSavedCards] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
+  const [scrollViewportHeight, setScrollViewportHeight] = useState(0);
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height;
 
@@ -92,48 +95,88 @@ export default function HomeScreen() {
 
   return (
     <View style={isLandscape ? styles.landscapeContainer : styles.container}>
-      <View style={styles.titleBigContainer}>
+      <View style={isLandscape? styles.landscapeTitleBigContainer : styles.titleBigContainer}>
         <View style={styles.titleRight}>
-          <Text style={styles.title}>Boxing</Text> 
+          <Text style={isLandscape ? styles.landscapeTitle : styles.title}>Boxing</Text> 
           <View style={styles.title2Container}>
-            <Text style={styles.title2}>
+            <Text style={isLandscape? styles.landscapeTitle2 : styles.title2}>
               Score
             </Text>
           </View>
-          <Text style={styles.title3}> Companion</Text>
+          <Text style={isLandscape ? styles.landscapeTitle3 : styles.title3}> Companion</Text>
         </View>
-        <Image source={tIcon} style={styles.icon} resizeMode="contain" />
+        <Image source={tIcon} style={isLandscape ? styles.landscapeIcon : styles.icon} resizeMode="contain" />
       </View>
-      <View style={styles.searchBox}>
+
+      <View style={isLandscape ? styles.landscapeSearchBox : styles.searchBox }>
         {/* <Text style={styles.search}> Search Cards</Text> */}
         <View style={styles.searchInputBox}>
           <Ionicons name="search" style={styles.searchIcon} />
           <TextInput 
             style={styles.searchInput} 
-            placeholderTextColor="rgba(255, 255, 255, 0.5)" 
+            placeholderTextColor="rgba(0, 0, 0, 0.5)" 
             placeholder="Search Cards" 
           />
         </View>
       </View>
-      <View style={styles.savedCardContainer}>
-        {savedCards.map((card) => (
-          <SavedCard
-            key={card.id}
-            id={card.id}
-            fighter1={card.fighter1}
-            fighter2={card.fighter2}
-            fighter1Score={card.fighter1Score}
-            fighter2Score={card.fighter2Score}
-            fighter1KD={card.fighter1KD}
-            fighter2KD={card.fighter2KD}
-            fighter1Pen={card.fighter1Pen}
-            fighter2Pen={card.fighter2Pen}
-            rounds={card.rounds}
-            savedScores={card.savedScores}
-            onDelete={handleDeleteCard}
-          />
-        ))}
-      </View>
+      {isLandscape && 
+        <ScrollView
+          style={styles.landscapeSavedCardContainer}
+          contentContainerStyle={styles.landscapeSavedCardContent}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+        >
+          {savedCards.map((card) => (
+            <LandscapeSavedCard
+              key={card.id}
+              id={card.id}
+              fighter1={card.fighter1}
+              fighter2={card.fighter2}
+              fighter1Score={card.fighter1Score}
+              fighter2Score={card.fighter2Score}
+              fighter1KD={card.fighter1KD}
+              fighter2KD={card.fighter2KD}
+              fighter1Pen={card.fighter1Pen}
+              fighter2Pen={card.fighter2Pen}
+              rounds={card.rounds}
+              savedScores={card.savedScores}
+              onDelete={handleDeleteCard}
+            />
+          ))}
+        </ScrollView>
+      }
+      {!isLandscape &&
+        <ScrollView
+          style={styles.savedCardContainer}
+          contentContainerStyle={styles.savedCardContent}
+          showsVerticalScrollIndicator={true}
+          onScroll={(event) => setScrollY(event.nativeEvent.contentOffset.y)}
+          onLayout={(event) => setScrollViewportHeight(event.nativeEvent.layout.height)}
+          bounces={false}
+          alwaysBounceVertical={false}
+        >
+          {savedCards.map((card) => (
+            <SavedCard
+              key={card.id}
+              id={card.id}
+              fighter1={card.fighter1}
+              fighter2={card.fighter2}
+              fighter1Score={card.fighter1Score}
+              fighter2Score={card.fighter2Score}
+              fighter1KD={card.fighter1KD}
+              fighter2KD={card.fighter2KD}
+              fighter1Pen={card.fighter1Pen}
+              fighter2Pen={card.fighter2Pen}
+              rounds={card.rounds}
+              savedScores={card.savedScores}
+              onDelete={handleDeleteCard}
+              scrollY={scrollY}
+              viewportHeight={scrollViewportHeight}
+            />
+          ))}
+        </ScrollView>
+      }
+
       <Pressable 
         style={isLandscape ? styles.landscapeButton : styles.button}
         onPress={handleStartFight}
@@ -148,45 +191,43 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   button: {
     backgroundColor: '#fff',
-    paddingHorizontal: 24,
-    paddingVertical: 14,
+    paddingHorizontal: '5%',
+    paddingVertical: '3%',
     borderRadius: 12,
     marginTop: 50,
-    bottom: 50,
-    position: 'absolute'
+    bottom: '6%',
+    position: 'absolute',
+    boxShadow: '4',
+    shadowColor: '#11334b',
+    shadowOffset: { width: 5, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 1,
   },
-    container: {
+  container: {
     flex: 1,
-    backgroundColor: '#307Fb6',
+    backgroundColor: '#f1f5f8',
     alignItems: 'center'
-  },
-  landscapeContainer: {
-    flex: 1,
-    backgroundColor: '#307Fb6',
-    alignItems: 'center',
-    padding: 24,
-    paddingTop: 25,
-  },
-  landscapeButton: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 12,
-    marginTop: 25,
   },
   buttonText: {
     color: '#111',
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '700',
   },
   icon: {
-    width: 120,
-    height: 120,
-    marginBottom: 36,
-    marginLeft: -5
+    width: '35%',
+    height: '85%',
+    marginBottom: '7%',
+    marginLeft: '-5%'
   },
   savedCardContainer: {
-    top: 140,
+    position: 'absolute',
+    top: '27%',
+    bottom: 100,
+    width: '100%',
+  },
+  savedCardContent: {
+    alignItems: 'center',
+    gap: 0
   },
   search: {
     color: "#fff",
@@ -195,37 +236,44 @@ const styles = StyleSheet.create({
   },
   searchBox: {
     width: '45%',
-    color: 'pink',
     height: 50,
-    top: 230,
+    top: 215,
     left: -85
   },
   searchIcon: {
-    color: "#fff",
-    top: 4,
+    color: "#000",
+    top: 0,
     marginRight: 5
   },
   searchInput: {
     width: '100%',
     height: 20,
-    color: 'white'
+    color: 'black'
   },
   searchInputBox: {
-    marginTop: 10,
     flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: 'white'
+    // borderBottomWidth: 1,
+    // borderBottomColor: 'black'
+    backgroundColor: '#E1EAF0',
+    borderWidth: 1,
+    borderColor: '#B6C6D1',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    top: '-80%',
+    height: 35,
+    marginLeft: -3,
+    alignItems: 'center',
   },
   title: {
     color: '#fff',
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '700',
-    marginBottom: 3,
-    marginLeft: 7
+    marginBottom: '1.5%',
+    marginLeft: '4.5%'
   },
   title2: {
     color: '#fff',
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '700',
   },
   title2Container: {
@@ -245,20 +293,104 @@ const styles = StyleSheet.create({
   },
   title3: {
     color: '#fff',
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '700',
-    marginBottom: 50,
+    marginBottom: '20%',
   },
   titleBigContainer: {
     position: 'absolute',
-    top: 95,
-    left: 12,
-    right: 0,
+    top: '7%',
+    left: '5%',
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
+    boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.1)',
+    width: '90%',
+    borderRadius: 15,
+    backgroundColor: '#307Fb6',
+    height: 100,
+    paddingTop: '2.5%',
+    paddingLeft: '6%',
+    paddingBottom: 0 
+
   },
   titleRight: {
-    marginLeft: 0,
+    height: '100%'
   },
+
+  //Landscape styles
+
+  landscapeButton: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 12,
+    // marginTop: 25,
+    top: '6.5%',
+    right: '8%',
+    position: 'absolute'
+  },
+  landscapeContainer: {
+    flex: 1,
+    backgroundColor: '#307Fb6',
+    alignItems: 'center',
+    padding: 24,
+    paddingTop: 25,
+  },
+  landscapeIcon: {
+    width: 60,
+    height: 60,
+    marginBottom: 45,
+    marginLeft: -5
+  },
+  landscapeSavedCardContainer: {
+    position: 'absolute',
+    top: 120,
+    bottom: 100,
+    width: '100%',
+  },
+  landscapeSavedCardContent: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingHorizontal: '4.5%',
+    paddingBottom: 20,
+  },
+  landscapeSearchBox: {
+    width: '35%',
+    height: 50,
+    top: '18%',
+    left: '-28.25%',
+  },
+  landscapeTitleBigContainer: {
+    top: '4%',
+    position: 'absolute',
+    left: 50,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+  },
+  landscapeTitle: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 3,
+    marginLeft: 7
+  },
+  landscapeTitle2: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  landscapeTitle3: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 50,
+    marginLeft: 3
+  },
+  
+  landscapeButtonText: {},
+  landscapeSearch: {},
+  
+  landscapeTitleContainer: {},
 });

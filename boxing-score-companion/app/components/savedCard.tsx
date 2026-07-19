@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Modal, View, Text, Pressable, StyleSheet } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Modal, View, Text, Pressable, StyleSheet, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useRouter } from 'expo-router';
@@ -17,11 +17,15 @@ type SavedCardProps = {
   rounds: number;
   savedScores?: string;
   onDelete: (id: number) => void;
+  scrollY?: number;
+  viewportHeight?: number;
 }
 
-export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, savedScores, onDelete}: SavedCardProps) {
+export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, savedScores, onDelete, scrollY = 0, viewportHeight = 0}: SavedCardProps) {
   const router = useRouter();
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [cardLayout, setCardLayout] = useState<{ y: number; height: number } | null>(null);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
 
   const handleEditCard = () => {
       router.push({
@@ -31,6 +35,7 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
           title: 'Edit Scorecard Details',
           backText: 'Menu',
           buttonText: "Edit Scores",
+          isEdit: "true",
           fighter1,
           fighter2,
           fighter1Score,
@@ -50,9 +55,62 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
     onDelete(id);
   };
 
+  const scoredRoundsCount = (() => {
+    if (!savedScores) return 0;
+
+    try {
+      const parsedScores = JSON.parse(savedScores);
+      if (parsedScores && typeof parsedScores === 'object' && !Array.isArray(parsedScores)) {
+        return Object.keys(parsedScores).length;
+      }
+    } catch {
+      return 0;
+    }
+
+    return 0;
+  })();
+
+  useEffect(() => {
+    const viewportStart = scrollY;
+    const viewportEnd = viewportStart + viewportHeight;
+    const cardTop = cardLayout?.y ?? 0;
+    const cardHeight = cardLayout?.height ?? 0;
+    const cardBottom = cardTop + cardHeight;
+    const fadeDistance = 70;
+
+    let nextOpacity = 1;
+
+    if (!cardHeight || !viewportHeight) {
+      nextOpacity = 1;
+    } else if (cardBottom <= viewportStart || cardTop >= viewportEnd) {
+      nextOpacity = 0;
+    } else if (cardTop < viewportStart) {
+      const progress = Math.min(1, (viewportStart - cardTop) / fadeDistance);
+      nextOpacity = 1 - progress;
+    } else if (cardBottom > viewportEnd) {
+      const progress = Math.min(1, (cardBottom - viewportEnd) / fadeDistance);
+      nextOpacity = 1 - progress;
+    }
+
+    Animated.timing(fadeAnim, {
+      toValue: nextOpacity,
+      duration: 30,
+      useNativeDriver: true,
+    }).start();
+  }, [cardLayout, fadeAnim, scrollY, viewportHeight]);
+
   return (
     <>
-      <Pressable style={styles.savedCard}>
+      <Animated.View
+        onLayout={(event) => {
+          setCardLayout({
+            y: event.nativeEvent.layout.y,
+            height: event.nativeEvent.layout.height,
+          });
+        }}
+        style={{ opacity: fadeAnim }}
+      >
+        <Pressable style={styles.savedCard}>
         <View style={styles.savedCardInfoRows}>
           <View style={styles.savedCardInfoRow}>
             <View style={styles.f1NameBox}>
@@ -62,8 +120,8 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
               <Text style={styles.f1Score}>{fighter1Score}</Text>
             </View>
             <View style={styles.eventBox1}>
-              <Text style={styles.knockdowns1}>KD:&nbsp;&nbsp;&nbsp;{fighter1KD}</Text>
-              <Text style={styles.deductions1}>PEN: {fighter1Pen}</Text>
+              <Text style={styles.knockdowns1}>KD: {fighter1KD}</Text>
+              <Text style={styles.deductions1}>PD: {fighter1Pen}</Text>
             </View>
           </View>
 
@@ -75,29 +133,32 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
               <Text style={styles.f2Score}>{fighter2Score}</Text>
             </View>
             <View style={styles.eventBox2}>
-              <Text style={styles.knockdowns2}>KD:&nbsp;&nbsp; {fighter2KD}</Text>
-              <Text style={styles.deductions2}>PEN: {fighter2Pen}</Text>
+              <Text style={styles.knockdowns2}>KD: {fighter2KD}</Text>
+              <Text style={styles.deductions2}>PD: {fighter2Pen}</Text>
             </View>
           </View>
         </View>
 
         <View style={styles.roundBox}>
-          <Text style={styles.roundText}>{rounds} RD</Text>
+          <Text style={styles.roundText}>{scoredRoundsCount}/{rounds}{"\n"}RD</Text>
         </View>
 
         <View style={styles.actionsBox}>
-          <Pressable style={styles.actionButton} onPress={handleEditCard}>
-            <Ionicons name="pencil" size={22} color="#333A3F" />
-            <Text 
-              style={styles.actionButtonText}
-            >Edit</Text>
+          <Pressable style={styles.actionButtonTop} onPress={handleEditCard}>
+            <Ionicons name="pencil" size={16} color="#333A3F" style={styles.editButtonIcon} />
+            <View style={styles.eventTextBoxTop}>
+              <Text style={styles.actionButtonText}>Edit</Text>
+            </View>
           </Pressable>
           <Pressable style={styles.actionButton} onPress={() => setDeleteModalVisible(true)}>
-            <Ionicons name="close" size={24} color="#d32f2f" />
-            <Text style={[styles.actionButtonText, styles.deleteActionText]}>Delete</Text>
+            <Ionicons name="close" size={20} color="#d32f2f" />
+            <View style={styles.eventTextBox}>
+              <Text style={[styles.actionButtonText, styles.deleteActionText]}>Delete</Text>
+            </View>
           </Pressable>
         </View>
       </Pressable>
+      </Animated.View>
 
       <Modal
         animationType="fade"
@@ -127,20 +188,67 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
 }
 
 const styles = StyleSheet.create({
+  editButtonIcon: {
+    marginRight: 3,
+  },
+  eventTextBoxTop: {
+    paddingBottom:1,
+    borderBottomWidth: .5,
+    borderBottomColor: 'black',
+  },
+  eventTextBox: {
+    paddingBottom:1,
+    borderBottomWidth: .5,
+    borderBottomColor: '#d32f2f',
+  },
   savedCard: {
     width: '90%',
     height: 90,
     backgroundColor: 'white',
     flexDirection: 'row',
     alignItems: 'center',
-    top: 100,
     borderRadius: 15,
-    boxShadow: '2',
+    boxShadow: '4',
     shadowColor: '#11334b',
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 0.7,
-    shadowRadius: 3,
-    marginBottom: 17,
+    shadowOffset: { width: 5, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 1,
+    marginBottom: 15,
+  },
+  
+  f1NameBox: {
+    height: '100.5%',
+    backgroundColor: '#D32F2F',
+    width: '47%',
+    paddingLeft: '5%',
+    paddingRight: '4%',
+    borderTopLeftRadius: 15,
+    justifyContent: 'center',
+  },
+  f2NameBox: {
+    height: '100.5%',
+    backgroundColor: '#307Fb6',
+    width: '47%',
+    paddingLeft: '5%',
+    paddingRight: '4%',
+    borderBottomLeftRadius: 15,
+    justifyContent: 'center',
+  },
+  fighter1: {
+    color: '#fff',
+    fontSize: 14,
+  },
+  fighter2: {
+    color: '#fff',
+    fontSize: 14,
+  },
+  f1Score: {
+    color: '#D32f2f',
+    fontSize: 24,
+  },
+  f2Score: {
+    color: '#307Fb6',
+    fontSize: 24,
   },
   savedCardInfoRows: {
     width: '66%',
@@ -152,68 +260,34 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '50%',
   },
-  f1NameBox: {
-    height: '100.5%',
-    backgroundColor: '#D32F2F',
-    width: '40%',
-    paddingTop: '2.5%',
-    paddingLeft: '4%',
-    paddingRight: '4%',
-    borderTopLeftRadius: 15,
-  },
-  f2NameBox: {
-    height: '100.5%',
-    backgroundColor: '#322fd3',
-    width: '40%',
-    paddingTop: '2.5%',
-    paddingLeft: '4%',
-    paddingRight: '4%',
-
-    borderBottomLeftRadius: 15,
-  },
-  fighter1: {
-    color: '#fff',
-    fontSize: 14,
-  },
-  fighter2: {
-    color: '#fff',
-    fontSize: 14,
-  },
   scoreBox1: {
     height: '100%',
-    width: '37%',
+    width: '30%',
     alignContent: 'center',
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 0,
     borderBottomColor: '#8c8c8c',
-    borderBottomWidth: 1,
+    borderBottomWidth: .5,
   },
-    scoreBox2: {
+  scoreBox2: {
     height: '100%',
-    width: '37%',
+    width: '30%',
     alignContent: 'center',
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 0,
   },
-  f1Score: {
-    color: '#D32f2f',
-    fontSize: 24,
-  },
-  f2Score: {
-    color: '#322fd3',
-    fontSize: 24,
-  },
+
   eventBox1: {
     height: '100%',
-    width: '23%',
-    borderBottomWidth: 1,
+    width: '18%',
+    borderBottomWidth: .5,
     borderBottomColor: '#8c8c8c',
   },
   eventBox2: {
     height: '100%',
-    width: '23%',
+    width: '18%',
   },
   knockdowns1: {
     color: '#D32f2f',
@@ -232,7 +306,7 @@ const styles = StyleSheet.create({
     top: 24,
   },
   knockdowns2: {
-    color: '#322fd3',
+    color: '#307Fb6',
     position: 'absolute',
     left: 3,
     top: 7,
@@ -240,7 +314,7 @@ const styles = StyleSheet.create({
 
   },
   deductions2: {
-    color: '#322fd3',
+    color: '#307Fb6',
     position: 'absolute',
     left: 3,
     top: 24,
@@ -252,12 +326,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: '16%',
     height: '100%',
-    marginRight: -5,
-    marginLeft: 5
+    marginLeft: -7,
+    marginRight: 0
   },
   roundText: {
-    fontWeight: '700',
-    color: "#333A3F"
+    fontWeight: '500',
+    color: "#333A3F",
+    fontSize: 13,
+    textAlign: 'center',
   },
   actionsBox: {
     backgroundColor: '#fff',
@@ -271,7 +347,16 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
+    flexDirection: 'row',
+    flex: 1,
+    width: '100%',
+  },
+  actionButtonTop: {
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    flexDirection: 'row',
+    paddingLeft: 2,
     flex: 1,
     width: '100%',
   },

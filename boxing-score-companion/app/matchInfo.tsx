@@ -2,6 +2,7 @@ import React, {useState, useRef, useEffect} from 'react';
 import { View, Text, Pressable, StyleSheet, Animated, ScrollView, useWindowDimensions } from 'react-native';
 import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
 import RoundRow from './components/roundRow';
+import LandscapeRoundRow from './components/landscapeRoundRow';
 
 export default function MatchInfoScreen() {
     const router = useRouter();
@@ -213,32 +214,81 @@ export default function MatchInfoScreen() {
         });
     };
 
+    const formatLandScapeName = (name: string) => {
+        const trimmed = String(name || '').trim();
+        const parts = trimmed.split(/\s+/).filter(Boolean);
+        if (parts.length <= 1) return trimmed;
+        const first = parts[0];
+        const last = parts[parts.length - 1];
+        return `${first}\n${last}`;
+    };
+
     return (
         <View style={isLandscape ? styles.landscapeContainer : styles.container}>
             <Stack.Screen options={{ headerShown: false }} />
 
-            <View style={isLandscape ? styles.landscapeTopDescription : styles.topDescription}>
-                <Text style={isLandscape ? [styles.landscapeFighterText, styles.landscapeFighter1Name] : [styles.fighterText, styles.fighter1Name]}>{fighter1}</Text>
-                <Text style={isLandscape ? [styles.landscapeFighterText, styles.landscapeVsText] : [styles.fighterText, styles.vsText]}>vs</Text>
-                <Text style={isLandscape ? [styles.landscapeFighterText, styles.landscapeFighter2Name] : [styles.fighterText, styles.fighter2Name]}>{fighter2}</Text>
-            </View>
+            {/* fighter name, point, and event container  */}
+            { !isLandscape ?
+                <View style={styles.summaryCard}>
+                    {/* Fighter 1 vs fighter 2 */}
+                    <View style={isLandscape ? styles.landscapeTopDescription : styles.topDescription}>
+                        <Text style={isLandscape ? [styles.landscapeFighterText, styles.landscapeFighter1Name] : [styles.fighterText, styles.fighter1Name]}>
+                            {isLandscape ? formatLandScapeName(String(fighter1)) : fighter1}
+                        </Text>
+                        <Text style={isLandscape ? [styles.landscapeFighterText, styles.landscapeVsText] : [styles.fighterText, styles.vsText]}>vs</Text>
+                        <Text style={isLandscape ? [styles.landscapeFighterText, styles.landscapeFighter2Name] : [styles.fighterText, styles.fighter2Name]}>
+                            {isLandscape ? formatLandScapeName(String(fighter2)) : fighter2}
+                        </Text>
+                    </View>
 
-            <View style={isLandscape ? styles.landscapePointHeader : styles.pointHeader}>
-                <Text style={styles.fighter1PointHeader}>{fighter1LatestTotal}</Text>
-                <Text style={styles.vsPointHeader}></Text>
-                <Text style={styles.fighter2PointHeader}>{fighter2LatestTotal}</Text>
-            </View>
+                    {/* Score 1 .. score 2  */}
+                    <View style={isLandscape ? styles.landscapePointHeader : styles.pointHeader}>
+                        <Text style={styles.fighter1PointHeader}>{fighter1LatestTotal}</Text>
+                        <Text style={styles.vsPointHeader}></Text>
+                        <Text style={styles.fighter2PointHeader}>{fighter2LatestTotal}</Text>
+                    </View>
 
-            <View style={isLandscape ? styles.landscapeTotalEvents : styles.totalEvents}>
-                <Text style={[styles.totalEventsText, styles.fighter1TotalEvents]}>
-                    {getTotalEventsText(scorecardTotals.fighter1KD, scorecardTotals.fighter1Pen)}
-                </Text>
-                <Text style={styles.vsTotalEvents}></Text>
-                <Text style={[styles.totalEventsText, styles.fighter2TotalEvents]}>
-                    {getTotalEventsText(scorecardTotals.fighter2KD, scorecardTotals.fighter2Pen)}
-                </Text>
-            </View>
+                    {/* round events (KD, PEN) */}
+                    <View style={isLandscape ? styles.landscapeTotalEvents : styles.totalEvents}>
+                        {/* fighter 1 kd pen */}
+                        <Text style={[styles.totalEventsText, styles.fighter1TotalEvents]}>
+                            {getTotalEventsText(scorecardTotals.fighter1KD, scorecardTotals.fighter1Pen)}
+                        </Text>
+                        {/* fighter 2 kd pen */}
+                        <Text style={styles.vsTotalEvents}></Text>
+                        <Text style={[styles.totalEventsText, styles.fighter2TotalEvents]}>
+                            {getTotalEventsText(scorecardTotals.fighter2KD, scorecardTotals.fighter2Pen)}
+                        </Text>
+                    </View>
+                </View>
+            :
+                <View style={styles.landscapeSummaryCard}>
+                    {/* Fighter 1 vs fighter 2 */}
+                    <View style={styles.landscapeTopDescription}>
+                        
+                        <Text style={[styles.landscapeFighterText, styles.landscapeFighter1Name]}>
+                            {isLandscape ? formatLandScapeName(String(fighter1)) : fighter1}
+                        </Text>
+                        <Text style={styles.fighter1PointHeader}>{fighter1LatestTotal}</Text>
+                        <Text style={[styles.totalEventsText, styles.landscapeFighter1TotalEvents]}>
+                            {getTotalEventsText(scorecardTotals.fighter1KD, scorecardTotals.fighter1Pen)}
+                        </Text>
+                        
 
+                        <Text style={[styles.landscapeFighterText, styles.landscapeVsText]}>vs</Text>
+
+                        <Text style={[styles.landscapeFighterText, styles.landscapeFighter2Name]}>
+                            {isLandscape ? formatLandScapeName(String(fighter2)) : fighter2}
+                        </Text>
+                        <Text style={styles.fighter2PointHeader}>{fighter2LatestTotal}</Text>
+                        <Text style={[styles.totalEventsText, styles.fighter2TotalEvents]}>
+                            {getTotalEventsText(scorecardTotals.fighter2KD, scorecardTotals.fighter2Pen)}
+                        </Text>
+                    </View>
+                </View>
+            }
+
+            {/* Total, round, +/- header  */}
             <View style={isLandscape ? styles.landscapeHeaderRow : styles.headerRow}>
                 <Text
                     numberOfLines={1}
@@ -247,41 +297,79 @@ export default function MatchInfoScreen() {
                     Total
                 </Text>
                 <Text style={isLandscape ? [styles.landscapeHeaderText, styles.landscapeLeftHeader] : [styles.headerText, styles.leftRound]}>Round</Text>
-                
                 <Text style={isLandscape ? styles.landscapeHeaderText : styles.headerText}>+/-</Text>
                 <Text style={isLandscape ? [styles.landscapeHeaderText, styles.landscapeRightHeader] : [styles.headerText, styles.rightRound]}>Round</Text>
                 <Text style={isLandscape ? [styles.landscapeHeaderText, styles.landscapeRightHeader] : [styles.headerText, styles.rightTotal]}>Total</Text>
             </View>
-            
-            <ScrollView style={isLandscape ? styles.landscapeRowContainer : styles.rowContainer}>
-                
-                {Array.from({ length: parseInt(rounds as string) }).map((_, index) => {
-                    const roundNumber = index + 1;
-                    return (
-                        <RoundRow
-                            key={roundNumber}
-                            roundNumber={roundNumber}
-                            leftScore={roundScores[roundNumber]?.left}
-                            rightScore={roundScores[roundNumber]?.right}
-                            leftTotal={isRoundScored(roundNumber) ? String(getTotalScore('left', roundNumber)) : '-'}
-                            rightTotal={isRoundScored(roundNumber) ? String(getTotalScore('right', roundNumber)) : '-'}
-                            // plusMinus={isRoundScored(roundNumber) ? String(getPlusMinus(roundNumber)) : '-'}
-                            plusMinus={isRoundScored(roundNumber) ? roundScores[roundNumber]?.plusMinus : '-'}
-                            leftKds={roundScores[roundNumber]?.leftKnockdowns}
-                            leftPen={roundScores[roundNumber]?.leftDeductions}
-                            rightKds={roundScores[roundNumber]?.rightKnockdowns}
-                            rightPen={roundScores[roundNumber]?.rightDeductions}
-                            // savedPlusMinus={savedPlusMinusForRound}
-                            fighter1={String(fighter1)}
-                            fighter2={String(fighter2)}
-                            rounds={String(rounds)}
-                            id={id ? String(id) : undefined}
-                            savedScores={JSON.stringify(roundScores)}
-                            onClearRound={handleClearRound}
-                        />
-                    );
-                })}
-            </ScrollView>
+
+            {/* Portrait row container  */}
+            {!isLandscape ?
+                <ScrollView style={styles.rowContainer}>
+                    {Array.from({ length: parseInt(rounds as string) }).map((_, index) => {
+                        const roundNumber = index + 1;
+                        return (
+                            <RoundRow
+                                key={roundNumber}
+                                roundNumber={roundNumber}
+                                leftScore={roundScores[roundNumber]?.left}
+                                rightScore={roundScores[roundNumber]?.right}
+                                leftTotal={isRoundScored(roundNumber) ? String(getTotalScore('left', roundNumber)) : '-'}
+                                rightTotal={isRoundScored(roundNumber) ? String(getTotalScore('right', roundNumber)) : '-'}
+                                // plusMinus={isRoundScored(roundNumber) ? String(getPlusMinus(roundNumber)) : '-'}
+                                plusMinus={isRoundScored(roundNumber) ? roundScores[roundNumber]?.plusMinus : '-'}
+                                leftKds={roundScores[roundNumber]?.leftKnockdowns}
+                                leftPen={roundScores[roundNumber]?.leftDeductions}
+                                rightKds={roundScores[roundNumber]?.rightKnockdowns}
+                                rightPen={roundScores[roundNumber]?.rightDeductions}
+                                // savedPlusMinus={savedPlusMinusForRound}
+                                fighter1={String(fighter1)}
+                                fighter2={String(fighter2)}
+                                rounds={String(rounds)}
+                                id={id ? String(id) : undefined}
+                                savedScores={JSON.stringify(roundScores)}
+                                onClearRound={handleClearRound}
+                            />
+                        );
+                    })}
+                </ScrollView>
+            :
+                <ScrollView
+                    style={styles.landscapeRowContainer}
+                    contentContainerStyle={styles.landscapeRowContent}
+                    horizontal={true}
+                    showsHorizontalScrollIndicator={false}
+                >
+                    {Array.from({ length: parseInt(rounds as string) }).map((_, index) => {
+                        const roundNumber = index + 1;
+                        return (
+                            
+                                <LandscapeRoundRow
+                                    key={roundNumber}
+                                    roundNumber={roundNumber}
+                                    leftScore={roundScores[roundNumber]?.left}
+                                    rightScore={roundScores[roundNumber]?.right}
+                                    leftTotal={isRoundScored(roundNumber) ? String(getTotalScore('left', roundNumber)) : '-'}
+                                    rightTotal={isRoundScored(roundNumber) ? String(getTotalScore('right', roundNumber)) : '-'}
+                                    // plusMinus={isRoundScored(roundNumber) ? String(getPlusMinus(roundNumber)) : '-'}
+                                    plusMinus={isRoundScored(roundNumber) ? roundScores[roundNumber]?.plusMinus : '-'}
+                                    leftKds={roundScores[roundNumber]?.leftKnockdowns}
+                                    leftPen={roundScores[roundNumber]?.leftDeductions}
+                                    rightKds={roundScores[roundNumber]?.rightKnockdowns}
+                                    rightPen={roundScores[roundNumber]?.rightDeductions}
+                                    // savedPlusMinus={savedPlusMinusForRound}
+                                    fighter1={String(fighter1)}
+                                    fighter2={String(fighter2)}
+                                    rounds={String(rounds)}
+                                    id={id ? String(id) : undefined}
+                                    savedScores={JSON.stringify(roundScores)}
+                                    onClearRound={handleClearRound}
+                                />
+                            
+                        );
+                    })}
+                </ScrollView>
+            }
+            {/* save button  */}f
             <Pressable 
                 style={isLandscape ? styles.landscapeButton : styles.button}
                 // onPress={() => router.push('/')}
@@ -293,7 +381,7 @@ export default function MatchInfoScreen() {
                 <Animated.View 
                     style={[styles.fillOverlay, { width: exitProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                 <Text style={isLandscape ? styles.landscapeButtonText : styles.buttonText}>
-                    {isEditingScorecard ? 'Hold to Save Changes' : 'Hold to Save & Exit Match'}
+                    {isEditingScorecard ? 'Hold to Save' : 'Hold to Save & Exit'}
                 </Text>
             </Pressable>
         </View>
@@ -303,24 +391,13 @@ export default function MatchInfoScreen() {
 const styles = StyleSheet.create({
     button: {
         backgroundColor: '#D32F2F',
-        paddingHorizontal: 24,
-        paddingVertical: 14,
+        paddingHorizontal: '6%',
+        paddingVertical: '2.5%',
         borderRadius: 12,
         overflow: 'hidden',
         alignSelf: 'center',
         alignItems: 'center',
-        bottom: 5
-    },
-    landscapeButton: {
-        backgroundColor: '#D32F2F',
-        paddingHorizontal: 24,
-        paddingVertical: 14,
-        borderRadius: 12,
-        width: '43%',
-        // center button in landscape
-        alignSelf: 'center',
-        alignItems: 'center',
-        overflow: 'hidden',
+        bottom: '4%'
     },
     buttonText: {
         color: '#fff',
@@ -328,38 +405,33 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         zIndex: 1
     },
-    landscapeButtonText: {
-        color: '#fff',
-        fontSize: 18,
-        fontWeight: '700',
-        zIndex: 1
-    },
     container: {
         flex: 1,
-        backgroundColor: '#fff',
-        padding: 18,
-        paddingTop: 70
-    },
-    landscapeContainer: {
-        flex: 1,
-        backgroundColor: '#fff',
-        padding: 24,
-        paddingHorizontal: 100
+        backgroundColor: '#f2f2f2',
+        padding: 15,
+        paddingRight: 10,
+        paddingTop: 60
     },
     fighter1Name: {
         color: '#D32F2F',
         textAlign: 'center',
     },
-    landscapeFighter1Name: {
+    fighter1PointHeader: {
+        flex: 1,
         color: '#D32F2F',
+        fontSize: 24,
+        fontWeight: '700',
         textAlign: 'center',
     },
     fighter2Name: {
         color: '#1976D2',
         textAlign: 'center',
     },
-    landscapeFighter2Name: {
+    fighter2PointHeader: {
+        flex: 1,
         color: '#1976D2',
+        fontSize: 24,
+        fontWeight: '700',
         textAlign: 'center',
     },
     fighterText: {
@@ -367,30 +439,24 @@ const styles = StyleSheet.create({
         flex: 1,
         fontWeight: '700',
     },
-    landscapeFighterText: {
-        flex: 1,
-        fontSize: 16,
-        fontWeight: '700',
-        textAlign: 'center',
+    fillOverlay: {
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        bottom: 0,
+        backgroundColor: 'black',
+        borderRadius: 12,
+        opacity: 0.35,
     },
     headerRow: {
         flexDirection: 'row',
         // justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: -6,
+        marginBottom: 0,
         marginHorizontal: 0,
-        paddingBottom: 10,
-        marginLeft: 18,
-        width: '82%'
-    },
-    landscapeHeaderRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 10,
-        paddingBottom: 10,
-        width: '77%',
-        alignSelf: 'center',
+        paddingBottom: 5,
+        marginLeft: 22,
+        width: '83%'
     },
     headerText: {
         flex: 1,
@@ -401,105 +467,35 @@ const styles = StyleSheet.create({
         width: '17%',
         // marginLeft: '4%'
     },
-    landscapeHeaderText: {
-        flex: 1,
-        textAlign: 'center',
-        color: '#333',
-        fontSize: 12,
-        fontWeight: '600',
-    },
     leftHeader: {
         color: 'red',
         width: '45%',
         // marginLeft: 15
     },
-    landscapeLeftHeader: {
-        color: '#D32F2F',
-    },
     leftTotal: {
         marginLeft: 10
-    },
-    leftRound: {
-
-    },
-    rightRound: {
-
-    },
-    rightTotal: {
-
-    },
-    rightHeader: {
-        color: 'blue',
-        width: '45%'
-    },
-    landscapeRightHeader: {
-        color: '#1976D2',
     },
     pointHeader: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 10,
-        width: '85%',
-        marginLeft: 23,
-    },
-    landscapePointHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 3,
-        width: '80%',
-        alignSelf: 'center',
-    },
-    fighter1PointHeader: {
-        flex: 1,
-        color: '#D32F2F',
-        fontSize: 24,
-        fontWeight: '700',
-        textAlign: 'center',
-    },
-    vsPointHeader: {
-        flex: 1,
-    },
-    fighter2PointHeader: {
-        flex: 1,
-        color: '#1976D2',
-        fontSize: 24,
-        fontWeight: '700',
-        textAlign: 'center',
-    },
-    totalEvents: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 25,
-        width: '85%',
-        marginLeft: 22,
-    },
-    landscapeTotalEvents: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 18,
-        width: '80%',
-        alignSelf: 'center',
-    },
-    totalEventsText: {
-        flex: 1,
-        color: '#333',
-        fontSize: 10,
-        fontWeight: '500',
-        textAlign: 'center',
+        marginBottom: 8,
+        width: '86%',
+        marginLeft: 21,
     },
     fighter1TotalEvents: {
         color: '#D32F2F',
         width: '45%'
     },
-    vsTotalEvents: {
-        flex: 1,
+    landscapeFighter1TotalEvents: {
+        color: '#D32F2F',
     },
     fighter2TotalEvents: {
         color: '#1976D2',
+    },
+    rightHeader: {
+        color: 'blue',
+        width: '45%'
     },
     rowContainer: {
         flex: 1,
@@ -507,11 +503,16 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
         marginHorizontal: -24,
     },
-    landscapeRowContainer: {
-        flex: 1,
-        marginBottom: 15,
-        marginHorizontal: -24,
-        paddingHorizontal: 15,
+    summaryCard: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(200, 200, 200, 0.7)',
+        paddingTop: 10,
+        height: '15.5%',
+        marginBottom: 18,
+        marginRight: '1%',
+        boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
     },
     title: {
         color: '#000',
@@ -523,36 +524,158 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 12,
+        marginBottom: 8,
         width: '85%',
         marginLeft: 23,
         marginHorizontal: 0,
     },
-    landscapeTopDescription: {
+    totalEvents: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'space-between',
         marginBottom: 25,
-        width: '80%',
-        alignSelf: 'center',
+        width: '85%',
+        marginLeft: 22,
     },
-    fillOverlay: {
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        bottom: 0,
-        backgroundColor: 'black',
-        borderRadius: 12,
-        opacity: 0.35,
+    totalEventsText: {
+        flex: 1,
+        color: '#333',
+        fontSize: 10,
+        fontWeight: '500',
+        textAlign: 'center',
+    },
+    vsPointHeader: {
+        flex: 1,
     },
     vsText: {
         color: '#000',
         textAlign: 'center',
-        
+    },
+    vsTotalEvents: {
+        flex: 1,
+    },
+
+    //LANDSCAPE STYLES
+    landscapeButton: {
+        backgroundColor: '#D32F2F',
+        paddingHorizontal: 24,
+        paddingVertical: 6,
+        borderRadius: 12,
+        width: '25%',
+        height: '10%',
+        position: 'absolute',
+        top: 15,
+        right: 45,
+        // center button in landscape
+        alignItems: 'center',
+        overflow: 'hidden',
+        boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
+    },
+    landscapeButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '700',
+        zIndex: 1
+    },
+    landscapeContainer: {
+        flex: 1,
+        backgroundColor: '#fff',
+        padding: 24,
+        paddingTop: 60,
+        paddingHorizontal: 10,
+        flexDirection: 'row'
+    },
+    landscapeFighterText: {
+        flex: 1,
+        fontSize: 16,
+        fontWeight: '700',
+        textAlign: 'center',
+    },
+    landscapeFighter1Name: {
+        color: '#D32F2F',
+        textAlign: 'center',
+        height: 50
+    },
+    landscapeFighter2Name: {
+        color: '#1976D2',
+        textAlign: 'center',
+    },
+    landscapeHeaderRow: {
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
+        height: '69.5%',
+        width: '7%',
+        top: 16.25,
+        paddingRight: 5,
+        marginRight: 5,
+        alignSelf: 'center',
+    },
+    landscapeHeaderText: {
+        flex: 1,
+        textAlign: 'center',
+        color: '#333',
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    landscapeLeftHeader: {
+        color: '#D32F2F',
+    },
+    landscapeRightHeader: {
+        color: '#1976D2',
+    },
+    landscapeRowContainer: {
+        flex: 1,
+        // marginHorizontal: -24,
+        width: '55%',
+    },
+    landscapeRowContent: {
+        flexGrow: 1,
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        alignItems: 'stretch',
+    },
+    landscapeSummaryCard: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(200, 200, 200, 0.7)',
+        paddingTop: 10,
+        height: '100%',
+        marginBottom: 15,
+        marginLeft: '5.5%',
+        width: '17%',
+        boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
+        flexDirection: 'row',
+        // justifyContent: 'space-between',
+        // alignItems: 'stretch',
+        paddingHorizontal: 5,
+    },
+    landscapeTopDescription: {
+        flex: 1,
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        marginBottom: 0,
+        paddingVertical: 12,
+    },
+    landscapePointHeader: {
+        flex: 1,
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 0,
+        paddingVertical: 12,
+    },
+    landscapeTotalEvents: {
+        flex: 1,
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 0,
+        paddingVertical: 12,
     },
     landscapeVsText: {
         color: '#000',
         textAlign: 'center',
     },
-
 });

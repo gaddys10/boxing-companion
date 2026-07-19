@@ -1,0 +1,421 @@
+import React, { useState } from 'react';
+import { Modal, View, Text, Pressable, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+
+import { useRouter } from 'expo-router';
+
+type SavedCardProps = {
+    id: number;
+    fighter1: string;
+    fighter2: string;
+    fighter1Score: number;
+    fighter2Score: number;
+    fighter1KD: number;
+    fighter2KD: number;
+    fighter1Pen: number;
+    fighter2Pen: number;
+    rounds: number;
+    savedScores?: string;
+    onDelete: (id: number) => void;
+}
+
+export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, savedScores, onDelete}: SavedCardProps) {
+    const router = useRouter();
+    const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+
+    const handleEditCard = () => {
+        router.push({
+            pathname: '/createMatch',
+            params: {
+            id: String(id),
+            title: 'Edit Scorecard Details',
+            backText: 'Menu',
+            buttonText: "Edit Scores",
+            isEdit: "true",
+            fighter1,
+            fighter2,
+            fighter1Score,
+            fighter2Score,
+            fighter1KD,
+            fighter2KD,
+            fighter1Pen,
+            fighter2Pen,
+            rounds,
+            savedScores,
+        }
+        });
+    };
+
+    const handleConfirmDelete = () => {
+        setDeleteModalVisible(false);
+        onDelete(id);
+    };
+
+    return (
+        <>
+            <Pressable style={styles.savedCard}>
+                <View style={styles.savedCardInfoRows}>
+
+
+                    {/* Fighter name row -- Row 1  */}
+                    <View style={styles.savedCardNameRow}>
+                        <View style={styles.f1NameBox}>
+                            <Text style={styles.fighter1}>{fighter1}</Text>
+                        </View>
+                        <View style={styles.f2NameBox}>
+                            <Text style={styles.fighter2}>{fighter2}</Text>
+                        </View>
+                    </View>
+
+                     {/* Round row -- Row 2 */}
+                    <View style={styles.savedCardRoundRow}>
+                        <View style={styles.roundBox}>
+                            <Text style={styles.roundText}>{rounds} RD</Text>
+                        </View>
+                    </View>
+
+                    {/* Score row -- Row 3  */}
+                    <View style={styles.savedCardScoreRow}>
+                        <View style={styles.scoreBox1}>
+                            <Text style={styles.f1Score}>{fighter1Score}</Text>
+                        </View>
+                        
+                        <View style={styles.scoreBox2}>
+                            <Text style={styles.f2Score}>{fighter2Score}</Text>
+                        </View>
+                    </View>
+
+                    {/* Event Row -- Row 3  */}
+                    <View style={styles.savedCardEventRow}>
+                        <View style={styles.eventBox1}>
+                            <Text style={styles.knockdowns1}>KD: &nbsp;&nbsp;{fighter1KD}{"\n"}PEN: {fighter1Pen}</Text>
+                            {/* <Text style={styles.deductions1}>PEN: {fighter1Pen}</Text> */}
+                        </View>
+                        <View style={styles.eventBox2}>
+                            <Text style={styles.knockdowns2}>KD: &nbsp;&nbsp;{fighter2KD}{"\n"}PEN: {fighter2Pen}</Text>
+                            {/* <Text style={styles.deductions2}>PEN: {fighter2Pen}</Text> */}
+                        </View>
+                    </View>
+
+                    {/* Action Row -- Row 5  */}
+                    <View style={styles.savedCardActionRow}>
+                        <Pressable style={styles.actionButton} onPress={handleEditCard}>
+                            {/* <Ionicons name="pencil" size={17} color="#333A3F" /> */}
+                            <Text style={styles.actionButtonText}>Edit</Text>
+                        </Pressable>
+                        <Pressable style={[styles.actionButton, styles.deleteActionButton]} onPress={() => setDeleteModalVisible(true)}>
+                            {/* <Ionicons name="close" size={20} color="#d32f2f" /> */}
+                            <Text style={[styles.actionButtonText, styles.deleteActionText]}>Delete</Text>
+                        </Pressable>
+                    </View>
+                </View>
+            </Pressable>
+
+            <Modal
+                animationType="fade"
+                transparent
+                visible={deleteModalVisible}
+                onRequestClose={() => setDeleteModalVisible(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.deleteModal}>
+                        <Text style={styles.modalTitle}>Delete scorecard?</Text>
+                        <Text style={styles.modalText}>Are you sure you want to delete {fighter1} vs {fighter2}?</Text>
+                        <View style={styles.modalActions}>
+                            <Pressable style={[styles.modalButton, styles.cancelButton]} onPress={() => setDeleteModalVisible(false)}>
+                                <Text style={styles.cancelButtonText}>Cancel</Text>
+                            </Pressable>
+                            <Pressable style={[styles.modalButton, styles.confirmDeleteButton]} onPress={handleConfirmDelete}>
+                                <Text style={styles.confirmDeleteText}>Delete</Text>
+                            </Pressable>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+        </>
+    );
+}
+
+const styles = StyleSheet.create({
+    actionsBox: {
+        backgroundColor: '#fff',
+        flex: 1,
+        height: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderTopRightRadius: 15,
+        borderBottomRightRadius: 15,
+        borderBottomLeftRadius: 15,
+        paddingRight: 3,
+        flexDirection: 'row'
+    },
+    actionButton: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        flex: 1,
+        height: '100%',
+        minWidth: 0,
+        paddingVertical: 0,
+    },
+    actionButtonText: {
+        color: '#333A3F',
+        fontSize: 12,
+        // textDecorationLine: 'underline',
+        borderBottomWidth: 1
+    },
+    deductions1: {
+        color: '#d32f2f',
+        position: 'absolute',
+        fontSize: 12,
+        left: 3,
+        top: 24,
+    },
+    deductions2: {
+        color: '#322fd3',
+        position: 'absolute',
+        left: 3,
+        top: 24,
+        fontSize: 12,
+    },
+    deleteActionButton: {
+        borderBottomColor: '#d32f2f'
+    },
+    deleteActionText: {
+        color: '#d32f2f',
+        borderBottomColor: '#d32f2f'
+    },
+    deleteModal: {
+        width: '100%',
+        maxWidth: 340,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.25,
+        shadowRadius: 8,
+        elevation: 6,
+    },
+    eventBox1: {
+        height: '100%',
+        width: '50.5%',
+        // borderBottomWidth: 1,
+        // borderBottomColor: '#8c8c8c',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRightWidth: 1,
+        borderColor: '#767676'
+    },
+    eventBox2: {
+        height: '100%',
+        width: '50%',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    f1NameBox: {
+        height: '100.5%',
+        backgroundColor: '#D32F2F',
+        width: '50.5%',
+        paddingHorizontal: '4%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderTopLeftRadius: 15,
+    },
+    f1Score: {
+        color: '#D32f2f',
+        fontSize: 32,
+        fontWeight: '700',
+        lineHeight: 32,
+        textAlign: 'center',
+        marginTop: 5
+    },
+    f2NameBox: {
+        height: '100.5%',
+        backgroundColor: '#322fd3',
+        width: '50%',
+        paddingHorizontal: '4%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderTopRightRadius: 15,
+    },
+    f2Score: {
+        color: '#322fd3',
+        fontSize: 32,
+        fontWeight: '700',
+        lineHeight: 32,
+        textAlign: 'center',
+        marginTop: 5
+
+    },
+    fighter1: {
+        color: '#fff',
+        fontSize: 13,
+        textAlign: 'center',
+    },
+    fighter2: {
+        color: '#fff',
+        fontSize: 13,
+        textAlign: 'center',
+    },
+    knockdowns1: {
+        color: '#D32f2f',
+        fontSize: 12,
+        textAlign: 'center',
+    },
+    knockdowns2: {
+        color: '#322fd3',
+        fontSize: 12,
+        textAlign: 'center',
+    },
+    modalActions: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+    },
+    modalButton: {
+        minWidth: 88,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginLeft: 10,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.45)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 24,
+    },   
+    modalText: {
+        color: '#333A3F',
+        fontSize: 15,
+        lineHeight: 21,
+        marginBottom: 20,
+    }, 
+    modalTitle: {
+        color: '#333A3F',
+        fontSize: 20,
+        fontWeight: '700',
+        marginBottom: 8,
+    },
+    roundBox: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        height: '100%',
+        textAlign: 'center',
+        paddingHorizontal: 8,
+    },
+    roundText: {
+        fontWeight: '700',
+        color: '#333A3F',
+        fontSize: 12,
+        textAlign: 'center',
+    },
+    savedCard: {
+        width: '24%',
+        maxHeight: '83%',
+        backgroundColor: 'white',
+        flexDirection: 'row',
+        alignItems: 'center',
+        top: 90,
+        borderRadius: 15,
+        overflow: 'hidden',
+        boxShadow: '2',
+        shadowColor: '#11334b',
+        shadowOffset: { width: 3, height: 3 },
+        shadowOpacity: 0.7,
+        shadowRadius: 3,
+        marginBottom: 17,
+        marginRight: 15
+    },
+    savedCardActionRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        height: '19%',
+        // paddingVertical: 2,
+        backgroundColor: '#fff',
+        borderBottomLeftRadius: 15,
+        borderBottomRightRadius: 15,
+    },
+    savedCardEventRow: {
+        flexDirection: 'row',
+        width: '100%',
+        height: '22%',
+        marginTop: -7,
+        borderBottomWidth: 1,
+        borderColor: '#767676'
+    },
+    savedCardNameRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '100%',
+        height: '22%',
+    },
+    savedCardScoreRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '100%',
+        height: '22%',
+        // paddingTop: '3%',
+        marginBottom: 0
+    },
+    savedCardRoundRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '33%',
+        height: '10%',
+        alignSelf: 'center',
+        backgroundColor: 'transparent',
+        borderBottomWidth: 1,
+        borderLeftWidth: 1,
+        borderRightWidth: 1,
+        borderTopLeftRadius: 0,
+        borderTopRightRadius: 0,
+        borderRadius: 5
+    },
+
+    savedCardInfoRows: {
+        width: '100%',
+        height: '100%',
+    },
+    scoreBox1: {
+        height: '100%',
+        width: '50.5%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 2,
+        borderRightWidth: 1,
+        borderColor: '#767676',
+        paddingTop: '3%'
+    },
+    scoreBox2: {
+        height: '100%',
+        width: '50%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 2,
+        paddingTop: '3%'
+
+    },
+
+
+
+    cancelButton: {
+        backgroundColor: '#EEF1F3',
+    },
+    confirmDeleteButton: {
+        backgroundColor: '#d32f2f',
+    },
+    cancelButtonText: {
+        color: '#333A3F',
+        fontWeight: '700',
+    },
+    confirmDeleteText: {
+        color: '#fff',
+        fontWeight: '700',
+    },
+});
