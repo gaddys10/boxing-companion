@@ -55,6 +55,21 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
     onDelete(id);
   };
 
+  const scoredRoundsCount = (() => {
+    if (!savedScores) return 0;
+
+    try {
+      const parsedScores = JSON.parse(savedScores);
+      if (parsedScores && typeof parsedScores === 'object' && !Array.isArray(parsedScores)) {
+        return Object.keys(parsedScores).length;
+      }
+    } catch {
+      return 0;
+    }
+
+    return 0;
+  })();
+
   useEffect(() => {
     const viewportStart = scrollY;
     const viewportEnd = viewportStart + viewportHeight;
@@ -125,7 +140,7 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
         </View>
 
         <View style={styles.roundBox}>
-          <Text style={styles.roundText}>{rounds}{"\n"}RD</Text>
+          <Text style={styles.roundText}>{scoredRoundsCount}/{rounds}{"\n"}RD</Text>
         </View>
 
         <View style={styles.actionsBox}>
@@ -247,7 +262,7 @@ const styles = StyleSheet.create({
   },
   scoreBox1: {
     height: '100%',
-    width: '33%',
+    width: '30%',
     alignContent: 'center',
     alignItems: 'center',
     justifyContent: 'center',
@@ -257,7 +272,7 @@ const styles = StyleSheet.create({
   },
   scoreBox2: {
     height: '100%',
-    width: '33%',
+    width: '30%',
     alignContent: 'center',
     alignItems: 'center',
     justifyContent: 'center',
@@ -309,7 +324,7 @@ const styles = StyleSheet.create({
   roundBox: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: '15%',
+    width: '16%',
     height: '100%',
     marginLeft: -7,
     marginRight: 0

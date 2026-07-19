@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     paddingVertical: '3%',
     borderRadius: 12,
     marginTop: 50,
-    bottom: '7%',
+    bottom: '6%',
     position: 'absolute',
     boxShadow: '4',
     shadowColor: '#11334b',
@@ -221,8 +221,8 @@ const styles = StyleSheet.create({
   },
   savedCardContainer: {
     position: 'absolute',
-    top: '28%',
-    bottom: 110,
+    top: '27%',
+    bottom: 100,
     width: '100%',
   },
   savedCardContent: {
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
     borderColor: '#B6C6D1',
     borderRadius: 12,
     paddingHorizontal: 12,
-    top: '-60%',
+    top: '-80%',
     height: 35,
     marginLeft: -3,
     alignItems: 'center',
@@ -308,12 +308,14 @@ const styles = StyleSheet.create({
     width: '90%',
     borderRadius: 15,
     backgroundColor: '#307Fb6',
-    height: 110,
-    paddingTop: '8%',
-    paddingLeft: '6%' 
+    height: 100,
+    paddingTop: '2.5%',
+    paddingLeft: '6%',
+    paddingBottom: 0 
 
   },
   titleRight: {
+    height: '100%'
   },
 
   //Landscape styles
