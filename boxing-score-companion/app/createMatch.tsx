@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, TextInput, useWindowDimensions, Image } from 'react-native';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 const tIcon = require('../assets/images/flatwhitet.png');
+import Dimensions from 'react-native/Libraries/Utilities/Dimensions';
+
+
 
 type RoundScore = {
     left?: string;
@@ -25,10 +28,11 @@ export default function CreateMatch() {
     const [fighter2Name, setFighter2Name] = useState(fighter2);
     const [selectedRounds, setSelectedRounds] = useState(roundAmount);
     const buttonText = String(params.buttonText || "Start Match");
-    const rounds = [1, 3, 4, 5, 6, 8, 10, 12];
+    const rounds = [3, 4, 5, 6, 8, 10, 12];
     const { width, height } = useWindowDimensions();
     const id = params.id ? String(params.id) : undefined;
     let isLandscape = width > height;
+
 
     const handleStartFight = () => {
         router.dismissTo({
@@ -163,7 +167,7 @@ export default function CreateMatch() {
                 ))}
             </View>
 
-            {!isLandscape && 
+            {!isLandscape ? 
                 <View style={isLandscape ? styles.landscapeButtonContainer : ""}>
                 
                     {/* Enter scorecard button  */}
@@ -171,7 +175,7 @@ export default function CreateMatch() {
                         style={isLandscape ? styles.landscapeButton : styles.button}
                         onPress={handleStartFight}
                     >
-                        <Text style={styles.buttonText}>{buttonText}</Text>
+                        <Text style={styles.buttonText} onPress={handleStartFight}>{buttonText}</Text>
                     </Pressable>
                     
                     {/* save and exit button  */}
@@ -191,8 +195,7 @@ export default function CreateMatch() {
                         <Text style={styles.cancelButtonText}>Cancel</Text>
                     </Pressable>
                 </View>
-            }
-            {isLandscape && 
+            :
                 <View style={isEditing ? styles.landscapeButtonContainer : styles.landscapeEditButtonContainer}>
                 
                     {/* Cancel button  */}
@@ -217,7 +220,9 @@ export default function CreateMatch() {
                         style={isLandscape ? styles.landscapeButton : styles.button}
                         onPress={handleStartFight}
                     >
-                        <Text style={styles.buttonText}>{buttonText}</Text>
+                        <Text style={styles.buttonText} onPress={handleStartFight}>
+                            {buttonText}
+                        </Text>
                     </Pressable>
                 </View>
             }
@@ -242,7 +247,7 @@ const styles = StyleSheet.create({
     button: {
         backgroundColor: '#fff',
         paddingHorizontal: 24,
-        paddingVertical: 12,
+        paddingVertical: '2%',
         borderRadius: 12,
         marginTop: 25,
         width: 250
@@ -256,7 +261,7 @@ const styles = StyleSheet.create({
     cancelButton: {
         backgroundColor: '#de2f2f',
         paddingHorizontal: 24,
-        paddingVertical: 12,
+        paddingVertical: '2%',
         borderRadius: 12,
         marginTop: 25,
         width: 250,
@@ -285,31 +290,33 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#307Fb6',
         alignItems: 'center',
-        justifyContent: 'center',
-        padding: 24,
+        // justifyContent: 'center',
+        paddingHorizontal: 24,
+        paddingTop: '23%'
     },
     fighter1input: {
         backgroundColor: '#fff',
         width: '100%',
-        padding: 12,
+        padding: "3%",
         borderRadius: 8,
         marginBottom: 36,
         color: '#D32f2f',
         fontWeight: 600,
+
     },
     fighter2Input: {
         backgroundColor: '#fff',
         width: '100%',
-        padding: 12,
+        padding: "3%",
         borderRadius: 8,
         color: '#322fd3',
         marginBottom: 36,
         fontWeight: 600,
     },
     icon: {
-        width: 100,
+        width: "20%",
         position: 'absolute',
-        top: '30%'
+        top: '21%',
     },
     inputContainer: {
         width: '100%'
@@ -335,10 +342,10 @@ const styles = StyleSheet.create({
         backgroundColor: 'transparent',
         borderWidth: 1,
         borderColor: '#fff',
-        paddingHorizontal: 14,
+        paddingHorizontal: '4.25%',
         paddingVertical: 7,
         borderRadius: 8,
-        marginRight: 10.5,
+        marginRight: '2.5%',
     },
     roundButtonSelected: {
         backgroundColor: '#fff',
@@ -353,15 +360,15 @@ const styles = StyleSheet.create({
     },
     roundsContainer: {
         flexDirection: 'row',
-        marginBottom: 24,
+        marginBottom: '4%',
         alignSelf: 'flex-start',
     },
     title: {
         color: '#fff',
-        fontSize: 28,
+        fontSize: 24,
         fontWeight: '700',
-        marginBottom: 50,
-        marginTop: -75
+        marginBottom: '10%',
+        // marginTop: -75
     },
 
     // LANDSCAPE STYLES

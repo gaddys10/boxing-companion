@@ -214,39 +214,79 @@ export default function MatchInfoScreen() {
         });
     };
 
+    const formatLandScapeName = (name: string) => {
+        const trimmed = String(name || '').trim();
+        const parts = trimmed.split(/\s+/).filter(Boolean);
+        if (parts.length <= 1) return trimmed;
+        const first = parts[0];
+        const last = parts[parts.length - 1];
+        return `${first}\n${last}`;
+    };
+
     return (
         <View style={isLandscape ? styles.landscapeContainer : styles.container}>
             <Stack.Screen options={{ headerShown: false }} />
 
             {/* fighter name, point, and event container  */}
-            <View>
-                {/* Fighter 1 vs fighter 2 */}
-                <View style={isLandscape ? styles.landscapeTopDescription : styles.topDescription}>
-                    <Text style={isLandscape ? [styles.landscapeFighterText, styles.landscapeFighter1Name] : [styles.fighterText, styles.fighter1Name]}>{fighter1}</Text>
-                    <Text style={isLandscape ? [styles.landscapeFighterText, styles.landscapeVsText] : [styles.fighterText, styles.vsText]}>vs</Text>
-                    <Text style={isLandscape ? [styles.landscapeFighterText, styles.landscapeFighter2Name] : [styles.fighterText, styles.fighter2Name]}>{fighter2}</Text>
-                </View>
+            { !isLandscape ?
+                <View style={styles.summaryCard}>
+                    {/* Fighter 1 vs fighter 2 */}
+                    <View style={isLandscape ? styles.landscapeTopDescription : styles.topDescription}>
+                        <Text style={isLandscape ? [styles.landscapeFighterText, styles.landscapeFighter1Name] : [styles.fighterText, styles.fighter1Name]}>
+                            {isLandscape ? formatLandScapeName(String(fighter1)) : fighter1}
+                        </Text>
+                        <Text style={isLandscape ? [styles.landscapeFighterText, styles.landscapeVsText] : [styles.fighterText, styles.vsText]}>vs</Text>
+                        <Text style={isLandscape ? [styles.landscapeFighterText, styles.landscapeFighter2Name] : [styles.fighterText, styles.fighter2Name]}>
+                            {isLandscape ? formatLandScapeName(String(fighter2)) : fighter2}
+                        </Text>
+                    </View>
 
-                {/* Score 1 .. score 2  */}
-                <View style={isLandscape ? styles.landscapePointHeader : styles.pointHeader}>
-                    <Text style={styles.fighter1PointHeader}>{fighter1LatestTotal}</Text>
-                    <Text style={styles.vsPointHeader}></Text>
-                    <Text style={styles.fighter2PointHeader}>{fighter2LatestTotal}</Text>
-                </View>
+                    {/* Score 1 .. score 2  */}
+                    <View style={isLandscape ? styles.landscapePointHeader : styles.pointHeader}>
+                        <Text style={styles.fighter1PointHeader}>{fighter1LatestTotal}</Text>
+                        <Text style={styles.vsPointHeader}></Text>
+                        <Text style={styles.fighter2PointHeader}>{fighter2LatestTotal}</Text>
+                    </View>
 
-                {/* round events (KD, PEN) */}
-                <View style={isLandscape ? styles.landscapeTotalEvents : styles.totalEvents}>
-                    {/* fighter 1 kd pen */}
-                    <Text style={[styles.totalEventsText, styles.fighter1TotalEvents]}>
-                        {getTotalEventsText(scorecardTotals.fighter1KD, scorecardTotals.fighter1Pen)}
-                    </Text>
-                    {/* fighter 2 kd pen */}
-                    <Text style={styles.vsTotalEvents}></Text>
-                    <Text style={[styles.totalEventsText, styles.fighter2TotalEvents]}>
-                        {getTotalEventsText(scorecardTotals.fighter2KD, scorecardTotals.fighter2Pen)}
-                    </Text>
+                    {/* round events (KD, PEN) */}
+                    <View style={isLandscape ? styles.landscapeTotalEvents : styles.totalEvents}>
+                        {/* fighter 1 kd pen */}
+                        <Text style={[styles.totalEventsText, styles.fighter1TotalEvents]}>
+                            {getTotalEventsText(scorecardTotals.fighter1KD, scorecardTotals.fighter1Pen)}
+                        </Text>
+                        {/* fighter 2 kd pen */}
+                        <Text style={styles.vsTotalEvents}></Text>
+                        <Text style={[styles.totalEventsText, styles.fighter2TotalEvents]}>
+                            {getTotalEventsText(scorecardTotals.fighter2KD, scorecardTotals.fighter2Pen)}
+                        </Text>
+                    </View>
                 </View>
-            </View>
+            :
+                <View style={styles.landscapeSummaryCard}>
+                    {/* Fighter 1 vs fighter 2 */}
+                    <View style={styles.landscapeTopDescription}>
+                        
+                        <Text style={[styles.landscapeFighterText, styles.landscapeFighter1Name]}>
+                            {isLandscape ? formatLandScapeName(String(fighter1)) : fighter1}
+                        </Text>
+                        <Text style={styles.fighter1PointHeader}>{fighter1LatestTotal}</Text>
+                        <Text style={[styles.totalEventsText, styles.landscapeFighter1TotalEvents]}>
+                            {getTotalEventsText(scorecardTotals.fighter1KD, scorecardTotals.fighter1Pen)}
+                        </Text>
+                        
+
+                        <Text style={[styles.landscapeFighterText, styles.landscapeVsText]}>vs</Text>
+
+                        <Text style={[styles.landscapeFighterText, styles.landscapeFighter2Name]}>
+                            {isLandscape ? formatLandScapeName(String(fighter2)) : fighter2}
+                        </Text>
+                        <Text style={styles.fighter2PointHeader}>{fighter2LatestTotal}</Text>
+                        <Text style={[styles.totalEventsText, styles.fighter2TotalEvents]}>
+                            {getTotalEventsText(scorecardTotals.fighter2KD, scorecardTotals.fighter2Pen)}
+                        </Text>
+                    </View>
+                </View>
+            }
 
             {/* Total, round, +/- header  */}
             <View style={isLandscape ? styles.landscapeHeaderRow : styles.headerRow}>
@@ -263,9 +303,8 @@ export default function MatchInfoScreen() {
             </View>
 
             {/* Portrait row container  */}
-            {!isLandscape &&
-                <ScrollView style={isLandscape ? styles.landscapeRowContainer : styles.rowContainer}>
-                    
+            {!isLandscape ?
+                <ScrollView style={styles.rowContainer}>
                     {Array.from({ length: parseInt(rounds as string) }).map((_, index) => {
                         const roundNumber = index + 1;
                         return (
@@ -293,11 +332,13 @@ export default function MatchInfoScreen() {
                         );
                     })}
                 </ScrollView>
-            }
-
-            {/* landscape row container  */}
-            {isLandscape &&
-                <ScrollView style={isLandscape ? styles.landscapeRowContainer : styles.rowContainer}>
+            :
+                <ScrollView
+                    style={styles.landscapeRowContainer}
+                    contentContainerStyle={styles.landscapeRowContent}
+                    horizontal={true}
+                    showsHorizontalScrollIndicator={false}
+                >
                     {Array.from({ length: parseInt(rounds as string) }).map((_, index) => {
                         const roundNumber = index + 1;
                         return (
@@ -328,7 +369,7 @@ export default function MatchInfoScreen() {
                     })}
                 </ScrollView>
             }
-            {/* save button  */}
+            {/* save button  */}f
             <Pressable 
                 style={isLandscape ? styles.landscapeButton : styles.button}
                 // onPress={() => router.push('/')}
@@ -340,7 +381,7 @@ export default function MatchInfoScreen() {
                 <Animated.View 
                     style={[styles.fillOverlay, { width: exitProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                 <Text style={isLandscape ? styles.landscapeButtonText : styles.buttonText}>
-                    {isEditingScorecard ? 'Hold to Save Changes' : 'Hold to Save & Exit Match'}
+                    {isEditingScorecard ? 'Hold to Save' : 'Hold to Save & Exit'}
                 </Text>
             </Pressable>
         </View>
@@ -350,13 +391,13 @@ export default function MatchInfoScreen() {
 const styles = StyleSheet.create({
     button: {
         backgroundColor: '#D32F2F',
-        paddingHorizontal: 24,
-        paddingVertical: 14,
+        paddingHorizontal: '6%',
+        paddingVertical: '2.5%',
         borderRadius: 12,
         overflow: 'hidden',
         alignSelf: 'center',
         alignItems: 'center',
-        bottom: 5
+        bottom: '4%'
     },
     buttonText: {
         color: '#fff',
@@ -366,10 +407,10 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#f2f2f2',
         padding: 15,
         paddingRight: 10,
-        paddingTop: 70
+        paddingTop: 60
     },
     fighter1Name: {
         color: '#D32F2F',
@@ -411,11 +452,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         // justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: -6,
+        marginBottom: 0,
         marginHorizontal: 0,
-        paddingBottom: 10,
-        marginLeft: 4,
-        width: '91.5%'
+        paddingBottom: 5,
+        marginLeft: 22,
+        width: '83%'
     },
     headerText: {
         flex: 1,
@@ -438,13 +479,16 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 10,
+        marginBottom: 8,
         width: '86%',
         marginLeft: 21,
     },
     fighter1TotalEvents: {
         color: '#D32F2F',
         width: '45%'
+    },
+    landscapeFighter1TotalEvents: {
+        color: '#D32F2F',
     },
     fighter2TotalEvents: {
         color: '#1976D2',
@@ -459,6 +503,17 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
         marginHorizontal: -24,
     },
+    summaryCard: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(200, 200, 200, 0.7)',
+        paddingTop: 10,
+        height: '15.5%',
+        marginBottom: 18,
+        marginRight: '1%',
+        boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
+    },
     title: {
         color: '#000',
         fontSize: 28,
@@ -469,7 +524,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 12,
+        marginBottom: 8,
         width: '85%',
         marginLeft: 23,
         marginHorizontal: 0,
@@ -489,7 +544,6 @@ const styles = StyleSheet.create({
         fontWeight: '500',
         textAlign: 'center',
     },
-
     vsPointHeader: {
         flex: 1,
     },
@@ -505,13 +559,17 @@ const styles = StyleSheet.create({
     landscapeButton: {
         backgroundColor: '#D32F2F',
         paddingHorizontal: 24,
-        paddingVertical: 12,
+        paddingVertical: 6,
         borderRadius: 12,
-        width: '43%',
+        width: '25%',
+        height: '10%',
+        position: 'absolute',
+        top: 15,
+        right: 45,
         // center button in landscape
-        alignSelf: 'center',
         alignItems: 'center',
         overflow: 'hidden',
+        boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
     },
     landscapeButtonText: {
         color: '#fff',
@@ -523,7 +581,9 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#fff',
         padding: 24,
-        paddingHorizontal: 10
+        paddingTop: 60,
+        paddingHorizontal: 10,
+        flexDirection: 'row'
     },
     landscapeFighterText: {
         flex: 1,
@@ -534,18 +594,21 @@ const styles = StyleSheet.create({
     landscapeFighter1Name: {
         color: '#D32F2F',
         textAlign: 'center',
+        height: 50
     },
     landscapeFighter2Name: {
         color: '#1976D2',
         textAlign: 'center',
     },
     landscapeHeaderRow: {
-        flexDirection: 'row',
+        flexDirection: 'column',
         justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 10,
-        paddingBottom: 10,
-        width: '77%',
+        alignItems: 'flex-end',
+        height: '69.5%',
+        width: '7%',
+        top: 16.25,
+        paddingRight: 5,
+        marginRight: 5,
         alignSelf: 'center',
     },
     landscapeHeaderText: {
@@ -558,39 +621,58 @@ const styles = StyleSheet.create({
     landscapeLeftHeader: {
         color: '#D32F2F',
     },
-    landscapePointHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 3,
-        width: '80%',
-        alignSelf: 'center',
-    },
     landscapeRightHeader: {
         color: '#1976D2',
     },
     landscapeRowContainer: {
         flex: 1,
+        // marginHorizontal: -24,
+        width: '55%',
+    },
+    landscapeRowContent: {
+        flexGrow: 1,
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        alignItems: 'stretch',
+    },
+    landscapeSummaryCard: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(200, 200, 200, 0.7)',
+        paddingTop: 10,
+        height: '100%',
         marginBottom: 15,
-        marginHorizontal: -24,
-        paddingHorizontal: 15,
-        width: '50%'
+        marginLeft: '5.5%',
+        width: '17%',
+        boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
+        flexDirection: 'row',
+        // justifyContent: 'space-between',
+        // alignItems: 'stretch',
+        paddingHorizontal: 5,
     },
     landscapeTopDescription: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        justifyContent: 'center',
-        marginBottom: 25,
-        width: '80%',
-        alignSelf: 'center',
+        flex: 1,
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        marginBottom: 0,
+        paddingVertical: 12,
+    },
+    landscapePointHeader: {
+        flex: 1,
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 0,
+        paddingVertical: 12,
     },
     landscapeTotalEvents: {
-        flexDirection: 'row',
+        flex: 1,
+        flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 18,
-        width: '80%',
-        alignSelf: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 0,
+        paddingVertical: 12,
     },
     landscapeVsText: {
         color: '#000',

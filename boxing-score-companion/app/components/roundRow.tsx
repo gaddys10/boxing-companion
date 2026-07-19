@@ -61,6 +61,24 @@ export default function RoundRow({
                     ? [styles.plusMinus, styles.bluePlusMinus]
                     : styles.plusMinus;
 
+    const plusMinusContainerStyle =
+        plusMinusNumber === null
+            ? [styles.plusMinusContainer, styles.neutralPlusMinusContainer]
+            : plusMinusNumber > 0
+                ? [styles.plusMinusContainer, styles.redPlusMinusContainer]
+                : plusMinusNumber < 0
+                    ? [styles.plusMinusContainer, styles.bluePlusMinusContainer]
+                    : [styles.plusMinusContainer, styles.neutralPlusMinusContainer];
+
+    const roundLabelColor =
+        plusMinusNumber === null
+            ? '#b0b0b0'
+            : plusMinusNumber > 0
+                ? '#D32F2F'
+                : plusMinusNumber < 0
+                    ? '#1976D2'
+                    : '#b0b0b0';
+
     const renderRightActions = () => (
         <Pressable
             style={styles.clearAction}
@@ -76,10 +94,22 @@ export default function RoundRow({
     return (
         <Swipeable ref={swipeableRef} renderRightActions={renderRightActions} overshootRight={false}>
             <View style={styles.row}>
-                <Text style={styles.roundLabel}>R{roundNumber}</Text>
+                <View style={[styles.roundLabelContainer, { backgroundColor: roundLabelColor }]}> 
+                    <Text style={styles.roundLabel}>R{roundNumber}</Text>
+                </View>
                 <Text style={[styles.scoreText, styles.leftTotalScore]}>{leftTotal ?? '-'}</Text>
                 <Text style={[styles.scoreText, styles.leftRoundScore]}>{leftScore ?? '-'}</Text>
-                <Text style={[styles.scoreText, plusMinusStyle]}>{plusMinusDisplay}</Text>
+
+                {plusMinusNumber !== null && plusMinusNumber > 0 && (
+                    <Ionicons name="triangle" style={styles.leftTriangle} />
+                )}
+                <View style={plusMinusContainerStyle}>
+                    <Text style={[styles.scoreText, plusMinusStyle]}>{plusMinusDisplay}</Text>
+                </View>
+
+                {plusMinusNumber !== null && plusMinusNumber < 0 && (
+                    <Ionicons name="triangle" style={styles.rightTriangle} />
+                )}
                 <Text style={[styles.scoreText, styles.rightRoundScore]}>{rightScore ?? '-'}</Text>
                 <Text style={[styles.scoreText, styles.rightTotalScore]}>{rightTotal ?? '-'}</Text>
                 <Pressable
@@ -96,7 +126,7 @@ export default function RoundRow({
                         },
                     })}
                 >
-                    <Ionicons name="pencil" size={18} color="#fff" />
+                    <Ionicons name="pencil" size={20} color="#333" />
                 </Pressable>
             </View>
             <View style={styles.roundEvents}>
@@ -107,18 +137,18 @@ export default function RoundRow({
                     <Text style={styles.roundEventsText}>KD{leftKds}</Text>
                 )}
                 {Number(leftKds) === 0 && Number(leftPen) > 0 && (
-                    <Text style={styles.roundEventsText}>PEN{leftPen}</Text>
+                    <Text style={styles.roundEventsText}>PD{leftPen}</Text>
                 )}
             </View>
             <View style={styles.roundEvents2}>
                 {Number(rightKds) > 0 && Number(rightPen) > 0 && (
-                    <Text style={styles.roundEventsText}>KD&nbsp;&nbsp;{rightKds}{"\n"}PEN{rightPen}</Text>
+                    <Text style={styles.roundEventsText}>KD{rightKds}{"\n"}PD{rightPen}</Text>
                 )}
                 {Number(rightKds) > 0 && Number(rightPen) === 0 && (
                     <Text style={styles.roundEventsText}>KD{rightKds}</Text>
                 )}
                 {Number(rightKds) === 0 && Number(rightPen) > 0 && (
-                    <Text style={styles.roundEventsText}>PEN{rightPen}</Text>
+                    <Text style={styles.roundEventsText}>PD{rightPen}</Text>
                 )}
             </View>
         </Swipeable>
@@ -127,13 +157,17 @@ export default function RoundRow({
 
 const styles = StyleSheet.create({
     bluePlusMinus: {
-        color: '#1976D2',
+        color: '#fff',
+    },
+    bluePlusMinusContainer: {
+        backgroundColor: '#1976D2',
     },
     button: {
-        backgroundColor: '#333',
-        marginRight: 3,
+        backgroundColor: 'white',
+        marginRight: 5,
         paddingHorizontal: 8,
-        paddingVertical: 8,
+        marginTop: 2,
+        paddingVertical: 5,
         borderRadius: 12,
     },
     buttonText: {   
@@ -141,12 +175,15 @@ const styles = StyleSheet.create({
     },
     clearAction: {
         alignItems: 'center',
-        backgroundColor: '#D32F2F',
+        backgroundColor: '#bc1616',
         justifyContent: 'center',
         // marginBottom: 5,
-        paddingHorizontal: 16,
-        
-        width: 82,
+        paddingHorizontal: 0,
+        height: '85%',
+        marginRight: 4,
+        marginTop: 2,
+        borderRadius: 12,
+        width: 75,
     },
     clearActionText: {
         color: '#fff',
@@ -160,11 +197,46 @@ const styles = StyleSheet.create({
     leftTotalScore: {
         color: '#D32F2F',
     },
+    leftTriangle: {
+        position: 'absolute',
+        left: '41.5%',
+        height: 9,
+        top: 15,
+        transform: [{ rotate: '-90deg' }],
+        color: "#d32f2f"
+    },
+    rightTriangle: {
+        position: 'absolute',
+        left: '55%',
+        top: 15,
+        transform: [{ rotate: '90deg' }],
+        height: 9,
+        color: "#1976D2"
+    },
     plusMinus: {
-        color: '#000',
+        color: '#fff',
+        fontSize: 14,
+        flex: 0,
+    },
+    plusMinusContainer: {
+        alignSelf: 'center',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 999,
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        minHeight: 24,
+        minWidth: 34,
+        marginHorizontal: 4,
+    },
+    neutralPlusMinusContainer: {
+        backgroundColor: '#b0b0b0',
     },
     redPlusMinus: {
-        color: '#D32F2F',
+        color: '#fff',
+    },
+    redPlusMinusContainer: {
+        backgroundColor: '#D32F2F',
     },
     rightTotalScore: {
         color: '#1976D2',
@@ -175,16 +247,16 @@ const styles = StyleSheet.create({
     },
     roundEvents: {
         position: 'absolute',
-        left: '21%',
-        top: 11.5,
-        height: 20,
+        left: '24.5%',
+        // top: 11.5,
+        height: 42,
         justifyContent: 'center'
     },
     roundEvents2: {
         position: 'absolute',
-        left: '70.5%',
-        top: 11.5,
-        height: 20,
+        left: '69%',
+        // top: 11.5,
+        height: 42,
         justifyContent: 'center'
     },
     roundEventsText: {
@@ -193,23 +265,36 @@ const styles = StyleSheet.create({
         fontWeight: 600
     },
     roundLabel: {
-        width: 50,
+        width: 40,
         textAlign: 'center',
         fontSize: 12,
         fontWeight: '700',
-        marginLeft: -12,
-        marginRight: -13
+        color: '#fff',
+    },
+    roundLabelContainer: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 0,
+        borderTopLeftRadius: 15,
+        borderBottomLeftRadius: 15,
+        height: '150%',
+        // minHeight: 51,
     },
     row: {
         backgroundColor: '#fff',
         flexDirection: 'row',
         alignItems: 'center',
-        minHeight: 35,
-        marginBottom: 0,
-        borderColor: '#000',
-        borderBottomWidth: 1,
-        // paddingBottom: 5,
-        paddingVertical: 3.95,
+        minHeight: 40,
+        marginBottom: 4.5,
+        marginHorizontal: '.5%',
+        marginRight: '2%',
+        borderWidth: 1,
+        borderColor: 'rgba(200, 200, 200, 0.7)',
+        borderRadius: 15,
+        // paddingVertical: 2,
+        overflow: 'hidden',
+        boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
+        height: 40,
     },
     rowContainer: {
         flexDirection: 'row',
@@ -220,6 +305,7 @@ const styles = StyleSheet.create({
     scoreText: {
         flex: 1,
         textAlign: 'center',
+        alignSelf: 'center',
         fontSize: 16,
         fontWeight: '700',
     },

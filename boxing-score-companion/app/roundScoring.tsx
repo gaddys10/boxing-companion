@@ -1,5 +1,5 @@
 import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
-import { View, Text, Pressable, StyleSheet, Animated, useWindowDimensions } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Animated, useWindowDimensions, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
 import * as ScreenOrientation from 'expo-screen-orientation';
@@ -135,7 +135,12 @@ export default function RoundScoringScreen() {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     handleScorePress('left');
                 }}
-                >
+            >
+                <Image
+                    source={require('../assets/images/bg1.png')}
+                    style={[StyleSheet.absoluteFill, styles.leftAreaImage, { opacity: 0.8 }]}
+                    resizeMode="cover"
+                />
 
                 {/* Undo left deductions */}
                 <Pressable
@@ -180,9 +185,13 @@ export default function RoundScoringScreen() {
 
 
                 { score > 0 &&
-                    <Text style={styles.leftScore}>{score}<Ionicons name="caret-back" size={24} color="white" /></Text>
+                    <Text style={styles.leftScore}>{score}&nbsp;<Ionicons name="caret-back" size={36} color="white" /></Text>
                 }
                 <Text style={styles.leftName}>{fighter1}</Text>
+
+
+
+
                 <Animated.Text style={[ styles.plusSign, { transform: [{ scale: leftPulseAnim }] }]} >+</Animated.Text>
 
                 {/* Left PEN */}
@@ -202,7 +211,7 @@ export default function RoundScoringScreen() {
                     delayLongPress={1500}
                 >
                     <Animated.View style={[styles.fillOverlayLeft, { width: leftDeductProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '150%'] }) }]} />
-                    <Text style={styles.buttonText}>Hold to{"\n"}Deduct</Text>
+                    <Text style={[styles.buttonText, styles.deductLeftText]}>Hold to{"\n"}Deduct</Text>
                 </Pressable>
 
                 {/* Left Knockdown  */}
@@ -232,6 +241,11 @@ export default function RoundScoringScreen() {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 handleScorePress('right');
             }}>
+                <Image
+                    source={require('../assets/images/bg2.png')}
+                    style={[StyleSheet.absoluteFillObject, styles.rightAreaImage, { opacity: 0.8 }]}
+                    resizeMode="cover"
+                />
 
                 {/* undo right knockdowns */}
                 <Pressable
@@ -254,7 +268,7 @@ export default function RoundScoringScreen() {
                 </Pressable>
 
                 { score < 0 &&
-                    <Text style={styles.rightScore}><Ionicons name="caret-forward" size={24} color="white" />{absScore}</Text>
+                    <Text style={styles.rightScore}><Ionicons name="caret-forward" size={36} color="white" />&nbsp;{absScore}</Text>
                 }
 
                 {/* Undo right deductions */}
@@ -369,20 +383,22 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
     },
-        deductLeft: {
+    deductLeft: {
         position: 'absolute',
         bottom: 0,
         left: 0,
         backgroundColor: 'gold',
         width: 90,
         height: 58,
-        paddingLeft: 30,
+        // paddingLeft: ,
         paddingTop: 10,
         borderTopRightRadius: 10,
     },
     deductLeftText: {
         //move text to right of box
-        marginLeft: 10,
+        marginLeft: 34,
+        marginTop: 10,
+        fontSize: 12,
         position: 'absolute',
         textAlign: 'right',
     },
@@ -400,8 +416,9 @@ const styles = StyleSheet.create({
     },
     deductRightText: {
         textAlign: 'left',
-        top: 8,
+        top: 10,
         left: 10,
+        fontSize: 12,
     },
     description: {
         color: '#333',
@@ -409,15 +426,17 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         marginBottom: 20,
     },
-        exitButton: {
+        
+    exitButton: {
         backgroundColor: 'gold',
         width: 225,
-        height: 75,
-        borderRadius: 25,
+        height: 40,
+        borderBottomRightRadius: 15,
+        borderBottomLeftRadius: 15,
+
         justifyContent: 'center',
         alignItems: 'center',
         fontSize: 36,
-        top: '-12%',
         left: '45%',
         transform: [{ translateX: -75 }],
         overflow: 'hidden',
@@ -426,7 +445,7 @@ const styles = StyleSheet.create({
         color: '#000',
         textAlign: 'center',
         fontSize: 14,
-        marginTop: 40,
+        marginTop: 0,
         zIndex: 1,
     },
     leftEvents: {
@@ -520,6 +539,21 @@ const styles = StyleSheet.create({
         height: '100%',
         width: '50%',
         position: 'absolute',
+        // overflow: 'hidden',
+    },
+    leftAreaImage: {
+        position: 'absolute',
+        left: 0,
+        top: -6,
+        width: '120%',
+        height: '105%',
+    },
+    rightAreaImage: {
+        position: 'absolute',
+        right: 0,
+        top: -70,
+        width: '120%',
+        height: '120%',
     },
     leftEvents2: {
         position: 'absolute',
@@ -534,7 +568,7 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: '500',
         textAlign: 'center',
-        marginTop: 50,
+        marginTop: 100,
     },
     leftkd: {
         bottom: -20,
@@ -543,10 +577,11 @@ const styles = StyleSheet.create({
     },
     leftScore: {
         position: 'absolute',
-        top: 50,
+        bottom: 50,
         right: 30,
         color: '#fff',
-        fontSize: 24,
+        fontSize: 48,
+        fontWeight: '700',
         textAlign: 'right'
     },
     plusSign: {
@@ -564,6 +599,7 @@ const styles = StyleSheet.create({
         width: '50%',
         position: 'absolute',
         right: 0,
+        overflow: 'hidden'
     },
     rightDedEvents: {
         color: '#000',
@@ -597,14 +633,15 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: '500',
         textAlign: 'center',
-        marginTop: 50,
+        marginTop: 100,
     },
     rightScore: {
         position: 'absolute',
-        top: 50,
+        bottom: 50,
         left: 30,
         color: '#fff',
-        fontSize: 24,
+        fontSize: 48,
+        fontWeight: '700',
     },
     title: {
         color: '#000',

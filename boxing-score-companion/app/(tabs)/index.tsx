@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, TextInput, Image, useWindowDimensions } from 'react-native';
+import { View, Text, Pressable, StyleSheet, TextInput, Image, useWindowDimensions, ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -29,6 +29,8 @@ export default function HomeScreen() {
   const lastSavedScorecard = useRef<string | null>(null);
   const [savedCards, setSavedCards] = useState<Scorecard[]>([]);
   const [hasLoadedSavedCards, setHasLoadedSavedCards] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
+  const [scrollViewportHeight, setScrollViewportHeight] = useState(0);
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height;
 
@@ -112,14 +114,18 @@ export default function HomeScreen() {
           <Ionicons name="search" style={styles.searchIcon} />
           <TextInput 
             style={styles.searchInput} 
-            placeholderTextColor="rgba(255, 255, 255, 0.5)" 
+            placeholderTextColor="rgba(0, 0, 0, 0.5)" 
             placeholder="Search Cards" 
           />
         </View>
       </View>
       {isLandscape && 
-        <View style={isLandscape ? styles.landscapeSavedCardContainer : styles.savedCardContainer}>
-          
+        <ScrollView
+          style={styles.landscapeSavedCardContainer}
+          contentContainerStyle={styles.landscapeSavedCardContent}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+        >
           {savedCards.map((card) => (
             <LandscapeSavedCard
               key={card.id}
@@ -137,31 +143,38 @@ export default function HomeScreen() {
               onDelete={handleDeleteCard}
             />
           ))}
-
-        </View>
+        </ScrollView>
       }
       {!isLandscape &&
-        <View style={isLandscape ? styles.landscapeSavedCardContainer : styles.savedCardContainer}>
-            
-            {savedCards.map((card) => (
-              <SavedCard
-                key={card.id}
-                id={card.id}
-                fighter1={card.fighter1}
-                fighter2={card.fighter2}
-                fighter1Score={card.fighter1Score}
-                fighter2Score={card.fighter2Score}
-                fighter1KD={card.fighter1KD}
-                fighter2KD={card.fighter2KD}
-                fighter1Pen={card.fighter1Pen}
-                fighter2Pen={card.fighter2Pen}
-                rounds={card.rounds}
-                savedScores={card.savedScores}
-                onDelete={handleDeleteCard}
-              />
-            ))}
-
-        </View>
+        <ScrollView
+          style={styles.savedCardContainer}
+          contentContainerStyle={styles.savedCardContent}
+          showsVerticalScrollIndicator={true}
+          onScroll={(event) => setScrollY(event.nativeEvent.contentOffset.y)}
+          onLayout={(event) => setScrollViewportHeight(event.nativeEvent.layout.height)}
+          bounces={false}
+          alwaysBounceVertical={false}
+        >
+          {savedCards.map((card) => (
+            <SavedCard
+              key={card.id}
+              id={card.id}
+              fighter1={card.fighter1}
+              fighter2={card.fighter2}
+              fighter1Score={card.fighter1Score}
+              fighter2Score={card.fighter2Score}
+              fighter1KD={card.fighter1KD}
+              fighter2KD={card.fighter2KD}
+              fighter1Pen={card.fighter1Pen}
+              fighter2Pen={card.fighter2Pen}
+              rounds={card.rounds}
+              savedScores={card.savedScores}
+              onDelete={handleDeleteCard}
+              scrollY={scrollY}
+              viewportHeight={scrollViewportHeight}
+            />
+          ))}
+        </ScrollView>
       }
 
       <Pressable 
@@ -178,16 +191,21 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   button: {
     backgroundColor: '#fff',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+    paddingHorizontal: '5%',
+    paddingVertical: '3%',
     borderRadius: 12,
     marginTop: 50,
-    bottom: 35,
-    position: 'absolute'
+    bottom: '7%',
+    position: 'absolute',
+    boxShadow: '4',
+    shadowColor: '#11334b',
+    shadowOffset: { width: 5, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 1,
   },
   container: {
     flex: 1,
-    backgroundColor: '#307Fb6',
+    backgroundColor: '#f1f5f8',
     alignItems: 'center'
   },
   buttonText: {
@@ -196,13 +214,20 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   icon: {
-    width: 110,
-    height: 110,
-    marginBottom: 36,
-    marginLeft: -5
+    width: '35%',
+    height: '85%',
+    marginBottom: '7%',
+    marginLeft: '-5%'
   },
   savedCardContainer: {
-    top: 130,
+    position: 'absolute',
+    top: '28%',
+    bottom: 110,
+    width: '100%',
+  },
+  savedCardContent: {
+    alignItems: 'center',
+    gap: 0
   },
   search: {
     color: "#fff",
@@ -216,27 +241,35 @@ const styles = StyleSheet.create({
     left: -85
   },
   searchIcon: {
-    color: "#fff",
-    top: 4,
+    color: "#000",
+    top: 0,
     marginRight: 5
   },
   searchInput: {
     width: '100%',
     height: 20,
-    color: 'white'
+    color: 'black'
   },
   searchInputBox: {
-    marginTop: 10,
     flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: 'white'
+    // borderBottomWidth: 1,
+    // borderBottomColor: 'black'
+    backgroundColor: '#E1EAF0',
+    borderWidth: 1,
+    borderColor: '#B6C6D1',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    top: '-60%',
+    height: 35,
+    marginLeft: -3,
+    alignItems: 'center',
   },
   title: {
     color: '#fff',
     fontSize: 26,
     fontWeight: '700',
-    marginBottom: 3,
-    marginLeft: 7
+    marginBottom: '1.5%',
+    marginLeft: '4.5%'
   },
   title2: {
     color: '#fff',
@@ -262,19 +295,25 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 26,
     fontWeight: '700',
-    marginBottom: 50,
+    marginBottom: '20%',
   },
   titleBigContainer: {
     position: 'absolute',
-    top: 95,
-    left: 12,
-    right: 0,
+    top: '7%',
+    left: '5%',
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
+    boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.1)',
+    width: '90%',
+    borderRadius: 15,
+    backgroundColor: '#307Fb6',
+    height: 110,
+    paddingTop: '8%',
+    paddingLeft: '6%' 
+
   },
   titleRight: {
-    marginLeft: 0,
   },
 
   //Landscape styles
@@ -303,11 +342,16 @@ const styles = StyleSheet.create({
     marginLeft: -5
   },
   landscapeSavedCardContainer: {
-    top: '-6%',
-    width: '91.5%',
+    position: 'absolute',
+    top: 120,
+    bottom: 100,
+    width: '100%',
+  },
+  landscapeSavedCardContent: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
     alignItems: 'flex-start',
+    paddingHorizontal: '4.5%',
+    paddingBottom: 20,
   },
   landscapeSearchBox: {
     width: '35%',
