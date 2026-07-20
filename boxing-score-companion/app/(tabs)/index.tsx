@@ -105,11 +105,10 @@ export default function HomeScreen() {
           </View>
           <Text style={isLandscape ? styles.landscapeTitle3 : styles.title3}> Companion</Text>
         </View>
-        <Image source={tIcon} style={isLandscape ? styles.landscapeIcon : styles.icon} resizeMode="contain" />
+          <Image source={tIcon} style={isLandscape ? styles.landscapeIcon : styles.icon} resizeMode="contain" />
       </View>
 
       <View style={isLandscape ? styles.landscapeSearchBox : styles.searchBox }>
-        {/* <Text style={styles.search}> Search Cards</Text> */}
         <View style={styles.searchInputBox}>
           <Ionicons name="search" style={styles.searchIcon} />
           <TextInput 
@@ -216,9 +215,10 @@ const styles = StyleSheet.create({
   icon: {
     width: '35%',
     height: '85%',
-    marginBottom: '7%',
-    marginLeft: '-5%'
+    marginLeft: '-2%',
+    alignSelf: 'center',
   },
+
   savedCardContainer: {
     position: 'absolute',
     top: '27%',
@@ -237,8 +237,9 @@ const styles = StyleSheet.create({
   searchBox: {
     width: '45%',
     height: 50,
-    top: 215,
-    left: -85
+    top: '22%',
+    alignSelf: 'flex-start',
+    marginLeft: '5.5%',
   },
   searchIcon: {
     color: "#000",
@@ -252,17 +253,18 @@ const styles = StyleSheet.create({
   },
   searchInputBox: {
     flexDirection: 'row',
-    // borderBottomWidth: 1,
-    // borderBottomColor: 'black'
     backgroundColor: '#E1EAF0',
     borderWidth: 1,
     borderColor: '#B6C6D1',
     borderRadius: 12,
     paddingHorizontal: 12,
-    top: '-80%',
     height: 35,
     marginLeft: -3,
     alignItems: 'center',
+  },
+  swipeContainer: {
+    flexDirection: 'row',
+    width: '25%'
   },
   title: {
     color: '#fff',
@@ -278,9 +280,8 @@ const styles = StyleSheet.create({
   },
   title2Container: {
     backgroundColor: '#D32F2F',
-    width: 155,
+    width: '100%',
     paddingHorizontal: 0,
-    paddingVertical: 0,
     shadowColor: 'transparent',
     shadowOpacity: 0,
     shadowRadius: 0,
@@ -295,7 +296,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 26,
     fontWeight: '700',
-    marginBottom: '20%',
   },
   titleBigContainer: {
     position: 'absolute',
@@ -308,14 +308,12 @@ const styles = StyleSheet.create({
     width: '90%',
     borderRadius: 15,
     backgroundColor: '#307Fb6',
-    height: 100,
-    paddingTop: '2.5%',
-    paddingLeft: '6%',
-    paddingBottom: 0 
-
+    height: '14%',
+    paddingVertical: 0,
   },
   titleRight: {
-    height: '100%'
+    height: '100%',
+    justifyContent: 'center',
   },
 
   //Landscape styles
@@ -340,8 +338,8 @@ const styles = StyleSheet.create({
   landscapeIcon: {
     width: 60,
     height: 60,
-    marginBottom: 45,
-    marginLeft: -5
+    marginLeft: -5,
+    alignSelf: 'center',
   },
   landscapeSavedCardContainer: {
     position: 'absolute',
@@ -359,7 +357,8 @@ const styles = StyleSheet.create({
     width: '35%',
     height: 50,
     top: '18%',
-    left: '-28.25%',
+    alignSelf: 'flex-start',
+    marginLeft: '4.5%',
   },
   landscapeTitleBigContainer: {
     top: '4%',

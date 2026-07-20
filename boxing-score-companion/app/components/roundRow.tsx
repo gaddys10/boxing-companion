@@ -80,15 +80,26 @@ export default function RoundRow({
                     : '#b0b0b0';
 
     const renderRightActions = () => (
-        <Pressable
-            style={styles.clearAction}
-            onPress={() => {
-                swipeableRef.current?.close();
-                onClearRound(roundNumber);
-            }}
-        >
-            <Text style={styles.clearActionText}>Clear{"\n"}Round</Text>
-        </Pressable>
+        <View style={styles.swipeContainer}>
+            <Pressable
+                style={styles.stoppageAction}
+                onPress={() => {
+                    swipeableRef.current?.close();
+                    onClearRound(roundNumber);
+                }}
+            >
+                <Text style={styles.clearActionText}>Mark{"\n"}Stoppage</Text>
+            </Pressable>
+            <Pressable
+                style={styles.clearAction}
+                onPress={() => {
+                    swipeableRef.current?.close();
+                    onClearRound(roundNumber);
+                }}
+            >
+                <Text style={styles.clearActionText}>Clear{"\n"}Round</Text>
+            </Pressable>
+        </View>
     );
 
     return (
@@ -183,13 +194,25 @@ const styles = StyleSheet.create({
         marginRight: 4,
         marginTop: 2,
         borderRadius: 12,
-        width: 75,
+        width: 70,
     },
     clearActionText: {
         color: '#fff',
         fontSize: 12,
         fontWeight: '700',
         textAlign: 'center',
+    },
+    stoppageAction: {
+        alignItems: 'center',
+        backgroundColor: '#000',
+        justifyContent: 'center',
+        // marginBottom: 5,
+        paddingHorizontal: 0,
+        height: '85%',
+        marginRight: 4,
+        marginTop: 2,
+        borderRadius: 12,
+        width: 70,
     },
     leftRoundScore: {
         color: '#D32F2F',
@@ -217,6 +240,9 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 14,
         flex: 0,
+    },
+    swipeContainer: {
+        flexDirection: 'row'
     },
     plusMinusContainer: {
         alignSelf: 'center',
