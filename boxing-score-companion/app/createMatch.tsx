@@ -122,7 +122,7 @@ export default function CreateMatch() {
 
                 {/* Red corner title and input  */}
                 <View style ={isLandscape ? styles.landscapeFighter1Box : ""}>
-                    <Text style={isLandscape ? styles.landscapeNameLabel : styles.nameLabel}>Red corner name:</Text>
+                    <Text style={isLandscape ? styles.landscapeNameLabel : styles.redNameLabel}>Red corner name:</Text>
                     <TextInput
                         placeholder="Enter name.."
                         value={fighter1Name}
@@ -134,10 +134,10 @@ export default function CreateMatch() {
 
                 {/* Blue corner title and input  */}
                 <View style={ isLandscape ? styles.landscapeFighter2Box : ""}>
-                    <Text style={isLandscape ? styles.landscapeNameLabel : styles.nameLabel}>Blue corner name:</Text>
+                    <Text style={isLandscape ? styles.landscapeNameLabel : styles.blueNameLabel}>Blue corner name:</Text>
                     <TextInput
                         placeholder="Enter name.."
-                        placeholderTextColor="#322fd3"
+                        placeholderTextColor="#307Fb6"
                         value={fighter2Name}
                         onChangeText={setFighter2Name}
                         style={isLandscape ? styles.landscapeFighter2Input : styles.fighter2Input}
@@ -146,7 +146,7 @@ export default function CreateMatch() {
             </View>
 
             {/* Round input  */}
-            <Text style={isLandscape ? styles.landscapeRoundLabel : styles.nameLabel}>Number of rounds:</Text>
+            <Text style={isLandscape ? styles.landscapeRoundLabel : styles.blackNameLabel}>Number of rounds:</Text>
             <View style={isLandscape ? styles.landscapeRoundsContainer : styles.roundsContainer}>
                 {rounds.map((round) => (
                     <Pressable
@@ -250,7 +250,8 @@ const styles = StyleSheet.create({
         paddingVertical: '2%',
         borderRadius: 12,
         marginTop: 25,
-        width: 250
+        width: 250,
+        boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
     },
     buttonText: {
         color: '#307Fb6',
@@ -267,8 +268,7 @@ const styles = StyleSheet.create({
         width: 250,
         alignItems: 'center',
         justifyContent: 'center',
-        borderWidth: 1,
-        borderColor: '#fff'
+        boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
     },
     landscapeCancelButton: {
         backgroundColor: '#de2f2f',
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        backgroundColor: '#307Fb6',
+        backgroundColor: '#f1f5f8',
         alignItems: 'center',
         // justifyContent: 'center',
         paddingHorizontal: 24,
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
         width: '100%',
         padding: "3%",
         borderRadius: 8,
-        color: '#322fd3',
+        color: '#307Fb6',
         marginBottom: 36,
         fontWeight: 600,
     },
@@ -322,7 +322,31 @@ const styles = StyleSheet.create({
         width: '100%'
     },
     nameLabel: {
-        color: '#fff',
+        color: '#D32f2f',
+        fontSize: 14,
+        fontWeight: '700',
+        marginBottom: 12,
+        marginLeft: 0,
+        alignSelf: 'flex-start'
+    },
+    blackNameLabel: {
+        color: '#000',
+        fontSize: 14,
+        fontWeight: '700',
+        marginBottom: 12,
+        marginLeft: 0,
+        alignSelf: 'flex-start'
+    },
+    blueNameLabel: {
+        color: '#307Fb6',
+        fontSize: 14,
+        fontWeight: '700',
+        marginBottom: 12,
+        marginLeft: 0,
+        alignSelf: 'flex-start'
+    },
+    redNameLabel: {
+        color: '#D32f2f',
         fontSize: 14,
         fontWeight: '700',
         marginBottom: 12,
@@ -341,7 +365,7 @@ const styles = StyleSheet.create({
     roundButton: {
         backgroundColor: 'transparent',
         borderWidth: 1,
-        borderColor: '#fff',
+        borderColor: '#000',
         paddingHorizontal: '4.25%',
         paddingVertical: 7,
         borderRadius: 8,
@@ -351,7 +375,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
     },
     roundButtonText: {
-        color: '#fff',
+        color: '#000',
         fontSize: 14,
         fontWeight: '500',
     },

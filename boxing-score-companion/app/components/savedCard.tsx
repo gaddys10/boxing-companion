@@ -111,52 +111,52 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
         style={{ opacity: fadeAnim }}
       >
         <Pressable style={styles.savedCard}>
-        <View style={styles.savedCardInfoRows}>
-          <View style={styles.savedCardInfoRow}>
-            <View style={styles.f1NameBox}>
-              <Text style={styles.fighter1}>{fighter1}</Text>
+          <View style={styles.savedCardInfoRows}>
+            <View style={styles.savedCardInfoRow}>
+              <View style={styles.f1NameBox}>
+                <Text style={styles.fighter1}>{fighter1}</Text>
+              </View>
+              <View style={styles.scoreBox1}>
+                <Text style={styles.f1Score}>{fighter1Score}</Text>
+              </View>
+              <View style={styles.eventBox1}>
+                <Text style={styles.knockdowns1}>KD: {fighter1KD}</Text>
+                <Text style={styles.deductions1}>PD: {fighter1Pen}</Text>
+              </View>
             </View>
-            <View style={styles.scoreBox1}>
-              <Text style={styles.f1Score}>{fighter1Score}</Text>
-            </View>
-            <View style={styles.eventBox1}>
-              <Text style={styles.knockdowns1}>KD: {fighter1KD}</Text>
-              <Text style={styles.deductions1}>PD: {fighter1Pen}</Text>
+
+            <View style={styles.savedCardInfoRow}>
+              <View style={styles.f2NameBox}>
+                <Text style={styles.fighter2}>{fighter2}</Text>
+              </View>
+              <View style={styles.scoreBox2}>
+                <Text style={styles.f2Score}>{fighter2Score}</Text>
+              </View>
+              <View style={styles.eventBox2}>
+                <Text style={styles.knockdowns2}>KD: {fighter2KD}</Text>
+                <Text style={styles.deductions2}>PD: {fighter2Pen}</Text>
+              </View>
             </View>
           </View>
 
-          <View style={styles.savedCardInfoRow}>
-            <View style={styles.f2NameBox}>
-              <Text style={styles.fighter2}>{fighter2}</Text>
-            </View>
-            <View style={styles.scoreBox2}>
-              <Text style={styles.f2Score}>{fighter2Score}</Text>
-            </View>
-            <View style={styles.eventBox2}>
-              <Text style={styles.knockdowns2}>KD: {fighter2KD}</Text>
-              <Text style={styles.deductions2}>PD: {fighter2Pen}</Text>
-            </View>
+          <View style={styles.roundBox}>
+            <Text style={styles.roundText}>{scoredRoundsCount}/{rounds}{"\n"}RD</Text>
           </View>
-        </View>
 
-        <View style={styles.roundBox}>
-          <Text style={styles.roundText}>{scoredRoundsCount}/{rounds}{"\n"}RD</Text>
-        </View>
-
-        <View style={styles.actionsBox}>
-          <Pressable style={styles.actionButtonTop} onPress={handleEditCard}>
-            <Ionicons name="pencil" size={16} color="#333A3F" style={styles.editButtonIcon} />
-            <View style={styles.eventTextBoxTop}>
-              <Text style={styles.actionButtonText}>Edit</Text>
-            </View>
-          </Pressable>
-          <Pressable style={styles.actionButton} onPress={() => setDeleteModalVisible(true)}>
-            <Ionicons name="close" size={20} color="#d32f2f" />
-            <View style={styles.eventTextBox}>
-              <Text style={[styles.actionButtonText, styles.deleteActionText]}>Delete</Text>
-            </View>
-          </Pressable>
-        </View>
+          <View style={styles.actionsBox}>
+            <Pressable style={styles.actionButtonTop} onPress={handleEditCard}>
+              <Ionicons name="pencil" size={16} color="#333A3F" style={styles.editButtonIcon} />
+              <View style={styles.eventTextBoxTop}>
+                <Text style={styles.actionButtonText}>Edit</Text>
+              </View>
+            </Pressable>
+            <Pressable style={styles.actionButton} onPress={() => setDeleteModalVisible(true)}>
+              <Ionicons name="close" size={20} color="#d32f2f" />
+              <View style={styles.eventTextBox}>
+                <Text style={[styles.actionButtonText, styles.deleteActionText]}>Delete</Text>
+              </View>
+            </Pressable>
+          </View>
       </Pressable>
       </Animated.View>
 
@@ -214,6 +214,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 1,
     marginBottom: 15,
+    
   },
   
   f1NameBox: {
