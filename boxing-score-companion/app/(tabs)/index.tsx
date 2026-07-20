@@ -201,6 +201,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 5, height: 5 },
     shadowOpacity: 0.4,
     shadowRadius: 1,
+    borderWidth: 1,
+    borderColor: '#B6C6D1',
   },
   container: {
     flex: 1,
@@ -237,7 +239,7 @@ const styles = StyleSheet.create({
   searchBox: {
     width: '45%',
     height: 50,
-    top: '22%',
+    top: '21.5%',
     alignSelf: 'flex-start',
     marginLeft: '5.5%',
   },
@@ -308,7 +310,7 @@ const styles = StyleSheet.create({
     width: '90%',
     borderRadius: 15,
     backgroundColor: '#307Fb6',
-    height: '14%',
+    height: '13%',
     paddingVertical: 0,
   },
   titleRight: {

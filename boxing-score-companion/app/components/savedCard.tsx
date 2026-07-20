@@ -214,6 +214,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 1,
     marginBottom: 15,
+    
   },
   
   f1NameBox: {
