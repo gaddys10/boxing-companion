@@ -101,6 +101,7 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
 
   return (
     <>
+    
       <Animated.View
         onLayout={(event) => {
           setCardLayout({
