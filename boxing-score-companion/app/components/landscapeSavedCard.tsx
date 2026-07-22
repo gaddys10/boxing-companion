@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
-import { Modal, View, Text, Pressable, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-
 import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { Modal, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+
 
 type SavedCardProps = {
     id: number;
@@ -22,6 +21,8 @@ type SavedCardProps = {
 export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, savedScores, onDelete}: SavedCardProps) {
     const router = useRouter();
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+
+    const { width } = useWindowDimensions();
 
     const handleEditCard = () => {
         router.push({
@@ -53,10 +54,8 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
 
     return (
         <>
-            <Pressable style={styles.savedCard}>
+            <Pressable style={[styles.savedCard, { width: width * .173}]}>
                 <View style={styles.savedCardInfoRows}>
-
-
                     {/* Fighter name row -- Row 1  */}
                     <View style={styles.savedCardNameRow}>
                         <View style={styles.f1NameBox}>
@@ -88,11 +87,11 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
                     {/* Event Row -- Row 3  */}
                     <View style={styles.savedCardEventRow}>
                         <View style={styles.eventBox1}>
-                            <Text style={styles.knockdowns1}>KD: &nbsp;&nbsp;{fighter1KD}{"\n"}PEN: {fighter1Pen}</Text>
+                            <Text style={styles.knockdowns1}>KD: {fighter1KD}{"\n"}PD: {fighter1Pen}</Text>
                             {/* <Text style={styles.deductions1}>PEN: {fighter1Pen}</Text> */}
                         </View>
                         <View style={styles.eventBox2}>
-                            <Text style={styles.knockdowns2}>KD: &nbsp;&nbsp;{fighter2KD}{"\n"}PEN: {fighter2Pen}</Text>
+                            <Text style={styles.knockdowns2}>KD: {fighter2KD}{"\n"}PD: {fighter2Pen}</Text>
                             {/* <Text style={styles.deductions2}>PEN: {fighter2Pen}</Text> */}
                         </View>
                     </View>
@@ -223,7 +222,7 @@ const styles = StyleSheet.create({
     },
     f1Score: {
         color: '#D32f2f',
-        fontSize: 32,
+        fontSize: 24,
         fontWeight: '700',
         lineHeight: 32,
         textAlign: 'center',
@@ -240,7 +239,7 @@ const styles = StyleSheet.create({
     },
     f2Score: {
         color: '#322fd3',
-        fontSize: 32,
+        fontSize: 24,
         fontWeight: '700',
         lineHeight: 32,
         textAlign: 'center',
@@ -313,21 +312,23 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     savedCard: {
-        width: '24%',
-        maxHeight: '83%',
+        // width: 150,
+        height: '70%',
         backgroundColor: 'white',
         flexDirection: 'row',
         alignItems: 'center',
         top: 90,
         borderRadius: 15,
-        overflow: 'hidden',
-        boxShadow: '2',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 3, height: 3 },
-        shadowOpacity: 0.7,
-        shadowRadius: 3,
+        // overflow: 'hidden',
         marginBottom: 17,
-        marginRight: 15
+        marginRight: 15,
+        boxShadow: '4',
+        shadowColor: '#11334b',
+        shadowOffset: { width: 5, height: 5 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1,
+        borderWidth: 1,
+        borderColor: '#B6C6D1',
     },
     savedCardActionRow: {
         flexDirection: 'row',
@@ -399,10 +400,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         paddingVertical: 2,
         paddingTop: '3%'
-
     },
-
-
 
     cancelButton: {
         backgroundColor: '#EEF1F3',

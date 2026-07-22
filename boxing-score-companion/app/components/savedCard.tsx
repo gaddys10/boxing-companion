@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Modal, View, Text, Pressable, StyleSheet, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useRouter } from 'expo-router';
 
@@ -215,7 +215,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 1,
     marginBottom: 15,
-    
+    borderWidth: 1,
+    borderColor: '#B6C6D1',
+    borderBottomWidth: 0
+
   },
   
   f1NameBox: {

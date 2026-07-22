@@ -108,7 +108,7 @@ export default function HomeScreen() {
       locations={[0, 0.32, 0.68, 1]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
-      style={styles.neonPageBorder}
+      style={[styles.neonPageBorder, isLandscape && styles.landscapeNeonPageBorder]}
     >
       <StatusBar style="dark" />
       <View style={isLandscape ? styles.landscapeContainer : styles.container}>
@@ -207,11 +207,15 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   neonPageBorder: {
-  flex: 1,
-  padding: 4,
-  paddingVertical: 5
-
-},
+    flex: 1,
+    padding: 4,
+    paddingVertical: 5,
+  },
+  landscapeNeonPageBorder: {
+    padding: 6,
+    paddingVertical: 6,
+    borderRadius: 10
+  },
   button: {
     backgroundColor: '#fff',
     paddingHorizontal: '5%',
@@ -354,14 +358,21 @@ const styles = StyleSheet.create({
     // marginTop: 25,
     top: '6.5%',
     right: '8%',
-    position: 'absolute'
+    position: 'absolute',
+    boxShadow: '4',
+    shadowColor: '#11334b',
+    shadowOffset: { width: 5, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 1,
+    borderWidth: 1,
+    borderColor: '#B6C6D1'
   },
   landscapeContainer: {
     flex: 1,
-    backgroundColor: '#307Fb6',
+    backgroundColor: '#f1f5f8',
     alignItems: 'center',
-    padding: 24,
-    paddingTop: 25,
+    borderRadius: 40
+
   },
   landscapeIcon: {
     width: 60,
@@ -371,20 +382,22 @@ const styles = StyleSheet.create({
   },
   landscapeSavedCardContainer: {
     position: 'absolute',
-    top: 120,
-    bottom: 100,
+    top: 60,
+    bottom: '0%',
+    left: '4.5%',
     width: '100%',
   },
   landscapeSavedCardContent: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    paddingHorizontal: '4.5%',
+    paddingLeft: 0,
+    paddingRight: 16,
     paddingBottom: 20,
   },
   landscapeSearchBox: {
     width: '35%',
     height: 50,
-    top: '18%',
+    top: '26%',
     alignSelf: 'flex-start',
     marginLeft: '4.5%',
   },
