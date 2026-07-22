@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -141,12 +141,13 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
           </View>
 
           <View style={styles.roundBox}>
-            <Text style={styles.roundText}>{scoredRoundsCount}/{rounds}{"\n"}RD</Text>
+            <Text style={styles.roundText}>RD{"\n"}{scoredRoundsCount}/{rounds}</Text>
           </View>
 
           <View style={styles.actionsBox}>
             <Pressable style={styles.actionButtonTop} onPress={handleEditCard}>
-              <Ionicons name="pencil" size={16} color="#333A3F" style={styles.editButtonIcon} />
+              {/* <Ionicons name="pencil" size={16} color="#333A3F" style={styles.editButtonIcon} /> */}
+              <MaterialCommunityIcons name="pencil" size={16} color="#333A3F" style={styles.editButtonIcon}/>
               <View style={styles.eventTextBoxTop}>
                 <Text style={styles.actionButtonText}>Edit</Text>
               </View>

@@ -1,8 +1,8 @@
-import React, {useState, useRef, useEffect} from 'react';
-import { View, Text, Pressable, StyleSheet, Animated, ScrollView, useWindowDimensions } from 'react-native';
-import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
-import RoundRow from './components/roundRow';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import LandscapeRoundRow from './components/landscapeRoundRow';
+import RoundRow from './components/roundRow';
 
 export default function MatchInfoScreen() {
     const router = useRouter();
@@ -177,13 +177,16 @@ export default function MatchInfoScreen() {
     const getTotalEventsText = (knockdowns: number, penalties: number) => {
         const events = [];
 
-        if (knockdowns > 0) {
-            events.push(`KD ${knockdowns}`);
-        }
+        events.push(`KD: ${knockdowns}`);
+        events.push(`Deductions: ${penalties}`);
 
-        if (penalties > 0) {
-            events.push(`PEN ${penalties}`);
-        }
+        // if (knockdowns > 0) {
+        //     events.push(`KD ${knockdowns}`);
+        // }
+
+        // if (penalties > 0) {
+        //     events.push(`PEN ${penalties}`);
+        // }
 
         return events.join(' · ');
     };
@@ -251,12 +254,20 @@ export default function MatchInfoScreen() {
                     {/* round events (KD, PEN) */}
                     <View style={isLandscape ? styles.landscapeTotalEvents : styles.totalEvents}>
                         {/* fighter 1 kd pen */}
-                        <Text style={[styles.totalEventsText, styles.fighter1TotalEvents]}>
+                        <Text
+                            style={[styles.totalEventsText, styles.fighter1TotalEvents]}
+                            numberOfLines={1}
+                            
+                        >
+                            {/* Knockdowns: {scorecardTotals.fighter1KD}{"\n"}
+                            Point Deductions: {scorecardTotals.fighter1Pen} */}
                             {getTotalEventsText(scorecardTotals.fighter1KD, scorecardTotals.fighter1Pen)}
                         </Text>
                         {/* fighter 2 kd pen */}
                         <Text style={styles.vsTotalEvents}></Text>
-                        <Text style={[styles.totalEventsText, styles.fighter2TotalEvents]}>
+                        <Text style={[styles.totalEventsText, styles.fighter2TotalEvents]}
+                            numberOfLines={1}
+                            >
                             {getTotalEventsText(scorecardTotals.fighter2KD, scorecardTotals.fighter2Pen)}
                         </Text>
                     </View>
@@ -485,7 +496,6 @@ const styles = StyleSheet.create({
     },
     fighter1TotalEvents: {
         color: '#D32F2F',
-        width: '45%'
     },
     landscapeFighter1TotalEvents: {
         color: '#D32F2F',
@@ -532,15 +542,14 @@ const styles = StyleSheet.create({
     totalEvents: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
         marginBottom: 25,
         width: '85%',
-        marginLeft: 22,
+        marginLeft: 23,
     },
     totalEventsText: {
         flex: 1,
         color: '#333',
-        fontSize: 10,
+        fontSize: 9,
         fontWeight: '500',
         textAlign: 'center',
     },

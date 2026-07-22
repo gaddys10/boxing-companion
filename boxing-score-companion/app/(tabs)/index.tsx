@@ -131,7 +131,7 @@ export default function HomeScreen() {
             <TextInput 
               style={styles.searchInput} 
               placeholderTextColor="rgba(0, 0, 0, 0.5)" 
-              placeholder="Search Cards" 
+              placeholder="Search Scorecards" 
             />
           </View>
         </View>
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
     paddingVertical: '3%',
     borderRadius: 12,
     marginTop: 50,
-    bottom: '3.5%',
+    bottom: '4%',
     position: 'absolute',
     boxShadow: '4',
     shadowColor: '#11334b',
@@ -256,6 +256,8 @@ const styles = StyleSheet.create({
     bottom: 91,
     width: '100%',
     borderRadius: 25,
+    backgroundColor: 'rgba(255, 255, 255, 0.28)',
+    overflow: 'hidden',
   },
   savedCardContent: {
     alignItems: 'center',
@@ -386,6 +388,14 @@ const styles = StyleSheet.create({
     bottom: '0%',
     left: '4.5%',
     width: '100%',
+    backgroundColor: 'rgba(255, 255, 255, 0.16)',
+    borderRadius: 24,
+    overflow: 'hidden',
+    shadowColor: '#0f172a',
+    shadowOffset: { width: -2, height: -2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 2,
   },
   landscapeSavedCardContent: {
     flexDirection: 'row',

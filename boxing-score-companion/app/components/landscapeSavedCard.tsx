@@ -69,7 +69,7 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
                      {/* Round row -- Row 2 */}
                     <View style={styles.savedCardRoundRow}>
                         <View style={styles.roundBox}>
-                            <Text style={styles.roundText}>{rounds} RD</Text>
+                            <Text style={styles.roundText}>RD {rounds}</Text>
                         </View>
                     </View>
 
