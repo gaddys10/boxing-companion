@@ -139,9 +139,20 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
               </View>
             </View>
           </View>
-
-          <View style={styles.roundBox}>
-            <Text style={styles.roundText}>RD{"\n"}{scoredRoundsCount}/{rounds}</Text>
+          <View style={styles.roundBoxes}>
+            <View style={styles.roundBox}>
+              <View style={styles.rdPill}>
+                <Text style={styles.rdPillText}>RD</Text>
+              </View>
+              <Text style={styles.roundText}>{scoredRoundsCount}/{rounds}</Text>
+            </View>
+            <View style={styles.roundBox}>
+              <View style={styles.genderPill}>
+                <Ionicons name="male-outline" size={12} color="#fff"/>
+                {/* <Text style={styles.rdPillText}>RD</Text> */}
+              </View>
+              <Text style={styles.roundText}>200+ lbs</Text>
+            </View>
           </View>
 
           <View style={styles.actionsBox}>
@@ -225,7 +236,7 @@ const styles = StyleSheet.create({
   f1NameBox: {
     height: '100.5%',
     backgroundColor: '#D32F2F',
-    width: '47%',
+    width: '49%',
     paddingLeft: '5%',
     paddingRight: '4%',
     borderTopLeftRadius: 15,
@@ -234,7 +245,7 @@ const styles = StyleSheet.create({
   f2NameBox: {
     height: '100.5%',
     backgroundColor: '#307Fb6',
-    width: '47%',
+    width: '49%',
     paddingLeft: '5%',
     paddingRight: '4%',
     borderBottomLeftRadius: 15,
@@ -250,16 +261,22 @@ const styles = StyleSheet.create({
   },
   f1Score: {
     color: '#D32f2f',
-    fontSize: 24,
+    fontSize: 28,
+    fontWeight: 700
   },
   f2Score: {
     color: '#307Fb6',
-    fontSize: 24,
+    fontSize: 28,
+    fontWeight: 700
   },
+  // pillColumn: {
+  //   flexDirection:
+  // },
   savedCardInfoRows: {
     width: '66%',
     height: '100%',
   },
+
   savedCardInfoRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -327,18 +344,49 @@ const styles = StyleSheet.create({
         fontSize: 12,
 
   },
+  genderPill: {
+    backgroundColor: '#307Fb6',
+    width: '59%',
+    height: '38%',
+    color: '#fff',
+    borderRadius: 15,
+    alignItems: 'center',
+    alignSelf: 'center',
+    justifyContent: 'center',
+  },
+  rdPill: {
+    backgroundColor: '#000',
+    width: '59%',
+    height: '38%',
+    color: '#fff',
+    borderRadius: 15,
+    alignItems: 'center',
+    alignSelf: 'center',
+    justifyContent: 'center',
+  },
+  rdPillText: {
+    color: "#fff",
+    fontSize: 12
+  },
+  roundBoxes: {
+    width: '17.5%',
+    height: '100%',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: -7,
+    marginRight: 0,
+  },
   roundBox: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: '16%',
-    height: '100%',
-    marginLeft: -7,
-    marginRight: 0
+    width: '100%',
+    height: '50%',
   },
   roundText: {
     fontWeight: '500',
     color: "#333A3F",
-    fontSize: 13,
+    fontSize: 12,
     textAlign: 'center',
   },
   actionsBox: {

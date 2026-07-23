@@ -113,7 +113,7 @@ export default function HomeScreen() {
       <StatusBar style="dark" />
       <View style={isLandscape ? styles.landscapeContainer : styles.container}>
         <View style={isLandscape? styles.landscapeTitleBigContainer : styles.titleBigContainer}>
-          <View style={styles.titleRight}>
+          <View style={isLandscape? styles.landscapeTitleRight : styles.titleRight}>
             <Text style={isLandscape ? styles.landscapeTitle : styles.title}>Boxing</Text> 
             <View style={styles.title2Container}>
               <Text style={isLandscape? styles.landscapeTitle2 : styles.title2}>
@@ -354,12 +354,12 @@ const styles = StyleSheet.create({
 
   landscapeButton: {
     backgroundColor: '#fff',
-    paddingHorizontal: 24,
+    paddingHorizontal: '5%',
     paddingVertical: 10,
     borderRadius: 12,
     // marginTop: 25,
     top: '6.5%',
-    right: '8%',
+    right: '5.5%',
     position: 'absolute',
     boxShadow: '4',
     shadowColor: '#11334b',
@@ -384,40 +384,46 @@ const styles = StyleSheet.create({
   },
   landscapeSavedCardContainer: {
     position: 'absolute',
-    top: 60,
+    top: '40%',
     bottom: '0%',
-    left: '4.5%',
-    width: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.16)',
-    borderRadius: 24,
+    left: '6%',
+    width: '89%',
+    backgroundColor: '#f1f5f8',
+    // borderRadius: 40,
     overflow: 'hidden',
-    shadowColor: '#0f172a',
-    shadowOffset: { width: -2, height: -2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
+    // shadowColor: '#0f172a',
+    // shadowOffset: { width: -2, height: -2 },
+    // shadowOpacity: 0.2,
+    // shadowRadius: 8,
     elevation: 2,
+    height: '58%'
   },
   landscapeSavedCardContent: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     paddingLeft: 0,
-    paddingRight: 16,
+    gap: 8,
+    paddingRight: 5,
     paddingBottom: 20,
   },
   landscapeSearchBox: {
-    width: '35%',
+    width: '33%',
     height: 50,
-    top: '26%',
+    top: '30%',
     alignSelf: 'flex-start',
-    marginLeft: '4.5%',
+    marginLeft: '6.5%',
   },
   landscapeTitleBigContainer: {
-    top: '4%',
+    top: '6%',
     position: 'absolute',
-    left: 50,
+    left: '6%',
     alignItems: 'center',
     flexDirection: 'row',
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
+    borderRadius: 15,
+    height: '20%',
+    backgroundColor: '#307Fb6',
+    width: '33.5%',
   },
   landscapeTitle: {
     color: '#fff',
@@ -437,6 +443,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 50,
     marginLeft: 3
+  },
+  landscapeTitleRight: {
+    height: '100%',
+    top: '30%',
+    justifyContent: 'center'
   },
   
   landscapeButtonText: {},

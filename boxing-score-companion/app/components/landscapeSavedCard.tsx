@@ -52,9 +52,24 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
         onDelete(id);
     };
 
+    const scoredRoundsCount = (() => {
+    if (!savedScores) return 0;
+
+    try {
+        const parsedScores = JSON.parse(savedScores);
+        if (parsedScores && typeof parsedScores === 'object' && !Array.isArray(parsedScores)) {
+            return Object.keys(parsedScores).length;
+        }
+    } catch {
+        return 0;
+    }
+
+        return 0;
+    })();
+
     return (
         <>
-            <Pressable style={[styles.savedCard, { width: width * .173}]}>
+            <Pressable style={[styles.savedCard, { width: width * .21}]}>
                 <View style={styles.savedCardInfoRows}>
                     {/* Fighter name row -- Row 1  */}
                     <View style={styles.savedCardNameRow}>
@@ -63,13 +78,6 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
                         </View>
                         <View style={styles.f2NameBox}>
                             <Text style={styles.fighter2}>{fighter2}</Text>
-                        </View>
-                    </View>
-
-                     {/* Round row -- Row 2 */}
-                    <View style={styles.savedCardRoundRow}>
-                        <View style={styles.roundBox}>
-                            <Text style={styles.roundText}>RD {rounds}</Text>
                         </View>
                     </View>
 
@@ -93,6 +101,13 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
                         <View style={styles.eventBox2}>
                             <Text style={styles.knockdowns2}>KD: {fighter2KD}{"\n"}PD: {fighter2Pen}</Text>
                             {/* <Text style={styles.deductions2}>PEN: {fighter2Pen}</Text> */}
+                        </View>
+                    </View>
+
+                    {/* Round row -- Row 2 */}
+                    <View style={styles.savedCardRoundRow}>
+                        <View style={styles.roundBox}>
+                            <Text style={styles.roundText}>RD {scoredRoundsCount}/{rounds}</Text>
                         </View>
                     </View>
 
@@ -170,7 +185,7 @@ const styles = StyleSheet.create({
         top: 24,
     },
     deductions2: {
-        color: '#322fd3',
+        color: '#307Fb6',
         position: 'absolute',
         left: 3,
         top: 24,
@@ -230,7 +245,7 @@ const styles = StyleSheet.create({
     },
     f2NameBox: {
         height: '100.5%',
-        backgroundColor: '#322fd3',
+        backgroundColor: '#307Fb6',
         width: '50%',
         paddingHorizontal: '4%',
         alignItems: 'center',
@@ -238,7 +253,7 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 15,
     },
     f2Score: {
-        color: '#322fd3',
+        color: '#307Fb6',
         fontSize: 24,
         fontWeight: '700',
         lineHeight: 32,
@@ -262,7 +277,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     knockdowns2: {
-        color: '#322fd3',
+        color: '#307Fb6',
         fontSize: 12,
         textAlign: 'center',
     },
@@ -301,28 +316,30 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         width: '100%',
-        height: '100%',
+        height: '75%',
         textAlign: 'center',
+        backgroundColor: '#000',
+        borderRadius: 15,
         paddingHorizontal: 8,
     },
     roundText: {
         fontWeight: '700',
-        color: '#333A3F',
+        color: '#fff',
         fontSize: 12,
         textAlign: 'center',
     },
     savedCard: {
-        // width: 150,
-        height: '70%',
+        height: '100%',
+        top: '6%',
         backgroundColor: 'white',
         flexDirection: 'row',
         alignItems: 'center',
-        top: 90,
         borderRadius: 15,
         // overflow: 'hidden',
         marginBottom: 17,
-        marginRight: 15,
-        boxShadow: '4',
+        // marginRight: 7,
+        // boxShadow: '4',
+        marginRight: 0,
         shadowColor: '#11334b',
         shadowOffset: { width: 5, height: 5 },
         shadowOpacity: 0.4,
@@ -335,7 +352,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         width: '100%',
-        height: '19%',
+        height: '16%',
         // paddingVertical: 2,
         backgroundColor: '#fff',
         borderBottomLeftRadius: 15,
@@ -353,7 +370,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         width: '100%',
-        height: '22%',
+        height: '24.5%',
     },
     savedCardScoreRow: {
         flexDirection: 'row',
@@ -367,16 +384,14 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        width: '33%',
-        height: '10%',
-        alignSelf: 'center',
-        backgroundColor: 'transparent',
-        borderBottomWidth: 1,
-        borderLeftWidth: 1,
-        borderRightWidth: 1,
+        width: '40%',
+        height: '17%',
+        alignSelf: 'flex-start',
+        left: '5%',
         borderTopLeftRadius: 0,
         borderTopRightRadius: 0,
-        borderRadius: 5
+        borderRadius: 5,
+        // backgroundColor: '#767676'
     },
 
     savedCardInfoRows: {
