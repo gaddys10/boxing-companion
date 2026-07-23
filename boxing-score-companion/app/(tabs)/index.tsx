@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
   savedCardContainer: {
     position: 'absolute',
     top: '26.25%',
-    bottom: 91,
+    bottom: 90,
     width: '100%',
     borderRadius: 25,
     backgroundColor: 'rgba(255, 255, 255, 0.28)',
