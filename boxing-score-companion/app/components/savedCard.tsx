@@ -1,6 +1,6 @@
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
-import { Modal, View, Text, Pressable, StyleSheet, Animated } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useRouter } from 'expo-router';
 
@@ -19,9 +19,11 @@ type SavedCardProps = {
   onDelete: (id: number) => void;
   scrollY?: number;
   viewportHeight?: number;
+  weight?: number | string;
+  gender?: string;
 }
 
-export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, savedScores, onDelete, scrollY = 0, viewportHeight = 0}: SavedCardProps) {
+export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, savedScores, weight, gender, onDelete, scrollY = 0, viewportHeight = 0}: SavedCardProps) {
   const router = useRouter();
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [cardLayout, setCardLayout] = useState<{ y: number; height: number } | null>(null);
@@ -46,6 +48,8 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
           fighter2Pen,
           rounds,
           savedScores,
+          gender,
+          weight
       }
     });
   };
@@ -101,6 +105,7 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
 
   return (
     <>
+    
       <Animated.View
         onLayout={(event) => {
           setCardLayout({
@@ -138,20 +143,40 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
               </View>
             </View>
           </View>
+          <View style={styles.roundBoxes}>
+            <View style={styles.roundBox}>
+              <View style={styles.rdPill}>
+                <Text style={styles.rdPillText}>RD</Text>
+              </View>
+              <Text style={[styles.roundText]}>{scoredRoundsCount}/{rounds}</Text>
+            </View>
+            <View style={styles.roundBox}>
+              {(gender === "mens" || gender === "womens") && (
+                <View style={gender === "mens" ? styles.malePill : styles.femalePill}>
+                  <Ionicons
+                    name={gender === "mens" ? "male-outline" : "female-outline"}
+                    size={13}
+                    color="#fff"
+                  />
+                </View>
+              )}
 
-          <View style={styles.roundBox}>
-            <Text style={styles.roundText}>{scoredRoundsCount}/{rounds}{"\n"}RD</Text>
+              <Text style={styles.roundText}>
+                {weight ? `${weight} lbs` : ""}
+              </Text>
+            </View>
           </View>
 
           <View style={styles.actionsBox}>
             <Pressable style={styles.actionButtonTop} onPress={handleEditCard}>
-              <Ionicons name="pencil" size={16} color="#333A3F" style={styles.editButtonIcon} />
+              {/* <Ionicons name="pencil" size={16} color="#333A3F" style={styles.editButtonIcon} /> */}
+              {/* <MaterialCommunityIcons name="pencil" size={16} color="#333A3F" style={styles.editButtonIcon}/> */}
               <View style={styles.eventTextBoxTop}>
                 <Text style={styles.actionButtonText}>Edit</Text>
               </View>
             </Pressable>
             <Pressable style={styles.actionButton} onPress={() => setDeleteModalVisible(true)}>
-              <Ionicons name="close" size={20} color="#d32f2f" />
+              {/* <Ionicons name="close" size={20} color="#d32f2f" /> */}
               <View style={styles.eventTextBox}>
                 <Text style={[styles.actionButtonText, styles.deleteActionText]}>Delete</Text>
               </View>
@@ -214,13 +239,16 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 1,
     marginBottom: 15,
-    
+    borderWidth: 1,
+    borderColor: '#B6C6D1',
+    borderBottomWidth: 0
+
   },
   
   f1NameBox: {
     height: '100.5%',
     backgroundColor: '#D32F2F',
-    width: '47%',
+    width: '50%',
     paddingLeft: '5%',
     paddingRight: '4%',
     borderTopLeftRadius: 15,
@@ -229,7 +257,7 @@ const styles = StyleSheet.create({
   f2NameBox: {
     height: '100.5%',
     backgroundColor: '#307Fb6',
-    width: '47%',
+    width: '50%',
     paddingLeft: '5%',
     paddingRight: '4%',
     borderBottomLeftRadius: 15,
@@ -245,16 +273,22 @@ const styles = StyleSheet.create({
   },
   f1Score: {
     color: '#D32f2f',
-    fontSize: 24,
+    fontSize: 28,
+    fontWeight: 700
   },
   f2Score: {
     color: '#307Fb6',
-    fontSize: 24,
+    fontSize: 28,
+    fontWeight: 700
   },
+  // pillColumn: {
+  //   flexDirection:
+  // },
   savedCardInfoRows: {
     width: '66%',
     height: '100%',
   },
+
   savedCardInfoRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -322,18 +356,59 @@ const styles = StyleSheet.create({
         fontSize: 12,
 
   },
+  malePill: {
+    backgroundColor: '#307Fb6',
+    width: '59%',
+    height: '39%',
+    color: '#fff',
+    borderRadius: 15,
+    alignItems: 'center',
+    alignSelf: 'center',
+    justifyContent: 'center',
+  },
+  femalePill: {
+    backgroundColor: '#d32fba',
+    width: '59%',
+    height: '39%',
+    color: '#fff',
+    borderRadius: 15,
+    alignItems: 'center',
+    alignSelf: 'center',
+    justifyContent: 'center',
+  },
+  rdPill: {
+    backgroundColor: '#000',
+    width: '59%',
+    height: '38%',
+    color: '#fff',
+    borderRadius: 15,
+    alignItems: 'center',
+    alignSelf: 'center',
+    justifyContent: 'center',
+  },
+  rdPillText: {
+    color: "#fff",
+    fontSize: 12
+  },
+  roundBoxes: {
+    width: '17.5%',
+    height: '100%',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: -7,
+    marginRight: 0,
+  },
   roundBox: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: '16%',
-    height: '100%',
-    marginLeft: -7,
-    marginRight: 0
+    width: '100%',
+    height: '50%',
   },
   roundText: {
     fontWeight: '500',
     color: "#333A3F",
-    fontSize: 13,
+    fontSize: 12,
     textAlign: 'center',
   },
   actionsBox: {
@@ -344,20 +419,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderTopRightRadius: 15,
     borderBottomRightRadius: 15,
-    paddingRight: 3,
+    paddingRight: '4%',
   },
   actionButton: {
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    justifyContent: 'flex-end',
     flexDirection: 'row',
     flex: 1,
     width: '100%',
   },
   actionButtonTop: {
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    justifyContent: 'flex-end',
     flexDirection: 'row',
-    paddingLeft: 2,
     flex: 1,
     width: '100%',
   },

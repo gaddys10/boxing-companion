@@ -1,8 +1,8 @@
-import React, {useState, useRef, useEffect} from 'react';
-import { View, Text, Pressable, StyleSheet, Animated, ScrollView, useWindowDimensions } from 'react-native';
-import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
-import RoundRow from './components/roundRow';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View, Modal } from 'react-native';
 import LandscapeRoundRow from './components/landscapeRoundRow';
+import RoundRow from './components/roundRow';
 
 export default function MatchInfoScreen() {
     const router = useRouter();
@@ -21,6 +21,8 @@ export default function MatchInfoScreen() {
         savedRightDeductions,
         savedLeftKnockdowns,
         savedRightKnockdowns,
+        gender,
+        weight
     } = useLocalSearchParams();
     
     type RoundScore = {
@@ -31,6 +33,7 @@ export default function MatchInfoScreen() {
         rightDeductions?: string;
         leftKnockdowns?: string;
         rightKnockdowns?: string;
+        scoringMethod?: 'quick' | 'full';
     };
 
     const [roundScores, setRoundScores] = useState<Record<number, RoundScore>>({});
@@ -177,13 +180,16 @@ export default function MatchInfoScreen() {
     const getTotalEventsText = (knockdowns: number, penalties: number) => {
         const events = [];
 
-        if (knockdowns > 0) {
-            events.push(`KD ${knockdowns}`);
-        }
+        events.push(`KD: ${knockdowns}`);
+        events.push(`Deductions: ${penalties}`);
 
-        if (penalties > 0) {
-            events.push(`PEN ${penalties}`);
-        }
+        // if (knockdowns > 0) {
+        //     events.push(`KD ${knockdowns}`);
+        // }
+
+        // if (penalties > 0) {
+        //     events.push(`PEN ${penalties}`);
+        // }
 
         return events.join(' · ');
     };
@@ -200,6 +206,8 @@ export default function MatchInfoScreen() {
                     fighter2: String(fighter2 || 'Fighter 2'),
                     rounds: Number(rounds || 3),
                     savedScores: JSON.stringify(savedRoundScores),
+                    weight: Number(weight || null),
+                    gender: String(gender || null),
                     ...scorecardTotals,
                 }),
             },
@@ -214,6 +222,13 @@ export default function MatchInfoScreen() {
         });
     };
 
+    const handleSaveRound = (roundNumber: number, score: RoundScore) => {
+        setRoundScores((currentScores) => ({
+            ...currentScores,
+            [roundNumber]: score,
+        }));
+    };
+
     const formatLandScapeName = (name: string) => {
         const trimmed = String(name || '').trim();
         const parts = trimmed.split(/\s+/).filter(Boolean);
@@ -224,126 +239,104 @@ export default function MatchInfoScreen() {
     };
 
     return (
-        <View style={isLandscape ? styles.landscapeContainer : styles.container}>
-            <Stack.Screen options={{ headerShown: false }} />
+        <>
+            <View style={isLandscape ? styles.landscapeContainer : styles.container}>
+                <Stack.Screen options={{ headerShown: false }} />
 
-            {/* fighter name, point, and event container  */}
-            { !isLandscape ?
-                <View style={styles.summaryCard}>
-                    {/* Fighter 1 vs fighter 2 */}
-                    <View style={isLandscape ? styles.landscapeTopDescription : styles.topDescription}>
-                        <Text style={isLandscape ? [styles.landscapeFighterText, styles.landscapeFighter1Name] : [styles.fighterText, styles.fighter1Name]}>
-                            {isLandscape ? formatLandScapeName(String(fighter1)) : fighter1}
-                        </Text>
-                        <Text style={isLandscape ? [styles.landscapeFighterText, styles.landscapeVsText] : [styles.fighterText, styles.vsText]}>vs</Text>
-                        <Text style={isLandscape ? [styles.landscapeFighterText, styles.landscapeFighter2Name] : [styles.fighterText, styles.fighter2Name]}>
-                            {isLandscape ? formatLandScapeName(String(fighter2)) : fighter2}
-                        </Text>
+                {/* fighter name, point, and event container  */}
+                { !isLandscape ?
+                    <View style={styles.summaryCard}>
+                        {/* Fighter 1 vs fighter 2 */}
+                        <View style={isLandscape ? styles.landscapeTopDescription : styles.topDescription}>
+                            <Text style={isLandscape ? [styles.landscapeFighterText, styles.landscapeFighter1Name] : [styles.fighterText, styles.fighter1Name]}>
+                                {isLandscape ? formatLandScapeName(String(fighter1)) : fighter1}
+                            </Text>
+                            <Text style={isLandscape ? [styles.landscapeFighterText, styles.landscapeVsText] : [styles.fighterText, styles.vsText]}>vs</Text>
+                            <Text style={isLandscape ? [styles.landscapeFighterText, styles.landscapeFighter2Name] : [styles.fighterText, styles.fighter2Name]}>
+                                {isLandscape ? formatLandScapeName(String(fighter2)) : fighter2}
+                            </Text>
+                        </View>
+
+                        {/* Score 1 .. score 2  */}
+                        <View style={isLandscape ? styles.landscapePointHeader : styles.pointHeader}>
+                            <Text style={styles.fighter1PointHeader}>{fighter1LatestTotal}</Text>
+                            <Text style={styles.vsPointHeader}></Text>
+                            <Text style={styles.fighter2PointHeader}>{fighter2LatestTotal}</Text>
+                        </View>
+
+                        {/* round events (KD, PEN) */}
+                        <View style={isLandscape ? styles.landscapeTotalEvents : styles.totalEvents}>
+                            {/* fighter 1 kd pen */}
+                            <Text
+                                style={[styles.totalEventsText, styles.fighter1TotalEvents]}
+                                numberOfLines={1}
+                                
+                            >
+                                {getTotalEventsText(scorecardTotals.fighter1KD, scorecardTotals.fighter1Pen)}
+                            </Text>
+                            {/* fighter 2 kd pen */}
+                            <Text style={styles.vsTotalEvents}></Text>
+                            <Text style={[styles.totalEventsText, styles.fighter2TotalEvents]}
+                                numberOfLines={1}
+                                >
+                                {getTotalEventsText(scorecardTotals.fighter2KD, scorecardTotals.fighter2Pen)}
+                            </Text>
+                        </View>
                     </View>
-
-                    {/* Score 1 .. score 2  */}
-                    <View style={isLandscape ? styles.landscapePointHeader : styles.pointHeader}>
-                        <Text style={styles.fighter1PointHeader}>{fighter1LatestTotal}</Text>
-                        <Text style={styles.vsPointHeader}></Text>
-                        <Text style={styles.fighter2PointHeader}>{fighter2LatestTotal}</Text>
-                    </View>
-
-                    {/* round events (KD, PEN) */}
-                    <View style={isLandscape ? styles.landscapeTotalEvents : styles.totalEvents}>
-                        {/* fighter 1 kd pen */}
-                        <Text style={[styles.totalEventsText, styles.fighter1TotalEvents]}>
-                            {getTotalEventsText(scorecardTotals.fighter1KD, scorecardTotals.fighter1Pen)}
-                        </Text>
-                        {/* fighter 2 kd pen */}
-                        <Text style={styles.vsTotalEvents}></Text>
-                        <Text style={[styles.totalEventsText, styles.fighter2TotalEvents]}>
-                            {getTotalEventsText(scorecardTotals.fighter2KD, scorecardTotals.fighter2Pen)}
-                        </Text>
-                    </View>
-                </View>
-            :
-                <View style={styles.landscapeSummaryCard}>
-                    {/* Fighter 1 vs fighter 2 */}
-                    <View style={styles.landscapeTopDescription}>
-                        
-                        <Text style={[styles.landscapeFighterText, styles.landscapeFighter1Name]}>
-                            {isLandscape ? formatLandScapeName(String(fighter1)) : fighter1}
-                        </Text>
-                        <Text style={styles.fighter1PointHeader}>{fighter1LatestTotal}</Text>
-                        <Text style={[styles.totalEventsText, styles.landscapeFighter1TotalEvents]}>
-                            {getTotalEventsText(scorecardTotals.fighter1KD, scorecardTotals.fighter1Pen)}
-                        </Text>
-                        
-
-                        <Text style={[styles.landscapeFighterText, styles.landscapeVsText]}>vs</Text>
-
-                        <Text style={[styles.landscapeFighterText, styles.landscapeFighter2Name]}>
-                            {isLandscape ? formatLandScapeName(String(fighter2)) : fighter2}
-                        </Text>
-                        <Text style={styles.fighter2PointHeader}>{fighter2LatestTotal}</Text>
-                        <Text style={[styles.totalEventsText, styles.fighter2TotalEvents]}>
-                            {getTotalEventsText(scorecardTotals.fighter2KD, scorecardTotals.fighter2Pen)}
-                        </Text>
-                    </View>
-                </View>
-            }
-
-            {/* Total, round, +/- header  */}
-            <View style={isLandscape ? styles.landscapeHeaderRow : styles.headerRow}>
-                <Text
-                    numberOfLines={1}
-                    style={isLandscape ? [styles.landscapeHeaderText, styles.landscapeLeftHeader] : [styles.headerText, styles.leftTotal]}
-                >
-                    Total
-                </Text>
-                <Text style={isLandscape ? [styles.landscapeHeaderText, styles.landscapeLeftHeader] : [styles.headerText, styles.leftRound]}>Round</Text>
-                <Text style={isLandscape ? styles.landscapeHeaderText : styles.headerText}>+/-</Text>
-                <Text style={isLandscape ? [styles.landscapeHeaderText, styles.landscapeRightHeader] : [styles.headerText, styles.rightRound]}>Round</Text>
-                <Text style={isLandscape ? [styles.landscapeHeaderText, styles.landscapeRightHeader] : [styles.headerText, styles.rightTotal]}>Total</Text>
-            </View>
-
-            {/* Portrait row container  */}
-            {!isLandscape ?
-                <ScrollView style={styles.rowContainer}>
-                    {Array.from({ length: parseInt(rounds as string) }).map((_, index) => {
-                        const roundNumber = index + 1;
-                        return (
-                            <RoundRow
-                                key={roundNumber}
-                                roundNumber={roundNumber}
-                                leftScore={roundScores[roundNumber]?.left}
-                                rightScore={roundScores[roundNumber]?.right}
-                                leftTotal={isRoundScored(roundNumber) ? String(getTotalScore('left', roundNumber)) : '-'}
-                                rightTotal={isRoundScored(roundNumber) ? String(getTotalScore('right', roundNumber)) : '-'}
-                                // plusMinus={isRoundScored(roundNumber) ? String(getPlusMinus(roundNumber)) : '-'}
-                                plusMinus={isRoundScored(roundNumber) ? roundScores[roundNumber]?.plusMinus : '-'}
-                                leftKds={roundScores[roundNumber]?.leftKnockdowns}
-                                leftPen={roundScores[roundNumber]?.leftDeductions}
-                                rightKds={roundScores[roundNumber]?.rightKnockdowns}
-                                rightPen={roundScores[roundNumber]?.rightDeductions}
-                                // savedPlusMinus={savedPlusMinusForRound}
-                                fighter1={String(fighter1)}
-                                fighter2={String(fighter2)}
-                                rounds={String(rounds)}
-                                id={id ? String(id) : undefined}
-                                savedScores={JSON.stringify(roundScores)}
-                                onClearRound={handleClearRound}
-                            />
-                        );
-                    })}
-                </ScrollView>
-            :
-                <ScrollView
-                    style={styles.landscapeRowContainer}
-                    contentContainerStyle={styles.landscapeRowContent}
-                    horizontal={true}
-                    showsHorizontalScrollIndicator={false}
-                >
-                    {Array.from({ length: parseInt(rounds as string) }).map((_, index) => {
-                        const roundNumber = index + 1;
-                        return (
+                :
+                    <View style={styles.landscapeSummaryCard}>
+                        {/* Fighter 1 vs fighter 2 */}
+                        <View style={styles.landscapeTopDescription}>
                             
-                                <LandscapeRoundRow
+                            <Text style={[styles.landscapeFighterText, styles.landscapeFighter1Name]}>
+                                {isLandscape ? formatLandScapeName(String(fighter1)) : fighter1}
+                            </Text>
+                            <Text style={styles.fighter1PointHeader}>{fighter1LatestTotal}</Text>
+                            <Text style={[styles.totalEventsText, styles.landscapeFighter1TotalEvents]}>
+                                {getTotalEventsText(scorecardTotals.fighter1KD, scorecardTotals.fighter1Pen)}
+                            </Text>
+                            
+                            <Text style={[styles.landscapeFighterText, styles.landscapeVsText]}>vs</Text>
+
+                            <Text style={[styles.landscapeFighterText, styles.landscapeFighter2Name]}>
+                                {isLandscape ? formatLandScapeName(String(fighter2)) : fighter2}
+                            </Text>
+                            <Text style={styles.fighter2PointHeader}>{fighter2LatestTotal}</Text>
+                            <Text style={[styles.totalEventsText, styles.fighter2TotalEvents]}>
+                                {getTotalEventsText(scorecardTotals.fighter2KD, scorecardTotals.fighter2Pen)}
+                            </Text>
+                        </View>
+                    </View>
+                }
+
+                {/* Total, round, +/- header  */}
+                {isLandscape ? (
+                    <View style={styles.landscapeHeaderRow}>
+                        <Text numberOfLines={1} style={[styles.landscapeHeaderText, styles.landscapeLeftHeader]}>Total</Text>
+                        <Text style={[styles.landscapeHeaderText, styles.landscapeLeftHeader]}>Round</Text>
+                        <Text style={styles.landscapeHeaderText}>+/-</Text>
+                        <Text style={[styles.landscapeHeaderText, styles.landscapeRightHeader]}>Round</Text>
+                        <Text style={[styles.landscapeHeaderText, styles.landscapeRightHeader]}>Total</Text>
+                    </View>
+                ) : (
+                    <View style={styles.headerRow}>
+                        <View style={styles.headerRoundLabelSpacer} />
+                        <View style={styles.headerScoreCell}><Text style={styles.headerText}>Total</Text></View>
+                        <View style={styles.headerScoreCell}><Text style={styles.headerText}>Round</Text></View>
+                        <View style={styles.headerPlusMinusCell}><Text style={styles.headerText}>+/-</Text></View>
+                        <View style={styles.headerScoreCell}><Text style={styles.headerText}>Round</Text></View>
+                        <View style={styles.headerScoreCell}><Text style={styles.headerText}>Total</Text></View>
+                        <View style={styles.headerActionSpacer} />
+                    </View>
+                )}
+
+                {/* Portrait row container  */}
+                {!isLandscape ?
+                    <ScrollView style={styles.rowContainer}>
+                        {Array.from({ length: parseInt(rounds as string) }).map((_, index) => {
+                            const roundNumber = index + 1;
+                            return (
+                                <RoundRow
                                     key={roundNumber}
                                     roundNumber={roundNumber}
                                     leftScore={roundScores[roundNumber]?.left}
@@ -352,6 +345,7 @@ export default function MatchInfoScreen() {
                                     rightTotal={isRoundScored(roundNumber) ? String(getTotalScore('right', roundNumber)) : '-'}
                                     // plusMinus={isRoundScored(roundNumber) ? String(getPlusMinus(roundNumber)) : '-'}
                                     plusMinus={isRoundScored(roundNumber) ? roundScores[roundNumber]?.plusMinus : '-'}
+                                    isQuickScore={roundScores[roundNumber]?.scoringMethod === 'quick'}
                                     leftKds={roundScores[roundNumber]?.leftKnockdowns}
                                     leftPen={roundScores[roundNumber]?.leftDeductions}
                                     rightKds={roundScores[roundNumber]?.rightKnockdowns}
@@ -363,32 +357,86 @@ export default function MatchInfoScreen() {
                                     id={id ? String(id) : undefined}
                                     savedScores={JSON.stringify(roundScores)}
                                     onClearRound={handleClearRound}
+                                    onSaveRound={handleSaveRound}
                                 />
-                            
-                        );
-                    })}
-                </ScrollView>
-            }
-            {/* save button  */}f
-            <Pressable 
-                style={isLandscape ? styles.landscapeButton : styles.button}
-                // onPress={() => router.push('/')}
-                onLongPress={handleSaveScorecard}
-                onPressIn={() => isLandscape ? startLandscapeLongPressFill(exitProgress, 2000) : startLongPressFill(exitProgress, 4000)}
-                onPressOut={() => resetLongPressFill(exitProgress)}
-                delayLongPress={2000}
-            >
-                <Animated.View 
-                    style={[styles.fillOverlay, { width: exitProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
-                <Text style={isLandscape ? styles.landscapeButtonText : styles.buttonText}>
-                    {isEditingScorecard ? 'Hold to Save' : 'Hold to Save & Exit'}
-                </Text>
-            </Pressable>
-        </View>
+                            );
+                        })}
+                    </ScrollView>
+                :
+                    <ScrollView
+                        style={styles.landscapeRowContainer}
+                        contentContainerStyle={styles.landscapeRowContent}
+                        horizontal={true}
+                        showsHorizontalScrollIndicator={false}
+                    >
+                        {Array.from({ length: parseInt(rounds as string) }).map((_, index) => {
+                            const roundNumber = index + 1;
+                            return (
+                                
+                                    <LandscapeRoundRow
+                                        key={roundNumber}
+                                        roundNumber={roundNumber}
+                                        leftScore={roundScores[roundNumber]?.left}
+                                        rightScore={roundScores[roundNumber]?.right}
+                                        leftTotal={isRoundScored(roundNumber) ? String(getTotalScore('left', roundNumber)) : '-'}
+                                        rightTotal={isRoundScored(roundNumber) ? String(getTotalScore('right', roundNumber)) : '-'}
+                                        // plusMinus={isRoundScored(roundNumber) ? String(getPlusMinus(roundNumber)) : '-'}
+                                        plusMinus={isRoundScored(roundNumber) ? roundScores[roundNumber]?.plusMinus : '-'}
+                                        leftKds={roundScores[roundNumber]?.leftKnockdowns}
+                                        leftPen={roundScores[roundNumber]?.leftDeductions}
+                                        rightKds={roundScores[roundNumber]?.rightKnockdowns}
+                                        rightPen={roundScores[roundNumber]?.rightDeductions}
+                                        // savedPlusMinus={savedPlusMinusForRound}
+                                        fighter1={String(fighter1)}
+                                        fighter2={String(fighter2)}
+                                        rounds={String(rounds)}
+                                        id={id ? String(id) : undefined}
+                                        savedScores={JSON.stringify(roundScores)}
+                                        onClearRound={handleClearRound}
+                                    />
+                                
+                            );
+                        })}
+                    </ScrollView>
+                }
+                {/* save button  */}f
+                <Pressable 
+                    style={isLandscape ? styles.landscapeButton : styles.button}
+                    // onPress={() => router.push('/')}
+                    onLongPress={handleSaveScorecard}
+                    onPressIn={() => isLandscape ? startLandscapeLongPressFill(exitProgress, 2000) : startLongPressFill(exitProgress, 4000)}
+                    onPressOut={() => resetLongPressFill(exitProgress)}
+                    delayLongPress={2000}
+                >
+                    <Animated.View 
+                        style={[styles.fillOverlay, { width: exitProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
+                    <Text style={isLandscape ? styles.landscapeButtonText : styles.buttonText}>
+                        {isEditingScorecard ? 'Hold to Save' : 'Hold to Save & Exit'}
+                    </Text>
+                </Pressable>
+            </View>
+            
+        </>
     );
 }
 
 const styles = StyleSheet.create({
+    cancelButton: {
+        backgroundColor: '#EEF1F3',
+    },
+    confirmDeleteButton: {
+        backgroundColor: '#d32f2f',
+    },
+    cancelButtonText: {
+        color: '#333A3F',
+        fontWeight: '700',
+    },
+    confirmDeleteText: {
+        color: '#fff',
+        fontWeight: '700',
+    },
+
+
     button: {
         backgroundColor: '#D32F2F',
         paddingHorizontal: '6%',
@@ -450,22 +498,32 @@ const styles = StyleSheet.create({
     },
     headerRow: {
         flexDirection: 'row',
-        // justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 0,
-        marginHorizontal: 0,
+        // marginLeft: '.5%',
+        // marginRight: '2%',
         paddingBottom: 5,
-        marginLeft: 22,
-        width: '83%'
     },
     headerText: {
-        flex: 1,
         textAlign: 'center',
         color: '#333',
         fontSize: 12,
         fontWeight: '600',
-        width: '17%',
-        // marginLeft: '4%'
+    },
+    headerRoundLabelSpacer: {
+        width: '9.25%',
+        height: '100%',
+    },
+    headerScoreCell: {
+        flex: 1,
+        alignItems: 'center',
+    },
+    headerPlusMinusCell: {
+        width: 42,
+        alignItems: 'center',
+    },
+    headerActionSpacer: {
+        width: 41,
     },
     leftHeader: {
         color: 'red',
@@ -485,7 +543,6 @@ const styles = StyleSheet.create({
     },
     fighter1TotalEvents: {
         color: '#D32F2F',
-        width: '45%'
     },
     landscapeFighter1TotalEvents: {
         color: '#D32F2F',
@@ -532,15 +589,14 @@ const styles = StyleSheet.create({
     totalEvents: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
         marginBottom: 25,
         width: '85%',
-        marginLeft: 22,
+        marginLeft: 23,
     },
     totalEventsText: {
         flex: 1,
         color: '#333',
-        fontSize: 10,
+        fontSize: 9,
         fontWeight: '500',
         textAlign: 'center',
     },

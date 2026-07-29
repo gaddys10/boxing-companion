@@ -5,6 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SavedCard from '../components/savedCard';
 import LandscapeSavedCard from '../components/landscapeSavedCard';
+import { LinearGradient } from 'expo-linear-gradient';
+import { StatusBar } from 'expo-status-bar';
 const tIcon = require('../../assets/images/flatwhitet.png');
 
 const SAVED_CARDS_KEY = 'savedScorecards';
@@ -20,6 +22,8 @@ type Scorecard = {
   fighter1Pen: number;
   fighter2Pen: number;
   rounds: number;
+  gender?: string;
+  weight?: string;
   savedScores?: string;
 };
 
@@ -93,108 +97,138 @@ export default function HomeScreen() {
     });
   };
 
+  const borderFadeColor = isLandscape ? '#307FB6' : '#F1F5F8';
+
   return (
-    <View style={isLandscape ? styles.landscapeContainer : styles.container}>
-      <View style={isLandscape? styles.landscapeTitleBigContainer : styles.titleBigContainer}>
-        <View style={styles.titleRight}>
-          <Text style={isLandscape ? styles.landscapeTitle : styles.title}>Boxing</Text> 
-          <View style={styles.title2Container}>
-            <Text style={isLandscape? styles.landscapeTitle2 : styles.title2}>
-              Score
-            </Text>
+    <LinearGradient
+      colors={[
+        'rgba(211, 47, 47, 0.9)',
+        borderFadeColor,
+        borderFadeColor,
+        'rgba(48, 127, 182, 0.9)',
+      ]}
+      locations={[0, 0.32, 0.68, 1]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={[styles.neonPageBorder, isLandscape && styles.landscapeNeonPageBorder]}
+    >
+      <StatusBar style="dark" />
+      <View style={isLandscape ? styles.landscapeContainer : styles.container}>
+        <View style={isLandscape? styles.landscapeTitleBigContainer : styles.titleBigContainer}>
+          <View style={isLandscape? styles.landscapeTitleRight : styles.titleRight}>
+            <Text style={isLandscape ? styles.landscapeTitle : styles.title}>Boxing</Text> 
+            <View style={styles.title2Container}>
+              <Text style={isLandscape? styles.landscapeTitle2 : styles.title2}>
+                Score
+              </Text>
+            </View>
+            <Text style={isLandscape ? styles.landscapeTitle3 : styles.title3}> Companion</Text>
           </View>
-          <Text style={isLandscape ? styles.landscapeTitle3 : styles.title3}> Companion</Text>
+            <Image source={tIcon} style={isLandscape ? styles.landscapeIcon : styles.icon} resizeMode="contain" />
         </View>
-          <Image source={tIcon} style={isLandscape ? styles.landscapeIcon : styles.icon} resizeMode="contain" />
-      </View>
 
-      <View style={isLandscape ? styles.landscapeSearchBox : styles.searchBox }>
-        <View style={styles.searchInputBox}>
-          <Ionicons name="search" style={styles.searchIcon} />
-          <TextInput 
-            style={styles.searchInput} 
-            placeholderTextColor="rgba(0, 0, 0, 0.5)" 
-            placeholder="Search Cards" 
-          />
+        <View style={isLandscape ? styles.landscapeSearchBox : styles.searchBox }>
+          <View style={styles.searchInputBox}>
+            <Ionicons name="search" style={styles.searchIcon} />
+            <TextInput 
+              style={styles.searchInput} 
+              placeholderTextColor="rgba(0, 0, 0, 0.5)" 
+              placeholder="Search Scorecards" 
+            />
+          </View>
         </View>
-      </View>
-      {isLandscape && 
-        <ScrollView
-          style={styles.landscapeSavedCardContainer}
-          contentContainerStyle={styles.landscapeSavedCardContent}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-        >
-          {savedCards.map((card) => (
-            <LandscapeSavedCard
-              key={card.id}
-              id={card.id}
-              fighter1={card.fighter1}
-              fighter2={card.fighter2}
-              fighter1Score={card.fighter1Score}
-              fighter2Score={card.fighter2Score}
-              fighter1KD={card.fighter1KD}
-              fighter2KD={card.fighter2KD}
-              fighter1Pen={card.fighter1Pen}
-              fighter2Pen={card.fighter2Pen}
-              rounds={card.rounds}
-              savedScores={card.savedScores}
-              onDelete={handleDeleteCard}
-            />
-          ))}
-        </ScrollView>
-      }
-      {!isLandscape &&
-        <ScrollView
-          style={styles.savedCardContainer}
-          contentContainerStyle={styles.savedCardContent}
-          showsVerticalScrollIndicator={true}
-          onScroll={(event) => setScrollY(event.nativeEvent.contentOffset.y)}
-          onLayout={(event) => setScrollViewportHeight(event.nativeEvent.layout.height)}
-          bounces={false}
-          alwaysBounceVertical={false}
-        >
-          {savedCards.map((card) => (
-            <SavedCard
-              key={card.id}
-              id={card.id}
-              fighter1={card.fighter1}
-              fighter2={card.fighter2}
-              fighter1Score={card.fighter1Score}
-              fighter2Score={card.fighter2Score}
-              fighter1KD={card.fighter1KD}
-              fighter2KD={card.fighter2KD}
-              fighter1Pen={card.fighter1Pen}
-              fighter2Pen={card.fighter2Pen}
-              rounds={card.rounds}
-              savedScores={card.savedScores}
-              onDelete={handleDeleteCard}
-              scrollY={scrollY}
-              viewportHeight={scrollViewportHeight}
-            />
-          ))}
-        </ScrollView>
-      }
+        {isLandscape && 
+          <ScrollView
+            style={styles.landscapeSavedCardContainer}
+            contentContainerStyle={styles.landscapeSavedCardContent}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+          >
+            {savedCards.map((card) => (
+              <LandscapeSavedCard
+                key={card.id}
+                id={card.id}
+                fighter1={card.fighter1}
+                fighter2={card.fighter2}
+                fighter1Score={card.fighter1Score}
+                fighter2Score={card.fighter2Score}
+                fighter1KD={card.fighter1KD}
+                fighter2KD={card.fighter2KD}
+                fighter1Pen={card.fighter1Pen}
+                fighter2Pen={card.fighter2Pen}
+                rounds={card.rounds}
+                gender={card.gender}
+                weight={card.weight}
+                savedScores={card.savedScores}
+                onDelete={handleDeleteCard}
+              />
+            ))}
+          </ScrollView>
+        }
+        {!isLandscape &&
+          <ScrollView
+            style={styles.savedCardContainer}
+            contentContainerStyle={styles.savedCardContent}
+            showsVerticalScrollIndicator={true}
+            onScroll={(event) => setScrollY(event.nativeEvent.contentOffset.y)}
+            onLayout={(event) => setScrollViewportHeight(event.nativeEvent.layout.height)}
+            bounces={false}
+            alwaysBounceVertical={false}
+          >
+            {savedCards.map((card) => (
+              <SavedCard
+                key={card.id}
+                id={card.id}
+                fighter1={card.fighter1}
+                fighter2={card.fighter2}
+                fighter1Score={card.fighter1Score}
+                fighter2Score={card.fighter2Score}
+                fighter1KD={card.fighter1KD}
+                fighter2KD={card.fighter2KD}
+                fighter1Pen={card.fighter1Pen}
+                fighter2Pen={card.fighter2Pen}
+                rounds={card.rounds}
+                gender={card.gender}
+                weight={card.weight}
+                savedScores={card.savedScores}
+                onDelete={handleDeleteCard}
+                scrollY={scrollY}
+                viewportHeight={scrollViewportHeight}
+              />
+            ))}
+          </ScrollView>
+        }
 
-      <Pressable 
-        style={isLandscape ? styles.landscapeButton : styles.button}
-        onPress={handleStartFight}
-      >
-        <Text style={styles.buttonText}>+ New Scorecard</Text>
-      </Pressable>
-      
-    </View>
+        <Pressable 
+          style={isLandscape ? styles.landscapeButton : styles.button}
+          onPress={handleStartFight}
+        >
+          <Text style={styles.buttonText}>+ New Scorecard</Text>
+        </Pressable>
+        
+      </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  neonPageBorder: {
+    flex: 1,
+    padding: 4,
+    paddingVertical: 5,
+  },
+  landscapeNeonPageBorder: {
+    padding: 6,
+    paddingVertical: 6,
+    borderRadius: 10
+  },
   button: {
     backgroundColor: '#fff',
     paddingHorizontal: '5%',
     paddingVertical: '3%',
     borderRadius: 12,
     marginTop: 50,
-    bottom: '6%',
+    bottom: '4%',
     position: 'absolute',
     boxShadow: '4',
     shadowColor: '#11334b',
@@ -207,7 +241,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f1f5f8',
-    alignItems: 'center'
+    alignItems: 'center',
+    borderRadius: 40
   },
   buttonText: {
     color: '#111',
@@ -223,9 +258,12 @@ const styles = StyleSheet.create({
 
   savedCardContainer: {
     position: 'absolute',
-    top: '27%',
-    bottom: 100,
+    top: '26.25%',
+    bottom: 90,
     width: '100%',
+    borderRadius: 25,
+    backgroundColor: 'rgba(255, 255, 255, 0.28)',
+    overflow: 'hidden',
   },
   savedCardContent: {
     alignItems: 'center',
@@ -239,7 +277,7 @@ const styles = StyleSheet.create({
   searchBox: {
     width: '45%',
     height: 50,
-    top: '21.5%',
+    top: '20.5%',
     alignSelf: 'flex-start',
     marginLeft: '5.5%',
   },
@@ -301,7 +339,7 @@ const styles = StyleSheet.create({
   },
   titleBigContainer: {
     position: 'absolute',
-    top: '7%',
+    top: '6%',
     left: '5%',
     alignItems: 'center',
     flexDirection: 'row',
@@ -322,20 +360,27 @@ const styles = StyleSheet.create({
 
   landscapeButton: {
     backgroundColor: '#fff',
-    paddingHorizontal: 24,
+    paddingHorizontal: '5%',
     paddingVertical: 10,
     borderRadius: 12,
     // marginTop: 25,
     top: '6.5%',
-    right: '8%',
-    position: 'absolute'
+    right: '5.5%',
+    position: 'absolute',
+    boxShadow: '4',
+    shadowColor: '#11334b',
+    shadowOffset: { width: 5, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 1,
+    borderWidth: 1,
+    borderColor: '#B6C6D1'
   },
   landscapeContainer: {
     flex: 1,
-    backgroundColor: '#307Fb6',
+    backgroundColor: '#f1f5f8',
     alignItems: 'center',
-    padding: 24,
-    paddingTop: 25,
+    borderRadius: 40
+
   },
   landscapeIcon: {
     width: 60,
@@ -345,30 +390,46 @@ const styles = StyleSheet.create({
   },
   landscapeSavedCardContainer: {
     position: 'absolute',
-    top: 120,
-    bottom: 100,
-    width: '100%',
+    top: '40%',
+    bottom: '0%',
+    left: '6%',
+    width: '89%',
+    backgroundColor: '#f1f5f8',
+    // borderRadius: 40,
+    overflow: 'hidden',
+    // shadowColor: '#0f172a',
+    // shadowOffset: { width: -2, height: -2 },
+    // shadowOpacity: 0.2,
+    // shadowRadius: 8,
+    elevation: 2,
+    height: '58%'
   },
   landscapeSavedCardContent: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    paddingHorizontal: '4.5%',
+    paddingLeft: 0,
+    gap: 8,
+    paddingRight: 5,
     paddingBottom: 20,
   },
   landscapeSearchBox: {
-    width: '35%',
+    width: '33%',
     height: 50,
-    top: '18%',
+    top: '30%',
     alignSelf: 'flex-start',
-    marginLeft: '4.5%',
+    marginLeft: '6.5%',
   },
   landscapeTitleBigContainer: {
-    top: '4%',
+    top: '6%',
     position: 'absolute',
-    left: 50,
+    left: '6%',
     alignItems: 'center',
     flexDirection: 'row',
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
+    borderRadius: 15,
+    height: '20%',
+    backgroundColor: '#307Fb6',
+    width: '33.5%',
   },
   landscapeTitle: {
     color: '#fff',
@@ -388,6 +449,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 50,
     marginLeft: 3
+  },
+  landscapeTitleRight: {
+    height: '100%',
+    top: '30%',
+    justifyContent: 'center'
   },
   
   landscapeButtonText: {},

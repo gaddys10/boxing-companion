@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { Swipeable } from 'react-native-gesture-handler';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons} from '@expo/vector-icons';
 
 type RoundRowProps = {
     roundNumber: number;
@@ -115,7 +115,12 @@ export default function LandscapeRoundRow({
                         },
                     })}
                 >
-                    <Ionicons name="pencil" size={20} color="#333" />
+                    <MaterialCommunityIcons 
+                        name="pencil" size={20} 
+                        color="#333A3F" 
+                        // style={styles.editButtonIcon}
+                    />
+                    {/* <Ionicons name="pencil" size={20} color="#333" /> */}
                 </Pressable>
             </View>
             <View style={styles.roundEvents}>

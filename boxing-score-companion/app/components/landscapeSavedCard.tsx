@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Modal, View, Text, Pressable, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-
 import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Modal, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+
 
 type SavedCardProps = {
     id: number;
@@ -15,13 +15,17 @@ type SavedCardProps = {
     fighter1Pen: number;
     fighter2Pen: number;
     rounds: number;
+    gender?: string;
     savedScores?: string;
     onDelete: (id: number) => void;
 }
 
-export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, savedScores, onDelete}: SavedCardProps) {
+export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, gender, savedScores, onDelete}: SavedCardProps) {
     const router = useRouter();
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+    const [editModalVisible, setEditModalvisible] = useState(false)
+
+    const { width } = useWindowDimensions();
 
     const handleEditCard = () => {
         router.push({
@@ -41,6 +45,7 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
             fighter1Pen,
             fighter2Pen,
             rounds,
+            gender,
             savedScores,
         }
         });
@@ -51,12 +56,26 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
         onDelete(id);
     };
 
+    const scoredRoundsCount = (() => {
+    if (!savedScores) return 0;
+
+    try {
+        const parsedScores = JSON.parse(savedScores);
+        if (parsedScores && typeof parsedScores === 'object' && !Array.isArray(parsedScores)) {
+            return Object.keys(parsedScores).length;
+        }
+    } catch {
+        return 0;
+    }
+
+        return 0;
+    })();
+
     return (
         <>
-            <Pressable style={styles.savedCard}>
-                <View style={styles.savedCardInfoRows}>
-
-
+            <View style={[styles.savedCardShadow, { width: width * .21}]}>
+                <Pressable style={styles.savedCard}>
+                    <View style={styles.savedCardInfoRows}>
                     {/* Fighter name row -- Row 1  */}
                     <View style={styles.savedCardNameRow}>
                         <View style={styles.f1NameBox}>
@@ -64,13 +83,6 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
                         </View>
                         <View style={styles.f2NameBox}>
                             <Text style={styles.fighter2}>{fighter2}</Text>
-                        </View>
-                    </View>
-
-                     {/* Round row -- Row 2 */}
-                    <View style={styles.savedCardRoundRow}>
-                        <View style={styles.roundBox}>
-                            <Text style={styles.roundText}>{rounds} RD</Text>
                         </View>
                     </View>
 
@@ -88,12 +100,31 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
                     {/* Event Row -- Row 3  */}
                     <View style={styles.savedCardEventRow}>
                         <View style={styles.eventBox1}>
-                            <Text style={styles.knockdowns1}>KD: &nbsp;&nbsp;{fighter1KD}{"\n"}PEN: {fighter1Pen}</Text>
+                            <Text style={styles.knockdowns1}>KD: {fighter1KD}{"\n"}PD: {fighter1Pen}</Text>
                             {/* <Text style={styles.deductions1}>PEN: {fighter1Pen}</Text> */}
                         </View>
                         <View style={styles.eventBox2}>
-                            <Text style={styles.knockdowns2}>KD: &nbsp;&nbsp;{fighter2KD}{"\n"}PEN: {fighter2Pen}</Text>
+                            <Text style={styles.knockdowns2}>KD: {fighter2KD}{"\n"}PD: {fighter2Pen}</Text>
                             {/* <Text style={styles.deductions2}>PEN: {fighter2Pen}</Text> */}
+                        </View>
+                    </View>
+
+                    {/* Round row -- Row 2 */}
+                    <View style={styles.gwSavedCardRoundRow}>
+                        <View style={styles.roundBox}>
+                            <View style={styles.roundPill}>
+                                <Text style={styles.roundText}>RD {scoredRoundsCount}/{rounds}</Text>
+                            </View>
+                        </View>
+                        <View style={styles.genderWeightBox}>
+                            <View style={styles.genderIcon}>
+                                <Ionicons
+                                    name={gender === 'womens' ? 'female-outline' : 'male-outline'}
+                                    size={14}
+                                    color='#fff'
+                                />
+                            </View>
+                            <Text style={styles.weightClass}>122lbs</Text>
                         </View>
                     </View>
 
@@ -108,8 +139,9 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
                             <Text style={[styles.actionButtonText, styles.deleteActionText]}>Delete</Text>
                         </Pressable>
                     </View>
-                </View>
-            </Pressable>
+                    </View>
+                </Pressable>
+            </View>
 
             <Modal
                 animationType="fade"
@@ -171,7 +203,7 @@ const styles = StyleSheet.create({
         top: 24,
     },
     deductions2: {
-        color: '#322fd3',
+        color: '#307Fb6',
         position: 'absolute',
         left: 3,
         top: 24,
@@ -213,34 +245,38 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     f1NameBox: {
-        height: '100.5%',
+        height: '100%',
         backgroundColor: '#D32F2F',
         width: '50.5%',
+        top: 0,
         paddingHorizontal: '4%',
         alignItems: 'center',
         justifyContent: 'center',
-        borderTopLeftRadius: 15,
+        borderTopLeftRadius: 14,
+        borderRightWidth: 1,
+        borderRightColor: '#767676'
     },
     f1Score: {
         color: '#D32f2f',
-        fontSize: 32,
+        fontSize: 24,
         fontWeight: '700',
         lineHeight: 32,
         textAlign: 'center',
         marginTop: 5
     },
     f2NameBox: {
-        height: '100.5%',
-        backgroundColor: '#322fd3',
-        width: '50%',
+        height: '100%',
+        backgroundColor: '#307Fb6',
+        width: '49.5%',
+        top: 0,
         paddingHorizontal: '4%',
         alignItems: 'center',
         justifyContent: 'center',
-        borderTopRightRadius: 15,
+        borderTopRightRadius: 14,
     },
     f2Score: {
-        color: '#322fd3',
-        fontSize: 32,
+        color: '#307Fb6',
+        fontSize: 24,
         fontWeight: '700',
         lineHeight: 32,
         textAlign: 'center',
@@ -263,7 +299,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     knockdowns2: {
-        color: '#322fd3',
+        color: '#307Fb6',
         fontSize: 12,
         textAlign: 'center',
     },
@@ -298,43 +334,78 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         marginBottom: 8,
     },
+    genderIcon: {
+        // backgroundColor: '#d32f2f',
+        backgroundColor: '#d32fba',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '30%',
+        height: '60%',
+        borderRadius: 25
+    },
+    genderWeightBox: {
+        width: '50%',
+        height: '100%',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 5
+    },
+    weightClass: {
+        
+    },
     roundBox: {
         alignItems: 'center',
         justifyContent: 'center',
-        width: '100%',
+        width: '50%',
         height: '100%',
         textAlign: 'center',
+    },
+    roundPill: {
+        backgroundColor: '#000',
+        height: '60%',
+        borderRadius: 15,
+        justifyContent: 'center',
+        alignContent: 'center',
         paddingHorizontal: 8,
     },
     roundText: {
         fontWeight: '700',
-        color: '#333A3F',
+        color: '#fff',
         fontSize: 12,
         textAlign: 'center',
     },
+    savedCardShadow: {
+        height: '100%',
+        top: '6%',
+        backgroundColor: 'white',
+        borderRadius: 15,
+        marginBottom: 17,
+        marginRight: 0,
+        shadowColor: '#11334b',
+        shadowOffset: { width: 5, height: 5 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1,
+        elevation: 6,
+    },
     savedCard: {
-        width: '24%',
-        maxHeight: '83%',
+        width: '100%',
+        height: '100%',
         backgroundColor: 'white',
         flexDirection: 'row',
         alignItems: 'center',
-        top: 90,
         borderRadius: 15,
         overflow: 'hidden',
-        boxShadow: '2',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 3, height: 3 },
-        shadowOpacity: 0.7,
-        shadowRadius: 3,
-        marginBottom: 17,
-        marginRight: 15
+        borderWidth: 1,
+        borderColor: '#B6C6D1',
+        borderRightWidth: 0
     },
     savedCardActionRow: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         width: '100%',
-        height: '19%',
+        height: '8%',
         // paddingVertical: 2,
         backgroundColor: '#fff',
         borderBottomLeftRadius: 15,
@@ -352,7 +423,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         width: '100%',
-        height: '22%',
+        height: '24.5%',
     },
     savedCardScoreRow: {
         flexDirection: 'row',
@@ -365,17 +436,22 @@ const styles = StyleSheet.create({
     savedCardRoundRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
-        width: '33%',
-        height: '10%',
-        alignSelf: 'center',
-        backgroundColor: 'transparent',
-        borderBottomWidth: 1,
-        borderLeftWidth: 1,
-        borderRightWidth: 1,
+        justifyContent: 'space-between',
+        width: '100%',
+        height: '17%',
+        alignSelf: 'flex-start',
+        // backgroundColor: '#767676'
+    },
+    
+    gwSavedCardRoundRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '100%',
+        height: '22%',
+        alignSelf: 'flex-start',
         borderTopLeftRadius: 0,
         borderTopRightRadius: 0,
-        borderRadius: 5
     },
 
     savedCardInfoRows: {
@@ -399,10 +475,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         paddingVertical: 2,
         paddingTop: '3%'
-
     },
-
-
 
     cancelButton: {
         backgroundColor: '#EEF1F3',

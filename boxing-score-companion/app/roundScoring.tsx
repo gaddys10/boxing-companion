@@ -65,11 +65,11 @@ export default function RoundScoringScreen() {
     };
 
     useEffect(() => {
-        // Lock to landscape mode
-        // ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+        void ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
 
-        // Cleanup: restore default orientation when leaving screen
-        return () => { ScreenOrientation.unlockAsync(); };
+        return () => {
+            void ScreenOrientation.unlockAsync();
+        };
     }, []);
 
     useEffect(() => {
@@ -158,7 +158,7 @@ export default function RoundScoringScreen() {
                     delayLongPress={1500}
                     style={styles.undoDeductLeft}
                 >
-                    <Animated.View style={[styles.fillOverlayTopLeft, { width: leftDeductUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '150%'] }) }]} />
+                    <Animated.View style={[styles.fillOverlayTopLeft, { width: leftDeductUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                     <Text style={styles.leftEvents}>Deductions: {leftDeductions}</Text>
                     <Text style={styles.leftDedUndo}>Hold to Undo</Text>
                 </Pressable>
@@ -189,9 +189,6 @@ export default function RoundScoringScreen() {
                 }
                 <Text style={styles.leftName}>{fighter1}</Text>
 
-
-
-
                 <Animated.Text style={[ styles.plusSign, { transform: [{ scale: leftPulseAnim }] }]} >+</Animated.Text>
 
                 {/* Left PEN */}
@@ -210,7 +207,7 @@ export default function RoundScoringScreen() {
                     }}
                     delayLongPress={1500}
                 >
-                    <Animated.View style={[styles.fillOverlayLeft, { width: leftDeductProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '150%'] }) }]} />
+                    <Animated.View style={[styles.fillOverlayLeft, { width: leftDeductProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                     <Text style={[styles.buttonText, styles.deductLeftText]}>Hold to{"\n"}Deduct</Text>
                 </Pressable>
 
@@ -393,6 +390,7 @@ const styles = StyleSheet.create({
         // paddingLeft: ,
         paddingTop: 10,
         borderTopRightRadius: 10,
+        overflow: 'hidden',
     },
     deductLeftText: {
         //move text to right of box
