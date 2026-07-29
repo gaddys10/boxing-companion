@@ -22,6 +22,8 @@ type Scorecard = {
   fighter1Pen: number;
   fighter2Pen: number;
   rounds: number;
+  gender?: string;
+  weight?: string;
   savedScores?: string;
 };
 
@@ -155,6 +157,8 @@ export default function HomeScreen() {
                 fighter1Pen={card.fighter1Pen}
                 fighter2Pen={card.fighter2Pen}
                 rounds={card.rounds}
+                gender={card.gender}
+                weight={card.weight}
                 savedScores={card.savedScores}
                 onDelete={handleDeleteCard}
               />
@@ -184,6 +188,8 @@ export default function HomeScreen() {
                 fighter1Pen={card.fighter1Pen}
                 fighter2Pen={card.fighter2Pen}
                 rounds={card.rounds}
+                gender={card.gender}
+                weight={card.weight}
                 savedScores={card.savedScores}
                 onDelete={handleDeleteCard}
                 scrollY={scrollY}

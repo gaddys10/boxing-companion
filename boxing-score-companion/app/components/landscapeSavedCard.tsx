@@ -15,11 +15,12 @@ type SavedCardProps = {
     fighter1Pen: number;
     fighter2Pen: number;
     rounds: number;
+    gender?: string;
     savedScores?: string;
     onDelete: (id: number) => void;
 }
 
-export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, savedScores, onDelete}: SavedCardProps) {
+export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, gender, savedScores, onDelete}: SavedCardProps) {
     const router = useRouter();
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const [editModalVisible, setEditModalvisible] = useState(false)
@@ -44,6 +45,7 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
             fighter1Pen,
             fighter2Pen,
             rounds,
+            gender,
             savedScores,
         }
         });
@@ -116,7 +118,11 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
                         </View>
                         <View style={styles.genderWeightBox}>
                             <View style={styles.genderIcon}>
-                                <Ionicons name='female-outline' size={14} color='#fff'/>
+                                <Ionicons
+                                    name={gender === 'womens' ? 'female-outline' : 'male-outline'}
+                                    size={14}
+                                    color='#fff'
+                                />
                             </View>
                             <Text style={styles.weightClass}>122lbs</Text>
                         </View>
@@ -141,27 +147,6 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
                 animationType="fade"
                 transparent
                 visible={deleteModalVisible}
-                onRequestClose={() => setDeleteModalVisible(false)}
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.deleteModal}>
-                        <Text style={styles.modalTitle}>Delete scorecard?</Text>
-                        <Text style={styles.modalText}>Are you sure you want to delete {fighter1} vs {fighter2}?</Text>
-                        <View style={styles.modalActions}>
-                            <Pressable style={[styles.modalButton, styles.cancelButton]} onPress={() => setDeleteModalVisible(false)}>
-                                <Text style={styles.cancelButtonText}>Cancel</Text>
-                            </Pressable>
-                            <Pressable style={[styles.modalButton, styles.confirmDeleteButton]} onPress={handleConfirmDelete}>
-                                <Text style={styles.confirmDeleteText}>Delete</Text>
-                            </Pressable>
-                        </View>
-                    </View>
-                </View>
-            </Modal>
-            <Modal
-                animationType="fade"
-                transparent
-                visible={editModalVisible}
                 onRequestClose={() => setDeleteModalVisible(false)}
             >
                 <View style={styles.modalOverlay}>

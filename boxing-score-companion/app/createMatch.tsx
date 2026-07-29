@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet, TextInput, useWindowDimensions, Imag
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 const tIcon = require('../assets/images/flatwhitet.png');
 import Dimensions from 'react-native/Libraries/Utilities/Dimensions';
+import { Ionicons } from '@expo/vector-icons';
 
 
 
@@ -19,15 +20,40 @@ type RoundScore = {
 export default function CreateMatch() {
     const router = useRouter();
     const params = useLocalSearchParams();
-    const title = String(params.title || 'Create Scorecard');
+    const title = String(params.title || 'New Scorecard');
     const fighter1 = String(params.fighter1 || '');
     const fighter2 = String(params.fighter2 || '');
     const isEditing = params.isEdit ? true : false
-    const roundAmount = Number(params.rounds || params.roundAmount || 3);
+    const roundAmount = Number(params.rounds || params.roundAmount || 10);
     const [fighter1Name, setFighter1Name] = useState(fighter1);
     const [fighter2Name, setFighter2Name] = useState(fighter2);
     const [selectedRounds, setSelectedRounds] = useState(roundAmount);
-    const buttonText = String(params.buttonText || "Start Match");
+
+
+    // const [selectedGender, setSelectedGender] = useState("");
+    // const [selectedWeight, setSelectedWeight] = useState<number | string>(0);
+
+    const initialGender = Array.isArray(params.gender)
+        ? params.gender[0]
+        : params.gender;
+
+    const initialWeight = Array.isArray(params.weight)
+        ? params.weight[0]
+        : params.weight;
+
+    const [selectedGender, setSelectedGender] = useState<"" | "mens" | "womens">(
+        initialGender === "mens" || initialGender === "womens"
+            ? initialGender
+            : ""
+    );
+
+    const [selectedWeight, setSelectedWeight] = useState<number | string>(() => {
+        if (!initialWeight) return 0;
+        return initialWeight === "200+" ? "200+" : Number(initialWeight);
+    });
+
+
+    const buttonText = String(params.buttonText || "Create Scorecard");
     const rounds = [3, 4, 5, 6, 8, 10, 12];
     const { width, height } = useWindowDimensions();
     const id = params.id ? String(params.id) : undefined;
@@ -43,6 +69,8 @@ export default function CreateMatch() {
                 fighter2: fighter2Name || 'Fighter 2',
                 rounds: selectedRounds,
                 savedScores: params.savedScores,
+                gender: selectedGender,
+                weight: selectedWeight
             },
         });
     };
@@ -104,6 +132,8 @@ export default function CreateMatch() {
                     fighter2: fighter2Name || 'Fighter 2',
                     rounds: selectedRounds,
                     savedScores: JSON.stringify(savedScores),
+                    gender: selectedGender,
+                    weight: selectedWeight,
                     ...getScorecardTotals(savedScores),
                 }),
             },
@@ -115,16 +145,18 @@ export default function CreateMatch() {
             <Stack.Screen options={{ headerShown: false }} />
 
             {/* Page title -- Create Scorecard  */}
-            <Text style={isLandscape ? styles.landscapeTitle : styles.title}>{title}</Text>
+            <View style={styles.titleContainer}>
+                <Text style={isLandscape ? styles.landscapeTitle : styles.title}>{title}</Text>
+            </View>
 
             {/* Text Input Container  */}
             <View style={isLandscape ? styles.landscapeInputContainer : styles.inputContainer}>
 
                 {/* Red corner title and input  */}
-                <View style ={isLandscape ? styles.landscapeFighter1Box : ""}>
+                <View style ={isLandscape ? styles.landscapeFighter1Box : styles.fighter1Box}>
                     <Text style={isLandscape ? styles.landscapeNameLabel : styles.redNameLabel}>Red corner name:</Text>
                     <TextInput
-                        placeholder="Enter name.."
+                        placeholder="Enter red corner's name.."
                         value={fighter1Name}
                         placeholderTextColor="#D32f2f"
                         onChangeText={setFighter1Name}
@@ -133,10 +165,10 @@ export default function CreateMatch() {
                 </View>
 
                 {/* Blue corner title and input  */}
-                <View style={ isLandscape ? styles.landscapeFighter2Box : ""}>
+                <View style={ isLandscape ? styles.landscapeFighter2Box : styles.fighter2Box}>
                     <Text style={isLandscape ? styles.landscapeNameLabel : styles.blueNameLabel}>Blue corner name:</Text>
                     <TextInput
-                        placeholder="Enter name.."
+                        placeholder="Enter blue corner's name.."
                         placeholderTextColor="#307Fb6"
                         value={fighter2Name}
                         onChangeText={setFighter2Name}
@@ -146,7 +178,7 @@ export default function CreateMatch() {
             </View>
 
             {/* Round input  */}
-            <Text style={isLandscape ? styles.landscapeRoundLabel : styles.blackNameLabel}>Number of rounds:</Text>
+            <Text style={isLandscape ? styles.landscapeRoundLabel : styles.blackNameLabel}>Select number of rounds:</Text>
             <View style={isLandscape ? styles.landscapeRoundsContainer : styles.roundsContainer}>
                 {rounds.map((round) => (
                     <Pressable
@@ -167,40 +199,119 @@ export default function CreateMatch() {
                 ))}
             </View>
 
-            {!isLandscape ? 
-                <View style={isLandscape ? styles.landscapeButtonContainer : ""}>
-                
-                    {/* Enter scorecard button  */}
-                    <Pressable
-                        style={isLandscape ? styles.landscapeButton : styles.button}
-                        onPress={handleStartFight}
-                    >
-                        <Text style={styles.buttonText} onPress={handleStartFight}>{buttonText}</Text>
-                    </Pressable>
-                    
-                    {/* save and exit button  */}
-                    {isEditing && 
-                        <Pressable
-                            style={isLandscape ? styles.landscapeButton : styles.button}
-                            onPress={handleSaveChangesAndExit}
-                        >
-                            <Text style={styles.buttonText}>Save Changes & Exit</Text>
-                        </Pressable>
+            <Text style={isLandscape ? styles.landscapeRoundLabel : styles.blackNameLabel}>
+                Select gender: <Text style={styles.optionalLabel}>(optional)</Text>
+            </Text>
+            <View style={styles.genderPills}>
+                <Pressable
+                    style={[
+                        styles.malePill,
+                        selectedGender === "mens" && styles.malePillSelected
+                    ]}
+                    onPress={() => selectedGender === "mens" ? setSelectedGender("") : setSelectedGender('mens')}
+                >
+                    {selectedGender === "mens" ?
+                        <Ionicons name={'male-outline'} size={18} color="#fff"/>
+                    :
+                        <Ionicons name={'male-outline'} size={18} color="#b6c6d1"/>
                     }
-                    {/* Cancel button  */}
-                    <Pressable
-                        style={isLandscape ? styles.landscapeButton : styles.cancelButton}
-                        onPress={() => router.dismissTo('/')}
-                    >
-                        <Text style={styles.cancelButtonText}>Cancel</Text>
-                    </Pressable>
+                    {/* <Ionicons name={'male-outline'} size={18} color="#b6c6d1" /> */}
+                    <Text style={[
+                        styles.maleText,
+                        selectedGender === "mens" && styles.maleTextSelected
+                    ]}>{"Men's"}</Text>
+                </Pressable>
+
+
+                <Pressable style={[
+                    styles.femalePill,
+                    selectedGender === "womens" && styles.femalePillSelected
+                    ]}
+                    onPress={() => selectedGender=== "womens"? setSelectedGender("") : setSelectedGender("womens")}
+                >
+                    {selectedGender === "womens" ?
+                        <Ionicons name={'female-outline'} size={18} color="#fff"/>
+                    :
+                        <Ionicons name={'female-outline'} size={18} color="#b6c6d1"/>
+                    }
+                    <Text style={[
+                        styles.femaleText,
+                        selectedGender === "womens" && styles.femaleTextSelected
+                    ]}>{"Women's"}</Text>
+                </Pressable>
+            </View>
+
+            <Text style={isLandscape ? styles.landscapeRoundLabel : styles.blackNameLabel}>
+                Select weight class: <Text style={styles.optionalLabel}>(optional)</Text>
+            </Text>
+
+            {/* <Pressable
+                key={round}
+                style={[
+                    styles.roundButton,
+                    selectedRounds === round && styles.roundButtonSelected,
+                ]}
+                onPress={() => setSelectedRounds(round)}
+            ></Pressable> */}
+
+            <View style={styles.weightClassContainer}>
+                <View style={styles.weightColumnLeft}>
+                    {[102, 112, 122, 135, 154, 175].map((weight) => (
+                        <Pressable
+                            key={weight}
+                            style={[
+                                styles.weightPill,
+                                selectedWeight === weight && styles.weightPillSelected
+                            ]}
+                            onPress={() => setSelectedWeight(selectedWeight === weight ? 0 : weight)}
+                        >
+                            <Text style={selectedWeight === weight ? styles.weightPillTextSelected : styles.weightPillText}>
+                                {weight}lbs
+                            </Text>
+                        </Pressable>
+                    ))}
                 </View>
-            :
-                <View style={isEditing ? styles.landscapeButtonContainer : styles.landscapeEditButtonContainer}>
+                <View style={styles.weightColumnCenter}>
+                    {[105, 115, 127, 140, 160, 200].map((weight) => (
+                        <Pressable
+                            key={weight}
+                            style={[
+                                styles.weightPill,
+                                selectedWeight === weight && styles.weightPillSelected
+                            ]}
+                            onPress={() => setSelectedWeight(selectedWeight === weight ? 0 : weight)}
+                        >
+                            <Text style={selectedWeight === weight ? styles.weightPillTextSelected : styles.weightPillText}>
+                                {weight}lbs
+                            </Text>
+                        </Pressable>
+                    ))}
+                </View>
+                <View style={styles.weightColumnRight}>
+                    {[110, 118, 130, 147, 168, '200+'].map((weight) => (
+                        <Pressable
+                            key={weight}
+                            style={[
+                                styles.weightPill,
+                                selectedWeight === weight && styles.weightPillSelected
+                            ]}
+                            onPress={() => setSelectedWeight(selectedWeight === weight ? 0 : weight)}
+                        >
+                            <Text style={selectedWeight === weight ? styles.weightPillTextSelected : styles.weightPillText}>
+                                {weight}lbs
+                            </Text>
+                        </Pressable>
+                    ))}
+                </View>
+            </View>
+
+
+            {!isLandscape ? 
+                <View style={styles.buttonContainer}>
                 
                     {/* Cancel button  */}
                     <Pressable
-                        style={isLandscape ? styles.landscapeCancelButton : styles.cancelButton}
+                        style={[styles.cancelButton, isEditing && styles.editingActionButton]}
                         onPress={() => router.dismissTo('/')}
                     >
                         <Text style={styles.cancelButtonText}>Cancel</Text>
@@ -209,24 +320,51 @@ export default function CreateMatch() {
                     {/* save and exit button  */}
                     {isEditing && 
                         <Pressable
-                            style={isLandscape ? styles.landscapeButton : styles.button}
+                            style={[styles.button, styles.editingActionButton]}
                             onPress={handleSaveChangesAndExit}
                         >
-                            <Text style={styles.buttonText}>Save Changes & Exit</Text>
+                            <Text style={[styles.buttonText, styles.editingButtonText]}>Save & Exit</Text>
                         </Pressable>
                     }
                     {/* Enter scorecard button  */}
                     <Pressable
-                        style={isLandscape ? styles.landscapeButton : styles.button}
+                        style={[styles.button, isEditing && styles.editingActionButton]}
                         onPress={handleStartFight}
                     >
-                        <Text style={styles.buttonText} onPress={handleStartFight}>
+                        <Text style={[styles.buttonText, isEditing && styles.editingButtonText]} onPress={handleStartFight}>{buttonText}</Text>
+                    </Pressable>
+                </View>
+            :
+                <View style={isEditing ? styles.landscapeEditButtonContainer: styles.landscapeButtonContainer}>
+                    {/* save and exit button  */}
+                    {isEditing && 
+                        <Pressable
+                            style={[styles.editButton, styles.editingActionButton]}
+                            onPress={handleSaveChangesAndExit}
+                        >
+                            <Text style={[styles.buttonText, styles.editingButtonText]}>Save & Exit</Text>
+                        </Pressable>
+                    }
+                    {/* Cancel button  */}
+                    <Pressable
+                        style={[styles.cancelButton, isEditing && styles.editingActionButton]}
+                        onPress={() => router.dismissTo('/')}
+                    >
+                        <Text style={styles.cancelButtonText}>Cancel</Text>
+                    </Pressable>
+
+                    {/* Enter scorecard button  */}
+                    <Pressable
+                        style={[styles.landscapeButton, isEditing && styles.editingActionButton]}
+                        onPress={handleStartFight}
+                    >
+                        <Text style={[styles.buttonText, isEditing && styles.editingButtonText]} onPress={handleStartFight}>
                             {buttonText}
                         </Text>
                     </Pressable>
                 </View>
             }
-            <Image source={tIcon} style={styles.icon} resizeMode="contain" />
+            {/* <Image source={tIcon} style={styles.icon} resizeMode="contain" /> */}
         </View>
     );
 }
@@ -246,26 +384,60 @@ const styles = StyleSheet.create({
     },
     button: {
         backgroundColor: '#fff',
-        paddingHorizontal: 24,
+        paddingHorizontal: '1%',
         paddingVertical: '2%',
         borderRadius: 12,
-        marginTop: 25,
-        width: 250,
+        // marginTop: 25,
+        width: '48%',
+        height: '18%',
+        alignItems: 'center',
+        justifyContent: 'center',
         boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
+        borderWidth: 1,
+        borderColor: '#B6C6D1'
+    },
+    editButton: {
+        backgroundColor: '#fff',
+        paddingHorizontal: '1%',
+        paddingVertical: '2%',
+        borderRadius: 12,
+        // marginTop: 25,
+        width: '24%',
+        height: '18%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
+        borderWidth: 1,
+        borderColor: '#B6C6D1'
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        top: '2.5%',
+        height: '25%',
+        justifyContent: 'space-between',
+        width: '100%'
     },
     buttonText: {
         color: '#307Fb6',
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: '700',
         textAlign: 'center'
+    },
+    editingActionButton: {
+        width: '31%',
+        paddingHorizontal: '1%',
+    },
+    editingButtonText: {
+        fontSize: 14,
     },
     cancelButton: {
         backgroundColor: '#de2f2f',
         paddingHorizontal: 24,
-        paddingVertical: '2%',
+        // paddingVertical: '2%',
         borderRadius: 12,
-        marginTop: 25,
-        width: 250,
+        // marginTop: 25,
+        width: '48%',
+        height: '18%',
         alignItems: 'center',
         justifyContent: 'center',
         boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
@@ -282,26 +454,91 @@ const styles = StyleSheet.create({
     },
     cancelButtonText: {
         color: '#fff',
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: '700',
         textAlign: 'center'
     },
+    weightClassContainer: {
+        height: '28%',
+        width: '100%',
+        flexDirection: 'row'
+    },
+    weightColumnLeft: {
+        // backgroundColor: 'pink',
+        height: '100%',
+        width: '33%',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 5.5,
+
+                // gap: 1,
+
+    },
+    weightColumnCenter: {
+        // backgroundColor: 'orange',
+        height: '100%',
+        width: '33%',
+        flexDirection: 'column',
+        alignItems: 'center',
+        // gap: 1,
+        gap: 5.5,
+
+    },
+    weightColumnRight: {
+        // backgroundColor: 'orange',
+        height: '100%',
+        width: '33%',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 5.5,
+
+    },
+    weightPill: {
+        height: '14.5%',
+        width: '85%',
+        borderColor: '#B6C6D1',
+        borderWidth: 1,
+        borderRadius: 25,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    weightPillSelected: {
+        height: '14.5%',
+        width: '85%',
+        // borderColor: '#fff',
+        borderWidth: 0,
+        borderRadius: 25,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#307Fb6'
+    },
+    weightPillText: {
+        color: 'black',
+        fontSize: 12
+    },
+    weightPillTextSelected: {
+        color: 'white',
+        fontSize: 12
+    },
+
     container: {
         flex: 1,
         backgroundColor: '#f1f5f8',
         alignItems: 'center',
         // justifyContent: 'center',
         paddingHorizontal: 24,
-        paddingTop: '23%'
+        paddingTop: '0%'
     },
     fighter1input: {
         backgroundColor: '#fff',
         width: '100%',
         padding: "3%",
         borderRadius: 8,
-        marginBottom: 36,
+        marginBottom: '8%',
         color: '#D32f2f',
         fontWeight: 600,
+        borderWidth: 1,
+        borderColor: '#B6C6D1',
 
     },
     fighter2Input: {
@@ -310,8 +547,11 @@ const styles = StyleSheet.create({
         padding: "3%",
         borderRadius: 8,
         color: '#307Fb6',
-        marginBottom: 36,
+        marginBottom: '8%',
         fontWeight: 600,
+        borderWidth: 1,
+
+        borderColor: '#B6C6D1',
     },
     icon: {
         width: "20%",
@@ -325,7 +565,7 @@ const styles = StyleSheet.create({
         color: '#D32f2f',
         fontSize: 14,
         fontWeight: '700',
-        marginBottom: 12,
+        marginBottom: 10,
         marginLeft: 0,
         alignSelf: 'flex-start'
     },
@@ -333,15 +573,18 @@ const styles = StyleSheet.create({
         color: '#000',
         fontSize: 14,
         fontWeight: '700',
-        marginBottom: 12,
+        marginBottom: 10,
         marginLeft: 0,
         alignSelf: 'flex-start'
+    },
+    optionalLabel: {
+        fontWeight: '400'
     },
     blueNameLabel: {
         color: '#307Fb6',
         fontSize: 14,
         fontWeight: '700',
-        marginBottom: 12,
+        marginBottom: 10,
         marginLeft: 0,
         alignSelf: 'flex-start'
     },
@@ -349,10 +592,76 @@ const styles = StyleSheet.create({
         color: '#D32f2f',
         fontSize: 14,
         fontWeight: '700',
-        marginBottom: 12,
+        marginBottom: 10,
         marginLeft: 0,
         alignSelf: 'flex-start'
     },
+    genderPills: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        height: '5%',
+        width: '100%',
+        paddingHorizontal: '8%',
+        paddingRight: '10%',
+        marginBottom: '6%'
+    },
+        malePill: {
+            flexDirection: 'row',
+            borderWidth: 1,
+            borderColor: '#B6C6D1',
+            color: 'red',
+
+            width: '40%',
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderRadius: 25,
+            height: '80%'
+
+        },
+        malePillSelected: {
+            backgroundColor: '#307Fb6',
+            borderWidth: 0
+        },
+
+        femalePill: {
+            flexDirection: 'row',
+            borderWidth: 1,
+            borderColor: '#B6C6D1',
+            justifyContent: 'center',
+            alignItems: 'center',
+            color: '#B6c6d1',
+            height: '80%',
+            width: '40%',
+            borderRadius: 25
+
+        },
+        femalePillSelected: {
+            flexDirection: 'row',
+            borderWidth: 0,
+            backgroundColor: '#d32fba',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '80%',
+            width: '40%',
+            borderRadius: 25
+        },
+        maleText: {
+            color: '#B6C6D1',
+            marginLeft: 5
+        },
+        maleTextSelected: {
+            color: 'white',
+            marginLeft: 5
+
+        },
+        femaleText: {
+            color: '#B6C6D1',
+            marginLeft: 5
+        },
+        femaleTextSelected: {
+            color: 'white',
+            marginLeft: 5
+        },
     nameLabelRed: {
         color: '#fff',
         fontSize: 14,
@@ -365,34 +674,46 @@ const styles = StyleSheet.create({
     roundButton: {
         backgroundColor: 'transparent',
         borderWidth: 1,
-        borderColor: '#000',
-        paddingHorizontal: '4.25%',
+        borderColor: '#B6C6D1',
+        // paddingHorizontal: '4.25%',
+        width: '10%',
         paddingVertical: 7,
         borderRadius: 8,
         marginRight: '2.5%',
+        justifyContent: 'center',
+        alignItems: 'center'
     },
     roundButtonSelected: {
-        backgroundColor: '#fff',
+        backgroundColor: '#307fb6',
+        borderColor: "#fff"
     },
     roundButtonText: {
-        color: '#000',
+        color: '#b6c6d1',
         fontSize: 14,
         fontWeight: '500',
     },
     roundButtonTextSelected: {
-        color: '#307Fb6',
+        color: '#fff',
     },
     roundsContainer: {
         flexDirection: 'row',
-        marginBottom: '4%',
-        alignSelf: 'flex-start',
+        marginBottom: '9%',
+        alignSelf: 'center',
     },
     title: {
         color: '#fff',
-        fontSize: 24,
+        fontSize: 18,
         fontWeight: '700',
-        marginBottom: '10%',
-        // marginTop: -75
+        marginTop: '12%'
+    },
+    titleContainer: {
+        backgroundColor: '#307fb6',
+        height: '12%',
+        width: '115%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 15,
+        marginBottom: '7%',
     },
 
     // LANDSCAPE STYLES
@@ -409,14 +730,15 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         width: '87%',
         position: 'absolute',
-        top: '85%'
+        top: '88%'
     },
+
     landscapeEditButtonContainer: {
-    flexDirection: 'row',
+        flexDirection: 'row',
         justifyContent: 'space-between',
-        width: '63%',
+        width: '87%',
         position: 'absolute',
-        top: '85%'
+        top: '88%'
     },
     landscapeContainer: {
         flex: 1,
@@ -428,6 +750,12 @@ const styles = StyleSheet.create({
     },
     landscapeFighter1Box: {
         width: '50%'
+    },
+    fighter1Box: {
+
+    },
+    fighter2Box: {
+
     },
     landscapeFighter2Box: {
         width: '50%'
