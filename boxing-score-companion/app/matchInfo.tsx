@@ -183,14 +183,6 @@ export default function MatchInfoScreen() {
         events.push(`KD: ${knockdowns}`);
         events.push(`Deductions: ${penalties}`);
 
-        // if (knockdowns > 0) {
-        //     events.push(`KD ${knockdowns}`);
-        // }
-
-        // if (penalties > 0) {
-        //     events.push(`PEN ${penalties}`);
-        // }
-
         return events.join(' · ');
     };
 
@@ -399,7 +391,7 @@ export default function MatchInfoScreen() {
                         })}
                     </ScrollView>
                 }
-                {/* save button  */}f
+                {/* save button  */}
                 <Pressable 
                     style={isLandscape ? styles.landscapeButton : styles.button}
                     // onPress={() => router.push('/')}

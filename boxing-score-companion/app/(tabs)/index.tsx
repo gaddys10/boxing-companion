@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, TextInput, Image, useWindowDimensions, ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -32,6 +32,7 @@ export default function HomeScreen() {
   const { savedScorecard } = useLocalSearchParams();
   const lastSavedScorecard = useRef<string | null>(null);
   const [savedCards, setSavedCards] = useState<Scorecard[]>([]);
+  const [searchInput, setSearchInput] = useState('');
   const [hasLoadedSavedCards, setHasLoadedSavedCards] = useState(false);
   const [scrollY, setScrollY] = useState(0);
   const [scrollViewportHeight, setScrollViewportHeight] = useState(0);
@@ -97,6 +98,18 @@ export default function HomeScreen() {
     });
   };
 
+  const filteredCards = useMemo(() => {
+    const searchTerm = searchInput.trim().toLocaleLowerCase();
+
+    if (!searchTerm) return savedCards;
+
+    return savedCards.filter(
+      (card) =>
+        card.fighter1.toLocaleLowerCase().includes(searchTerm) ||
+        card.fighter2.toLocaleLowerCase().includes(searchTerm),
+    );
+  }, [savedCards, searchInput]);
+
   const borderFadeColor = isLandscape ? '#307FB6' : '#F1F5F8';
 
   return (
@@ -133,7 +146,12 @@ export default function HomeScreen() {
             <TextInput 
               style={styles.searchInput} 
               placeholderTextColor="rgba(0, 0, 0, 0.5)" 
-              placeholder="Search Scorecards" 
+              placeholder="Search Scorecards"
+              value={searchInput}
+              onChangeText={setSearchInput}
+              autoCapitalize="none"
+              autoCorrect={false}
+              clearButtonMode="while-editing"
             />
           </View>
         </View>
@@ -144,7 +162,7 @@ export default function HomeScreen() {
             horizontal
             showsHorizontalScrollIndicator={false}
           >
-            {savedCards.map((card) => (
+            {filteredCards.map((card) => (
               <LandscapeSavedCard
                 key={card.id}
                 id={card.id}
@@ -175,7 +193,7 @@ export default function HomeScreen() {
             bounces={false}
             alwaysBounceVertical={false}
           >
-            {savedCards.map((card) => (
+            {filteredCards.map((card) => (
               <SavedCard
                 key={card.id}
                 id={card.id}

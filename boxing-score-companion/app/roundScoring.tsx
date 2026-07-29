@@ -64,13 +64,13 @@ export default function RoundScoringScreen() {
         }).start();
     };
 
-    useEffect(() => {
-        void ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+    // useEffect(() => {
+    //     void ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
 
-        return () => {
-            void ScreenOrientation.unlockAsync();
-        };
-    }, []);
+    //     return () => {
+    //         void ScreenOrientation.unlockAsync();
+    //     };
+    // }, []);
 
     useEffect(() => {
         if (score > 0) {
