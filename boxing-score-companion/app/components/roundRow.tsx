@@ -234,94 +234,94 @@ export default function RoundRow({
             >
                 <View style={styles.modalOverlay}>
                     <View style={styles.deleteModal}>
-                    {!quickScoringVisible ? (
-                        <>
-                            <Text style={styles.modalTitle}>Select Scoring Method</Text>
-                            <Pressable style={styles.quickScoring} onPress={openQuickScoring}>
-                                <Text style={styles.quickScoringText}>Quick Scoring</Text>
-                            </Pressable>
-                            <Text style={[styles.modalText, {textAlign: 'center'}]}>Score the round in just a few taps!</Text>
-                            <Pressable 
-                                style={styles.fullScoring}
-                                onPress={() => {
-                                    closeScoringModal();
-                                    router.push({
-                                        pathname: '/roundScoring',
-                                        params: {
-                                            roundNumber: String(roundNumber),
-                                            fighter1,
-                                            fighter2,
-                                            rounds,
-                                            id,
-                                            savedScores,
-                                        },
-                                    });
-                                }}
-                            >
-                                <Text style={styles.quickScoringText}>Full Scoring</Text>
-                            </Pressable>
-                            <Text style={[styles.modalText, {textAlign: 'center'}]}>
-                                The full, interactive live scoring experience with round momentum tracking
-                            </Text>
-                            <View style={styles.modalActions}>
-                                <Pressable style={[styles.modalButton, styles.cancelButton]} onPress={closeScoringModal}>
-                                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                        {!quickScoringVisible ? (
+                            <>
+                                <Text style={styles.modalTitle}>Select Scoring Method</Text>
+                                <Pressable style={styles.quickScoring} onPress={openQuickScoring}>
+                                    <Text style={styles.quickScoringText}>Quick Scoring</Text>
                                 </Pressable>
-                            </View>
-                        </>
-                    ) : (
-                        <>
-                            <Text style={styles.modalTitle}>Quick Score Round {roundNumber}</Text>
-                            <View style={[styles.quickCornerRow, styles.quickCornerRowNames]}>
-                                <Text numberOfLines={1} style={[styles.quickCornerName, styles.quickLeftName]}>{fighter1}</Text>
-                                <Text numberOfLines={1} style={[styles.quickCornerName, styles.quickRightName]}>{fighter2}</Text>
-                            </View>
-                            <View style={styles.quickEventSection}>
-                                <Text style={styles.quickEventLabel}>Round score</Text>
-                                <View style={styles.quickCornerRow}>
-                                    <View style={styles.stepper}>
-                                        <Pressable style={styles.stepperButton} onPress={() => setQuickLeftScore((score) => Math.max(0, score - 1))}><Text style={styles.stepperButtonText}>−</Text></Pressable>
-                                        <Text style={[styles.stepperValue, styles.leftStepperValue]}>{quickLeftScore}</Text>
-                                        <Pressable style={styles.stepperButton} onPress={() => setQuickLeftScore((score) => Math.min(10, score + 1))}><Text style={styles.stepperButtonText}>+</Text></Pressable>
-                                    </View>
-                                    <View style={styles.stepper}>
-                                        <Pressable style={styles.stepperButton} onPress={() => setQuickRightScore((score) => Math.max(0, score - 1))}><Text style={styles.stepperButtonText}>−</Text></Pressable>
-                                        <Text style={[styles.stepperValue, styles.rightStepperValue]}>{quickRightScore}</Text>
-                                        <Pressable style={styles.stepperButton} onPress={() => setQuickRightScore((score) => Math.min(10, score + 1))}><Text style={styles.stepperButtonText}>+</Text></Pressable>
-                                    </View>
+                                <Text style={[styles.modalText, {textAlign: 'center'}]}>Score the round in just a few taps!</Text>
+                                <Pressable 
+                                    style={styles.fullScoring}
+                                    onPress={() => {
+                                        closeScoringModal();
+                                        router.push({
+                                            pathname: '/roundScoring',
+                                            params: {
+                                                roundNumber: String(roundNumber),
+                                                fighter1,
+                                                fighter2,
+                                                rounds,
+                                                id,
+                                                savedScores,
+                                            },
+                                        });
+                                    }}
+                                >
+                                    <Text style={styles.quickScoringText}>Full Scoring</Text>
+                                </Pressable>
+                                <Text style={[styles.modalText, {textAlign: 'center'}]}>
+                                    The full, interactive live scoring experience with round momentum tracking
+                                </Text>
+                                <View style={styles.modalActions}>
+                                    <Pressable style={[styles.modalButton, styles.cancelButton]} onPress={closeScoringModal}>
+                                        <Text style={styles.cancelButtonText}>Cancel</Text>
+                                    </Pressable>
                                 </View>
-                            </View>
-                            
-                            {[
-                                { label: 'Knockdowns', left: quickLeftKds, right: quickRightKds, setLeft: setQuickLeftKds, setRight: setQuickRightKds },
-                                { label: 'Point deductions', left: quickLeftPen, right: quickRightPen, setLeft: setQuickLeftPen, setRight: setQuickRightPen },
-                            ].map((event) => (
-                                <View key={event.label} style={styles.quickEventSection}>
-                                    <Text style={styles.quickEventLabel}>{event.label}</Text>
+                            </>
+                        ) : (
+                            <>
+                                <Text style={styles.modalTitle}>Quick Score Round {roundNumber}</Text>
+                                <View style={[styles.quickCornerRow, styles.quickCornerRowNames]}>
+                                    <Text numberOfLines={1} style={[styles.quickCornerName, styles.quickLeftName]}>{fighter1}</Text>
+                                    <Text numberOfLines={1} style={[styles.quickCornerName, styles.quickRightName]}>{fighter2}</Text>
+                                </View>
+                                <View style={styles.quickEventSection}>
+                                    <Text style={styles.quickEventLabel}>Round score</Text>
                                     <View style={styles.quickCornerRow}>
                                         <View style={styles.stepper}>
-                                            <Pressable style={styles.stepperButton} onPress={() => event.setLeft(Math.max(0, event.left - 1))}><Text style={styles.stepperButtonText}>−</Text></Pressable>
-                                            <Text style={styles.stepperValue}>{event.left}</Text>
-                                            <Pressable style={styles.stepperButton} onPress={() => event.setLeft(event.left + 1)}><Text style={styles.stepperButtonText}>+</Text></Pressable>
+                                            <Pressable style={styles.stepperButton} onPress={() => setQuickLeftScore((score) => Math.max(0, score - 1))}><Text style={styles.stepperButtonText}>−</Text></Pressable>
+                                            <Text style={[styles.stepperValue, styles.leftStepperValue]}>{quickLeftScore}</Text>
+                                            <Pressable style={styles.stepperButton} onPress={() => setQuickLeftScore((score) => Math.min(10, score + 1))}><Text style={styles.stepperButtonText}>+</Text></Pressable>
                                         </View>
                                         <View style={styles.stepper}>
-                                            <Pressable style={styles.stepperButton} onPress={() => event.setRight(Math.max(0, event.right - 1))}><Text style={styles.stepperButtonText}>−</Text></Pressable>
-                                            <Text style={styles.stepperValue}>{event.right}</Text>
-                                            <Pressable style={styles.stepperButton} onPress={() => event.setRight(event.right + 1)}><Text style={styles.stepperButtonText}>+</Text></Pressable>
+                                            <Pressable style={styles.stepperButton} onPress={() => setQuickRightScore((score) => Math.max(0, score - 1))}><Text style={styles.stepperButtonText}>−</Text></Pressable>
+                                            <Text style={[styles.stepperValue, styles.rightStepperValue]}>{quickRightScore}</Text>
+                                            <Pressable style={styles.stepperButton} onPress={() => setQuickRightScore((score) => Math.min(10, score + 1))}><Text style={styles.stepperButtonText}>+</Text></Pressable>
                                         </View>
                                     </View>
                                 </View>
-                            ))}
-                            <View style={styles.quickModalActions}>
-                                <Pressable style={[styles.modalButton, styles.cancelButton, styles.quickActionButton]} onPress={() => setQuickScoringVisible(false)}>
-                                    <Text style={styles.cancelButtonText}>Back</Text>
-                                </Pressable>
-                                <Pressable style={[styles.modalButton, styles.saveQuickButton, styles.quickActionButton]} onPress={saveQuickScore}>
-                                    <Text style={styles.saveQuickButtonText}>Save Round</Text>
-                                </Pressable>
-                            </View>
-                        </>
-                    )}
+                                
+                                {[
+                                    { label: 'Knockdowns', left: quickLeftKds, right: quickRightKds, setLeft: setQuickLeftKds, setRight: setQuickRightKds },
+                                    { label: 'Point deductions', left: quickLeftPen, right: quickRightPen, setLeft: setQuickLeftPen, setRight: setQuickRightPen },
+                                ].map((event) => (
+                                    <View key={event.label} style={styles.quickEventSection}>
+                                        <Text style={styles.quickEventLabel}>{event.label}</Text>
+                                        <View style={styles.quickCornerRow}>
+                                            <View style={styles.stepper}>
+                                                <Pressable style={styles.stepperButton} onPress={() => event.setLeft(Math.max(0, event.left - 1))}><Text style={styles.stepperButtonText}>−</Text></Pressable>
+                                                <Text style={styles.stepperValue}>{event.left}</Text>
+                                                <Pressable style={styles.stepperButton} onPress={() => event.setLeft(event.left + 1)}><Text style={styles.stepperButtonText}>+</Text></Pressable>
+                                            </View>
+                                            <View style={styles.stepper}>
+                                                <Pressable style={styles.stepperButton} onPress={() => event.setRight(Math.max(0, event.right - 1))}><Text style={styles.stepperButtonText}>−</Text></Pressable>
+                                                <Text style={styles.stepperValue}>{event.right}</Text>
+                                                <Pressable style={styles.stepperButton} onPress={() => event.setRight(event.right + 1)}><Text style={styles.stepperButtonText}>+</Text></Pressable>
+                                            </View>
+                                        </View>
+                                    </View>
+                                ))}
+                                <View style={styles.quickModalActions}>
+                                    <Pressable style={[styles.modalButton, styles.cancelButton, styles.quickActionButton]} onPress={() => setQuickScoringVisible(false)}>
+                                        <Text style={styles.cancelButtonText}>Back</Text>
+                                    </Pressable>
+                                    <Pressable style={[styles.modalButton, styles.saveQuickButton, styles.quickActionButton]} onPress={saveQuickScore}>
+                                        <Text style={styles.saveQuickButtonText}>Save Round</Text>
+                                    </Pressable>
+                                </View>
+                            </>
+                        )}
                     </View>
                 </View>
             </Modal>
@@ -333,14 +333,14 @@ const styles = StyleSheet.create({
     quickScoring: {
         width: '100%',
         backgroundColor: '#1976D2',
-        height: '20%',
+        height: '15%',
         borderRadius: 15,
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: '5%',
         boxShadow: '4',
         shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
+        shadowOffset: { width: 2, height: 2 },
         shadowOpacity: 0.4,
         shadowRadius: 1,
 
@@ -439,14 +439,14 @@ const styles = StyleSheet.create({
     },
     fullScoring: {
         width: '100%',
-        height: '20%',
+        height: '15%',
         backgroundColor: '#1976d2',
         borderRadius: 15,
         justifyContent: 'center',
         alignItems: 'center',
         boxShadow: '4',
         shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
+        shadowOffset: { width: 2, height: 2 },
         shadowOpacity: 0.4,
         shadowRadius: 1,
         marginBottom: '5%',
@@ -457,7 +457,12 @@ const styles = StyleSheet.create({
         backgroundColor: '#d32f2f',
         width: '85%',
         marginLeft: 0,
-        bottom: 0
+        top: '50%',
+        boxShadow: '4',
+        shadowColor: '#11334b',
+        shadowOffset: { width: 2, height: 2 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1,
     },
     confirmDeleteButton: {
         backgroundColor: '#d32f2f',
@@ -475,7 +480,7 @@ const styles = StyleSheet.create({
     },
     deleteModal: {
         width: '100%',
-        height: '63%',
+        height: '57%',
         maxWidth: 340,
         backgroundColor: '#fff',
         borderRadius: 12,

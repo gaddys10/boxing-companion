@@ -183,14 +183,6 @@ export default function MatchInfoScreen() {
         events.push(`KD: ${knockdowns}`);
         events.push(`Deductions: ${penalties}`);
 
-        // if (knockdowns > 0) {
-        //     events.push(`KD ${knockdowns}`);
-        // }
-
-        // if (penalties > 0) {
-        //     events.push(`PEN ${penalties}`);
-        // }
-
         return events.join(' · ');
     };
 
@@ -382,6 +374,7 @@ export default function MatchInfoScreen() {
                                         rightTotal={isRoundScored(roundNumber) ? String(getTotalScore('right', roundNumber)) : '-'}
                                         // plusMinus={isRoundScored(roundNumber) ? String(getPlusMinus(roundNumber)) : '-'}
                                         plusMinus={isRoundScored(roundNumber) ? roundScores[roundNumber]?.plusMinus : '-'}
+                                        isQuickScore={roundScores[roundNumber]?.scoringMethod === 'quick'}
                                         leftKds={roundScores[roundNumber]?.leftKnockdowns}
                                         leftPen={roundScores[roundNumber]?.leftDeductions}
                                         rightKds={roundScores[roundNumber]?.rightKnockdowns}
@@ -393,13 +386,14 @@ export default function MatchInfoScreen() {
                                         id={id ? String(id) : undefined}
                                         savedScores={JSON.stringify(roundScores)}
                                         onClearRound={handleClearRound}
+                                        onSaveRound={handleSaveRound}
                                     />
                                 
                             );
                         })}
                     </ScrollView>
                 }
-                {/* save button  */}f
+                {/* save button  */}
                 <Pressable 
                     style={isLandscape ? styles.landscapeButton : styles.button}
                     // onPress={() => router.push('/')}

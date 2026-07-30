@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { Modal, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 
@@ -16,14 +16,14 @@ type SavedCardProps = {
     fighter2Pen: number;
     rounds: number;
     gender?: string;
+    weight?: number | string;
     savedScores?: string;
     onDelete: (id: number) => void;
 }
 
-export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, gender, savedScores, onDelete}: SavedCardProps) {
+export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, gender, weight, savedScores, onDelete}: SavedCardProps) {
     const router = useRouter();
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-    const [editModalVisible, setEditModalvisible] = useState(false)
 
     const { width } = useWindowDimensions();
 
@@ -46,6 +46,7 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
             fighter2Pen,
             rounds,
             gender,
+            weight,
             savedScores,
         }
         });
@@ -117,14 +118,16 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
                             </View>
                         </View>
                         <View style={styles.genderWeightBox}>
-                            <View style={styles.genderIcon}>
-                                <Ionicons
-                                    name={gender === 'womens' ? 'female-outline' : 'male-outline'}
-                                    size={14}
-                                    color='#fff'
-                                />
-                            </View>
-                            <Text style={styles.weightClass}>122lbs</Text>
+                            {(gender === 'mens' || gender === 'womens') && (
+                                <View style={styles.genderIcon}>
+                                    <Ionicons
+                                        name={gender === 'womens' ? 'female-outline' : 'male-outline'}
+                                        size={14}
+                                        color='#fff'
+                                    />
+                                </View>
+                            )}
+                            <Text style={styles.weightClass}>{weight ? `${weight}lbs` : ''}</Text>
                         </View>
                     </View>
 
@@ -147,6 +150,7 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
                 animationType="fade"
                 transparent
                 visible={deleteModalVisible}
+                supportedOrientations={['landscape', 'landscape-left', 'landscape-right']}
                 onRequestClose={() => setDeleteModalVisible(false)}
             >
                 <View style={styles.modalOverlay}>
