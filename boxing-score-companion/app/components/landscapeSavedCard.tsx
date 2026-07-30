@@ -119,7 +119,7 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
                         </View>
                         <View style={styles.genderWeightBox}>
                             {(gender === 'mens' || gender === 'womens') && (
-                                <View style={styles.genderIcon}>
+                                <View style={[styles.genderIcon, gender==='mens' && styles.maleIcon]}>
                                     <Ionicons
                                         name={gender === 'womens' ? 'female-outline' : 'male-outline'}
                                         size={14}
@@ -341,6 +341,15 @@ const styles = StyleSheet.create({
     genderIcon: {
         // backgroundColor: '#d32f2f',
         backgroundColor: '#d32fba',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '30%',
+        height: '60%',
+        borderRadius: 25
+    },
+    maleIcon: {
+        // backgroundColor: '#d32f2f',
+        backgroundColor: '#307Fb6',
         alignItems: 'center',
         justifyContent: 'center',
         width: '30%',
