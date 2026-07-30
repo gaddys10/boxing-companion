@@ -374,6 +374,7 @@ export default function MatchInfoScreen() {
                                         rightTotal={isRoundScored(roundNumber) ? String(getTotalScore('right', roundNumber)) : '-'}
                                         // plusMinus={isRoundScored(roundNumber) ? String(getPlusMinus(roundNumber)) : '-'}
                                         plusMinus={isRoundScored(roundNumber) ? roundScores[roundNumber]?.plusMinus : '-'}
+                                        isQuickScore={roundScores[roundNumber]?.scoringMethod === 'quick'}
                                         leftKds={roundScores[roundNumber]?.leftKnockdowns}
                                         leftPen={roundScores[roundNumber]?.leftDeductions}
                                         rightKds={roundScores[roundNumber]?.rightKnockdowns}
@@ -385,6 +386,7 @@ export default function MatchInfoScreen() {
                                         id={id ? String(id) : undefined}
                                         savedScores={JSON.stringify(roundScores)}
                                         onClearRound={handleClearRound}
+                                        onSaveRound={handleSaveRound}
                                     />
                                 
                             );

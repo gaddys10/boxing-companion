@@ -397,8 +397,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f1f5f8',
     alignItems: 'center',
-    borderRadius: 40
-
+    borderRadius: 40,
+    paddingBottom: '1%',
   },
   landscapeIcon: {
     width: 60,
