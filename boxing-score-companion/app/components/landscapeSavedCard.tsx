@@ -74,16 +74,16 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
 
     return (
         <>
-            <View style={[styles.savedCardShadow, { width: width * .21}]}>
+            <View style={[styles.savedCardShadow, { width: Math.max(156, Math.min(210, width * .22)) }]}>
                 <Pressable style={styles.savedCard}>
                     <View style={styles.savedCardInfoRows}>
                     {/* Fighter name row -- Row 1  */}
                     <View style={styles.savedCardNameRow}>
                         <View style={styles.f1NameBox}>
-                            <Text style={styles.fighter1}>{fighter1}</Text>
+                            <Text numberOfLines={1} ellipsizeMode="tail" style={styles.fighter1}>{fighter1}</Text>
                         </View>
                         <View style={styles.f2NameBox}>
-                            <Text style={styles.fighter2}>{fighter2}</Text>
+                            <Text numberOfLines={1} ellipsizeMode="tail" style={styles.fighter2}>{fighter2}</Text>
                         </View>
                     </View>
 
@@ -390,7 +390,8 @@ const styles = StyleSheet.create({
     },
     savedCardShadow: {
         height: '100%',
-        top: '6%',
+        maxHeight: 245,
+        minHeight: 210,
         backgroundColor: 'white',
         borderRadius: 15,
         marginBottom: 17,

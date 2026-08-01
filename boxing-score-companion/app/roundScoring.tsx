@@ -2,8 +2,8 @@ import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
 import { View, Text, Pressable, StyleSheet, Animated, useWindowDimensions, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
-import * as ScreenOrientation from 'expo-screen-orientation';
 import * as Haptics from 'expo-haptics';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function RoundScoringScreen() {
     const router = useRouter();
@@ -44,8 +44,17 @@ export default function RoundScoringScreen() {
     const rightDeductProgress = useRef<Animated.Value>(new Animated.Value(0)).current;
     const exitProgress = useRef<Animated.Value>(new Animated.Value(0)).current;
 
-    const { width, height } = useWindowDimensions();
-    const isLandscape = width > height;
+    const { height } = useWindowDimensions();
+    const insets = useSafeAreaInsets();
+    const usableHeight = height - insets.top - insets.bottom;
+    const toolbarHeight = Math.max(44, Math.min(50, usableHeight * 0.14));
+    const undoHeight = Math.max(38, Math.min(44, usableHeight * 0.13));
+    const bottomControlHeight = Math.max(48, Math.min(56, usableHeight * 0.17));
+    const centerHeight = Math.max(120, usableHeight - toolbarHeight - undoHeight - bottomControlHeight);
+    const nameTop = undoHeight + Math.max(14, centerHeight * 0.12);
+    const scoreBottom = bottomControlHeight + Math.max(6, centerHeight * 0.04);
+    const plusTop = undoHeight + centerHeight * 0.28;
+    const compact = usableHeight < 370;
 
     const startLongPressFill = (progress: Animated.Value, duration: number) => {
         progress.setValue(0);
@@ -125,7 +134,12 @@ export default function RoundScoringScreen() {
 
     return (
         
-        <View style={styles.container}>
+        <View style={[styles.container, {
+            paddingLeft: Math.max(insets.left, 6),
+            paddingRight: Math.max(insets.right, 6),
+            paddingTop: Math.max(insets.top, 4) + toolbarHeight + 4,
+            paddingBottom: Math.max(insets.bottom, 4),
+        }]}>
             <Stack.Screen options={{ headerShown: false }} />
 
             <Pressable 
@@ -156,7 +170,7 @@ export default function RoundScoringScreen() {
                         setLeftDeductions((current) => current > 0 ? current - 1 : 0);
                     }}
                     delayLongPress={1500}
-                    style={styles.undoDeductLeft}
+                    style={[styles.undoDeductLeft, { height: undoHeight }]}
                 >
                     <Animated.View style={[styles.fillOverlayTopLeft, { width: leftDeductUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                     <Text style={styles.leftEvents}>Deductions: {leftDeductions}</Text>
@@ -176,7 +190,7 @@ export default function RoundScoringScreen() {
                         void confirmHaptic();
                         setLeftKnockdowns((current) => current > 0 ? current - 1 : 0);
                     }}
-                    style={styles.undoKDLeft}
+                    style={[styles.undoKDLeft, { height: undoHeight }]}
                     delayLongPress={1500}>
                         <Animated.View style={[styles.fillOverlayTopLeft, { width: leftKDUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                         <Text style={styles.leftEvents2}>Knockdowns: {leftKnockdowns}</Text>
@@ -185,15 +199,15 @@ export default function RoundScoringScreen() {
 
 
                 { score > 0 &&
-                    <Text style={styles.leftScore}>{score}&nbsp;<Ionicons name="caret-back" size={36} color="white" /></Text>
+                    <Text style={[styles.leftScore, { bottom: scoreBottom }]}>{score}&nbsp;<Ionicons name="caret-back" size={36} color="white" /></Text>
                 }
-                <Text style={styles.leftName}>{fighter1}</Text>
+                <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.62} style={[styles.leftName, { marginTop: nameTop }, compact && styles.compactName]}>{fighter1}</Text>
 
-                <Animated.Text style={[ styles.plusSign, { transform: [{ scale: leftPulseAnim }] }]} >+</Animated.Text>
+                <Animated.Text style={[styles.plusSign, { top: plusTop, transform: [{ scale: leftPulseAnim }] }]} >+</Animated.Text>
 
                 {/* Left PEN */}
                 <Pressable
-                    style={[styles.deductLeft]}
+                    style={[styles.deductLeft, { height: bottomControlHeight }]}
                     onPress={() => {
                         pulseAnimation(leftPulseAnim);
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -213,7 +227,7 @@ export default function RoundScoringScreen() {
 
                 {/* Left Knockdown  */}
                 <Pressable
-                    style={[styles.kdButton, styles.leftkd]}
+                    style={[styles.kdButton, styles.leftkd, { height: bottomControlHeight }]}
                     onPress={() => {
                         pulseAnimation(leftPulseAnim);
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -255,9 +269,9 @@ export default function RoundScoringScreen() {
                     onPressOut={() => resetLongPressFill(rightKDUndoProgress)}
                     onLongPress={() => {
                         void confirmHaptic();
-                        setLeftKnockdowns((current) => current > 0 ? current - 1 : 0);
+                        setRightKnockdowns((current) => current > 0 ? current - 1 : 0);
                     }}
-                    style={styles.undoKDright}
+                    style={[styles.undoKDright, { height: undoHeight }]}
                     delayLongPress={1500}>
                         <Animated.View style={[styles.fillOverlayTopLeft, { width: rightKDUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                         <Text style={styles.rightEvents2}>Knockdowns: {rightKnockdowns}</Text>
@@ -265,7 +279,7 @@ export default function RoundScoringScreen() {
                 </Pressable>
 
                 { score < 0 &&
-                    <Text style={styles.rightScore}><Ionicons name="caret-forward" size={36} color="white" />&nbsp;{absScore}</Text>
+                    <Text style={[styles.rightScore, { bottom: scoreBottom }]}><Ionicons name="caret-forward" size={36} color="white" />&nbsp;{absScore}</Text>
                 }
 
                 {/* Undo right deductions */}
@@ -282,19 +296,19 @@ export default function RoundScoringScreen() {
                         setRightDeductions((current) => current > 0 ? current - 1 : 0);
                     }}
                     delayLongPress={1500}
-                    style={styles.undoDeductRight}
+                    style={[styles.undoDeductRight, { height: undoHeight }]}
                 >
                     <Animated.View style={[styles.fillOverlayTopLeft, { width: rightDeductUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '150%'] }) }]} />
                     <Text style={styles.rightDedEvents}>Deductions: {rightDeductions}</Text>
                     <Text style={styles.leftDedUndo}>Hold to Undo</Text>
                 </Pressable>
 
-                <Text style={styles.rightName}>{fighter2}</Text>
-                <Animated.Text style={[styles.plusSign, { transform: [{ scale: rightPulseAnim }] }]} >+</Animated.Text>
+                <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.62} style={[styles.rightName, { marginTop: nameTop }, compact && styles.compactName]}>{fighter2}</Text>
+                <Animated.Text style={[styles.plusSign, { top: plusTop, transform: [{ scale: rightPulseAnim }] }]} >+</Animated.Text>
 
                 {/* Right Knockdown */}
                 <Pressable
-                    style={[styles.kdButton, styles.rightkd, {  height: height * 0.1 }]}
+                    style={[styles.kdButton, styles.rightkd, { height: bottomControlHeight }]}
                     onPress={() => {
                         pulseAnimation(rightPulseAnim);
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -315,7 +329,7 @@ export default function RoundScoringScreen() {
 
                 {/* right pen */}
                 <Pressable
-                    style={[styles.deductRight]}
+                    style={[styles.deductRight, { height: bottomControlHeight }]}
                     onPress={() => {
                         pulseAnimation(rightPulseAnim);
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -336,7 +350,7 @@ export default function RoundScoringScreen() {
 
             {/* Exit  */}
             <Pressable
-                style={styles.exitButton}
+                style={[styles.exitButton, { height: toolbarHeight, top: Math.max(insets.top, 4) }]}
                 onPressIn={() => startLongPressFill(exitProgress, 2000)}
                 onPressOut={() => resetLongPressFill(exitProgress)}
                 onLongPress={() => {
@@ -362,8 +376,8 @@ export default function RoundScoringScreen() {
                 }}
                 delayLongPress={1695}
             >
-                <Animated.View style={[styles.fillOverlay, { width: exitProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '106.5%'] }) }]} />
-                <Text style={styles.exitButtonText}>Hold to Save & Exit Round {round}</Text>
+                <Animated.View style={[styles.fillOverlay, { width: exitProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
+                <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={styles.exitButtonText}>Hold to Save & Exit Round {round}</Text>
             </Pressable>
         </View>
     );
@@ -377,8 +391,8 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
-        width: '100%',
-        height: '100%',
+        flexDirection: 'row',
+        gap: 4,
     },
     deductLeft: {
         position: 'absolute',
@@ -426,18 +440,21 @@ const styles = StyleSheet.create({
     },
         
     exitButton: {
+        position: 'absolute',
         backgroundColor: 'gold',
-        width: 225,
-        height: 40,
+        width: 230,
+        maxWidth: '38%',
+        minHeight: 44,
         borderBottomRightRadius: 15,
         borderBottomLeftRadius: 15,
 
         justifyContent: 'center',
         alignItems: 'center',
-        fontSize: 36,
-        left: '45%',
-        transform: [{ translateX: -75 }],
+        top: 0,
+        left: '50%',
+        transform: [{ translateX: -115 }],
         overflow: 'hidden',
+        zIndex: 5,
     },
     exitButtonText: {   
         color: '#000',
@@ -476,8 +493,8 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         height: 40,
         position: 'absolute',
-        left: 50,
-        width: '26%',
+        left: 8,
+        width: '43%',
         borderBottomLeftRadius: 15,
         borderBottomRightRadius: 15,
     },
@@ -489,8 +506,8 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         height: 40,
         position: 'absolute',
-        left: 255,
-        width: '26%',
+        right: 8,
+        width: '43%',
         borderBottomLeftRadius: 15,
         borderBottomRightRadius: 15,
     },
@@ -501,8 +518,8 @@ const styles = StyleSheet.create({
         height: 40,
         overflow: 'hidden',
         position: 'absolute',
-        left: 175,
-        width: '26%',
+        right: 8,
+        width: '43%',
         borderBottomLeftRadius: 15,
         borderBottomRightRadius: 15,
     },
@@ -513,8 +530,8 @@ const styles = StyleSheet.create({
         height: 40,
         overflow: 'hidden',
         position: 'absolute',
-        left: 130,
-        width: '26%',
+        left: 8,
+        width: '43%',
         borderBottomLeftRadius: 15,
         borderBottomRightRadius: 15,
     },
@@ -523,8 +540,8 @@ const styles = StyleSheet.create({
         // justifyContent: 'center',
         alignItems: 'center',
         justifyContent: 'center',
-        width: 200,
-        height: 50,
+        width: 150,
+        height: 52,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         transform: [{ translateX: -75 }],
@@ -534,10 +551,10 @@ const styles = StyleSheet.create({
     },
     leftArea: {
         backgroundColor: '#b63030',
-        height: '100%',
-        width: '50%',
-        position: 'absolute',
-        // overflow: 'hidden',
+        flex: 1,
+        minWidth: 0,
+        overflow: 'hidden',
+        borderRadius: 12,
     },
     leftAreaImage: {
         position: 'absolute',
@@ -566,12 +583,13 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: '500',
         textAlign: 'center',
-        marginTop: 100,
+        marginTop: 88,
+        paddingHorizontal: 18,
     },
     leftkd: {
-        bottom: -20,
+        bottom: 0,
         left: '50%',
-        paddingBottom: 20
+        paddingBottom: 6
     },
     leftScore: {
         position: 'absolute',
@@ -584,20 +602,18 @@ const styles = StyleSheet.create({
     },
     plusSign: {
         position: 'absolute',
-        top: '32%',
-        left: '40%',
-        transform: [{ translateX: -50 }, { translateY: -50 }],
-        fontSize: 120,
+        top: '34%',
+        alignSelf: 'center',
+        fontSize: 96,
         color: 'white',
         fontWeight: 'bold',
     },
     rightArea: {
         backgroundColor: '#307Fb6',
-        height: '100%',
-        width: '50%',
-        position: 'absolute',
-        right: 0,
-        overflow: 'hidden'
+        flex: 1,
+        minWidth: 0,
+        overflow: 'hidden',
+        borderRadius: 12,
     },
     rightDedEvents: {
         color: '#000',
@@ -622,16 +638,17 @@ const styles = StyleSheet.create({
         fontSize: 12
     },
     rightkd: {
-        bottom: -10,
-        left: '40%',
-        paddingBottom: 10
+        bottom: 0,
+        left: '50%',
+        paddingBottom: 6
     },
     rightName: {
         color: '#fff',
         fontSize: 24,
         fontWeight: '500',
         textAlign: 'center',
-        marginTop: 100,
+        marginTop: 88,
+        paddingHorizontal: 18,
     },
     rightScore: {
         position: 'absolute',
@@ -640,6 +657,9 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 48,
         fontWeight: '700',
+    },
+    compactName: {
+        fontSize: 20,
     },
     title: {
         color: '#000',

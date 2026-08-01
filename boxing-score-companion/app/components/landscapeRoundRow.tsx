@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, StyleSheet, Modal, useWindowDimensions } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Modal } from 'react-native';
 import { router } from 'expo-router';
 import { Swipeable } from 'react-native-gesture-handler';
 import { Ionicons, MaterialCommunityIcons} from '@expo/vector-icons';
@@ -95,23 +95,12 @@ export default function LandscapeRoundRow({
         closeScoringModal();
     };
 
-    const {height} = useWindowDimensions();
-
     const plusMinusDisplay =
         plusMinusNumber === null
             ? '-'
             : plusMinusNumber < 0
                 ? String(Math.abs(plusMinusNumber))
                 : String(plusMinusNumber);
-
-    const plusMinusStyle =
-        plusMinusNumber === null
-            ? styles.plusMinus
-            : plusMinusNumber > 0
-                ? [styles.plusMinus, styles.redPlusMinus]
-                : plusMinusNumber < 0
-                    ? [styles.plusMinus, styles.bluePlusMinus]
-                    : styles.plusMinus;
 
     const plusMinusPillStyle =
         plusMinusNumber === null
@@ -166,7 +155,7 @@ export default function LandscapeRoundRow({
                     </Text>
                 </Text> */}
 
-                <View style={[styles.plusMinusSlot, { transform: [{ translateY: -(height * 0.03) }] }]}>
+                <View style={styles.plusMinusSlot}>
                     <View style={plusMinusPillStyle}>
                         <Text style={styles.plusMinusPillText}>
                             {isQuickScore && plusMinusNumber !== null
@@ -485,7 +474,7 @@ plusMinusPillText: {
         shadowOpacity: 0.25,
         shadowRadius: 8,
         width: '88%',
-        height: '70%'
+        maxHeight: '90%'
     },
     quickCornerName: {
         flex: 1,
@@ -610,7 +599,8 @@ plusMinusPillText: {
         // paddingVertical: 2,
         overflow: 'hidden',
         boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
-        width: 40,
+        width: 52,
+        minWidth: 52,
         paddingBottom: 5
     },
     rowContainer: {
