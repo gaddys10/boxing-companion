@@ -3,10 +3,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View, Modal } from 'react-native';
 import LandscapeRoundRow from './components/landscapeRoundRow';
 import RoundRow from './components/roundRow';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function MatchInfoScreen() {
     const router = useRouter();
     const { width, height } = useWindowDimensions();
+    const insets = useSafeAreaInsets();
     const { 
         id,
         fighter1,
@@ -232,7 +234,14 @@ export default function MatchInfoScreen() {
 
     return (
         <>
-            <View style={isLandscape ? styles.landscapeContainer : styles.container}>
+            <View style={[
+                isLandscape ? styles.landscapeContainer : styles.container,
+                isLandscape && {
+                    paddingLeft: Math.max(insets.left, 8),
+                    paddingRight: Math.max(insets.right, 8),
+                    paddingBottom: Math.max(insets.bottom, 8),
+                },
+            ]}>
                 <Stack.Screen options={{ headerShown: false }} />
 
                 {/* fighter name, point, and event container  */}
@@ -280,7 +289,7 @@ export default function MatchInfoScreen() {
                         {/* Fighter 1 vs fighter 2 */}
                         <View style={styles.landscapeTopDescription}>
                             
-                            <Text style={[styles.landscapeFighterText, styles.landscapeFighter1Name]}>
+                            <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.65} style={[styles.landscapeFighterText, styles.landscapeFighter1Name]}>
                                 {isLandscape ? formatLandScapeName(String(fighter1)) : fighter1}
                             </Text>
                             <Text style={styles.fighter1PointHeader}>{fighter1LatestTotal}</Text>
@@ -290,7 +299,7 @@ export default function MatchInfoScreen() {
                             
                             <Text style={[styles.landscapeFighterText, styles.landscapeVsText]}>vs</Text>
 
-                            <Text style={[styles.landscapeFighterText, styles.landscapeFighter2Name]}>
+                            <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.65} style={[styles.landscapeFighterText, styles.landscapeFighter2Name]}>
                                 {isLandscape ? formatLandScapeName(String(fighter2)) : fighter2}
                             </Text>
                             <Text style={styles.fighter2PointHeader}>{fighter2LatestTotal}</Text>
@@ -405,7 +414,7 @@ export default function MatchInfoScreen() {
                     <Animated.View 
                         style={[styles.fillOverlay, { width: exitProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                     <Text style={isLandscape ? styles.landscapeButtonText : styles.buttonText}>
-                        {isEditingScorecard ? 'Hold to Save' : 'Hold to Save & Exit'}
+                        {isEditingScorecard ? 'Save' : 'Save & Exit'}
                     </Text>
                 </Pressable>
             </View>
@@ -556,7 +565,8 @@ const styles = StyleSheet.create({
     },
     summaryCard: {
         backgroundColor: '#fff',
-        borderRadius: 12,
+        borderBottomLeftRadius: 12,
+        borderBottomRightRadius: 12,
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
         paddingTop: 10,
@@ -612,10 +622,10 @@ const styles = StyleSheet.create({
         paddingVertical: 6,
         borderRadius: 12,
         width: '25%',
-        height: '10%',
+        minHeight: 44,
         position: 'absolute',
-        top: 15,
-        right: 45,
+        top: 8,
+        right: 16,
         // center button in landscape
         alignItems: 'center',
         overflow: 'hidden',
@@ -630,21 +640,20 @@ const styles = StyleSheet.create({
     landscapeContainer: {
         flex: 1,
         backgroundColor: '#fff',
-        padding: 24,
-        paddingTop: 60,
-        paddingHorizontal: 10,
+        paddingTop: 58,
+        paddingHorizontal: 8,
         flexDirection: 'row'
     },
     landscapeFighterText: {
         flex: 1,
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: '700',
         textAlign: 'center',
     },
     landscapeFighter1Name: {
         color: '#D32F2F',
         textAlign: 'center',
-        height: 50
+        minHeight: 24
     },
     landscapeFighter2Name: {
         color: '#1976D2',
@@ -654,9 +663,9 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         justifyContent: 'space-between',
         alignItems: 'flex-end',
-        height: '69.5%',
+        height: '100%',
         width: '7%',
-        top: 16.25,
+        paddingVertical: 12,
         paddingRight: 5,
         marginRight: 5,
         alignSelf: 'center',
@@ -676,11 +685,9 @@ const styles = StyleSheet.create({
     },
     landscapeRowContainer: {
         flex: 1,
-        // marginHorizontal: -24,
-        width: '55%',
+        minWidth: 0,
     },
     landscapeRowContent: {
-        flexGrow: 1,
         flexDirection: 'row',
         justifyContent: 'flex-start',
         alignItems: 'stretch',
@@ -690,11 +697,11 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
-        paddingTop: 10,
         height: '100%',
-        marginBottom: 15,
-        marginLeft: '5.5%',
-        width: '17%',
+        marginLeft: 0,
+        width: '20%',
+        minWidth: 126,
+        maxWidth: 170,
         boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
         flexDirection: 'row',
         // justifyContent: 'space-between',
@@ -706,7 +713,7 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         justifyContent: 'space-between',
         marginBottom: 0,
-        paddingVertical: 12,
+        paddingVertical: 8,
     },
     landscapePointHeader: {
         flex: 1,

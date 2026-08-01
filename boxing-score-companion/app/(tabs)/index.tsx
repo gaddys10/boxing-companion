@@ -7,6 +7,7 @@ import SavedCard from '../components/savedCard';
 import LandscapeSavedCard from '../components/landscapeSavedCard';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const tIcon = require('../../assets/images/flatwhitet.png');
 
 const SAVED_CARDS_KEY = 'savedScorecards';
@@ -38,6 +39,7 @@ export default function HomeScreen() {
   const [scrollViewportHeight, setScrollViewportHeight] = useState(0);
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height;
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const loadSavedCards = async () => {
@@ -126,35 +128,60 @@ export default function HomeScreen() {
       style={[styles.neonPageBorder, isLandscape && styles.landscapeNeonPageBorder]}
     >
       <StatusBar style="dark" />
-      <View style={isLandscape ? styles.landscapeContainer : styles.container}>
-        <View style={isLandscape? styles.landscapeTitleBigContainer : styles.titleBigContainer}>
-          <View style={isLandscape? styles.landscapeTitleRight : styles.titleRight}>
-            <Text style={isLandscape ? styles.landscapeTitle : styles.title}>Boxing</Text> 
-            <View style={styles.title2Container}>
-              <Text style={isLandscape? styles.landscapeTitle2 : styles.title2}>
-                Score
-              </Text>
+      <View style={[
+        isLandscape ? styles.landscapeContainer : styles.container,
+        isLandscape && {
+          paddingLeft: Math.max(insets.left, 8),
+          paddingRight: Math.max(insets.right, 8),
+        },
+      ]}>
+        {isLandscape ? (
+          <View style={styles.landscapeHeader}>
+            <View style={styles.landscapeTitleBigContainer}>
+              <View style={styles.landscapeTitleRight}>
+                <Text style={styles.landscapeTitle}>Boxing</Text>
+                <View style={styles.title2Container}><Text style={styles.landscapeTitle2}>Score</Text></View>
+                <Text style={styles.landscapeTitle3}> Companion</Text>
+              </View>
+              <Image source={tIcon} style={styles.landscapeIcon} resizeMode="contain" />
             </View>
-            <Text style={isLandscape ? styles.landscapeTitle3 : styles.title3}> Companion</Text>
+            <View style={styles.landscapeSearchBox}>
+              <View style={styles.searchInputBox}>
+                <Ionicons name="search" style={styles.searchIcon} />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                  placeholder="Search Scorecards"
+                  value={searchInput}
+                  onChangeText={setSearchInput}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  clearButtonMode="while-editing"
+                />
+              </View>
+            </View>
+            <Pressable style={styles.landscapeButton} onPress={handleStartFight}>
+              <Text numberOfLines={1} style={styles.buttonText}>+ New Scorecard</Text>
+            </Pressable>
           </View>
-            <Image source={tIcon} style={isLandscape ? styles.landscapeIcon : styles.icon} resizeMode="contain" />
-        </View>
-
-        <View style={isLandscape ? styles.landscapeSearchBox : styles.searchBox }>
-          <View style={styles.searchInputBox}>
-            <Ionicons name="search" style={styles.searchIcon} />
-            <TextInput 
-              style={styles.searchInput} 
-              placeholderTextColor="rgba(0, 0, 0, 0.5)" 
-              placeholder="Search Scorecards"
-              value={searchInput}
-              onChangeText={setSearchInput}
-              autoCapitalize="none"
-              autoCorrect={false}
-              clearButtonMode="while-editing"
-            />
-          </View>
-        </View>
+        ) : (
+          <>
+            <View style={styles.titleBigContainer}>
+              <View style={styles.titleRight}>
+                <Text style={styles.title}>Boxing</Text>
+                <View style={styles.title2Container}><Text style={styles.title2}>Score</Text></View>
+                <Text style={styles.title3}> Companion</Text>
+              </View>
+              <Image source={tIcon} style={styles.icon} resizeMode="contain" />
+            </View>
+            <View style={styles.searchBox}>
+              <View style={styles.searchInputBox}>
+                <Ionicons name="search" style={styles.searchIcon} />
+                <TextInput style={styles.searchInput} placeholderTextColor="rgba(0, 0, 0, 0.5)" placeholder="Search Scorecards" value={searchInput} onChangeText={setSearchInput} autoCapitalize="none" autoCorrect={false} clearButtonMode="while-editing" />
+              </View>
+            </View>
+          </>
+        )}
         {isLandscape && 
           <ScrollView
             style={styles.landscapeSavedCardContainer}
@@ -217,12 +244,11 @@ export default function HomeScreen() {
           </ScrollView>
         }
 
-        <Pressable 
-          style={isLandscape ? styles.landscapeButton : styles.button}
-          onPress={handleStartFight}
-        >
-          <Text style={styles.buttonText}>+ New Scorecard</Text>
-        </Pressable>
+        {!isLandscape && (
+          <Pressable style={styles.button} onPress={handleStartFight}>
+            <Text style={styles.buttonText}>+ New Scorecard</Text>
+          </Pressable>
+        )}
         
       </View>
     </LinearGradient>
@@ -378,13 +404,11 @@ const styles = StyleSheet.create({
 
   landscapeButton: {
     backgroundColor: '#fff',
-    paddingHorizontal: '5%',
-    paddingVertical: 10,
+    paddingHorizontal: 14,
+    minHeight: 44,
     borderRadius: 12,
-    // marginTop: 25,
-    top: '6.5%',
-    right: '5.5%',
-    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
     boxShadow: '4',
     shadowColor: '#11334b',
     shadowOffset: { width: 5, height: 5 },
@@ -396,9 +420,9 @@ const styles = StyleSheet.create({
   landscapeContainer: {
     flex: 1,
     backgroundColor: '#f1f5f8',
-    alignItems: 'center',
     borderRadius: 40,
-    paddingBottom: '1%',
+    padding: 8,
+    gap: 8,
   },
   landscapeIcon: {
     width: 60,
@@ -407,11 +431,8 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   landscapeSavedCardContainer: {
-    position: 'absolute',
-    top: '40%',
-    bottom: '0%',
-    left: '6%',
-    width: '89%',
+    flex: 1,
+    width: '100%',
     backgroundColor: '#f1f5f8',
     // borderRadius: 40,
     overflow: 'hidden',
@@ -420,7 +441,6 @@ const styles = StyleSheet.create({
     // shadowOpacity: 0.2,
     // shadowRadius: 8,
     elevation: 2,
-    height: '58%'
   },
   landscapeSavedCardContent: {
     flexDirection: 'row',
@@ -428,26 +448,32 @@ const styles = StyleSheet.create({
     paddingLeft: 0,
     gap: 8,
     paddingRight: 5,
-    paddingBottom: 20,
+    paddingBottom: 8,
   },
   landscapeSearchBox: {
-    width: '33%',
-    height: 50,
-    top: '30%',
-    alignSelf: 'flex-start',
-    marginLeft: '6.5%',
+    flex: 1,
+    minWidth: 170,
+    maxWidth: 360,
+    height: 44,
+    alignSelf: 'center',
+  },
+  landscapeHeader: {
+    width: '100%',
+    minHeight: 52,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   landscapeTitleBigContainer: {
-    top: '6%',
-    position: 'absolute',
-    left: '6%',
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
     borderRadius: 15,
-    height: '20%',
+    height: 50,
     backgroundColor: '#307Fb6',
-    width: '33.5%',
+    width: '30%',
+    minWidth: 175,
+    maxWidth: 250,
   },
   landscapeTitle: {
     color: '#fff',
@@ -470,7 +496,6 @@ const styles = StyleSheet.create({
   },
   landscapeTitleRight: {
     height: '100%',
-    top: '30%',
     justifyContent: 'center'
   },
   
