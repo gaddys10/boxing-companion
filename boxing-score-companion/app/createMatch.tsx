@@ -41,10 +41,10 @@ export default function CreateMatch() {
         ? params.weight[0]
         : params.weight;
 
-    const [selectedGender, setSelectedGender] = useState<"" | "mens" | "womens">(
+    const [selectedGender, setSelectedGender] = useState<"idk" | "mens" | "womens">(
         initialGender === "mens" || initialGender === "womens"
             ? initialGender
-            : ""
+            : "idk"
     );
 
     const [selectedWeight, setSelectedWeight] = useState<number | string>(() => {
@@ -178,7 +178,7 @@ export default function CreateMatch() {
                         styles.malePill,
                         selectedGender === "mens" && styles.malePillSelected
                     ]}
-                    onPress={() => selectedGender === "mens" ? setSelectedGender("") : setSelectedGender('mens')}
+                    onPress={() => selectedGender === "mens" ? setSelectedGender("idk") : setSelectedGender('mens')}
                 >
                     {selectedGender === "mens" ?
                         <Ionicons name={'male-outline'} size={18} color="#fff"/>
@@ -195,7 +195,7 @@ export default function CreateMatch() {
                     styles.femalePill,
                     selectedGender === "womens" && styles.femalePillSelected
                     ]}
-                    onPress={() => selectedGender=== "womens"? setSelectedGender("") : setSelectedGender("womens")}
+                    onPress={() => selectedGender=== "womens" ? setSelectedGender("idk") : setSelectedGender("womens")}
                 >
                     {selectedGender === "womens" ?
                         <Ionicons name={'female-outline'} size={18} color="#fff"/>
@@ -446,11 +446,11 @@ export default function CreateMatch() {
 
 
             {!isLandscape ? 
-                <View style={!isLandscape ? styles.buttonContainer : styles.landscapeButtonContainer}>
+                <View style={styles.buttonContainer}>
                 
                     {/* Cancel button  */}
                     <Pressable
-                        style={[styles.cancelButton, isEditing && styles.editingActionButton]}
+                        style={[styles.cancelButton]}
                         onPress={() => router.dismissTo('/')}
                     >
                         <Text style={styles.cancelButtonText}>Cancel</Text>
@@ -475,32 +475,44 @@ export default function CreateMatch() {
                 </View>
             :
                 <View style={isEditing ? styles.landscapeEditButtonContainer: styles.landscapeButtonContainer}>
-                    {/* save and exit button  */}
-                    {isEditing && 
-                        <Pressable
-                            style={[styles.editButton, styles.editingActionButton, styles.landscapeActionButton]}
-                            onPress={handleSaveChangesAndExit}
-                        >
-                            <Text style={[styles.buttonText, styles.editingButtonText]}>Save & Exit</Text>
-                        </Pressable>
-                    }
+
+
+
+                    
+
+
+
                     {/* Cancel button  */}
                     <Pressable
                         style={[
-                            isLandscape ? styles.landscapeCancelButton : styles.cancelButton, 
-                            styles.landscapeActionButton, 
-                            isEditing && styles.editingActionButton]}
+                            styles.landscapeCancelButton,
+                            styles.landscapeActionButton,
+                            isEditing && styles.landscapeEditingCancelButton
+                        ]}
                         onPress={() => router.dismissTo('/')}
                     >
                         <Text style={styles.cancelButtonText}>Cancel</Text>
                     </Pressable>
 
+
+                    {/* save and exit button  */}
+                    {isEditing && 
+                        <Pressable
+                            style={[styles.landscapeEditButton, styles.landscapeActionButton]}
+                            onPress={handleSaveChangesAndExit}
+                        >
+                            <Text style={[styles.buttonText, styles.editingButtonText]}>Save & Exit</Text>
+                        </Pressable>
+                    }
+
+
                     {/* Enter scorecard button  */}
                     <Pressable
                         style={[
-                            styles.landscapeButton, 
-                            styles.landscapeActionButton, 
-                            isEditing && styles.editingActionButton]}
+                            styles.landscapeButton,
+                            styles.landscapeActionButton,
+                            isEditing && styles.landscapeEditingButton
+                        ]}
                         onPress={handleStartFight}
                     >
                         <Text style={[styles.buttonText, isEditing && styles.editingButtonText]} onPress={handleStartFight}>
@@ -514,6 +526,9 @@ export default function CreateMatch() {
         </KeyboardAvoidingView>
     );
 }
+
+const landscape = StyleSheet.create({
+});
 
 const styles = StyleSheet.create({
     landscapeRoundGenderRow: {
@@ -578,6 +593,13 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#B6C6D1'
     },
+
+    
+    editingActionButton: {
+        width: '31%',
+        paddingHorizontal: '1%',
+    },
+    
     buttonContainer: {
         flexDirection: 'row',
         top: '2.5%',
@@ -585,18 +607,28 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         width: '100%'
     },
+    landscapeButtonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '80%',
+        gap: 12,
+        paddingBottom: 12,
+        height: '14%'
+    },
     buttonText: {
         color: '#307Fb6',
         fontSize: 16,
         fontWeight: '700',
         textAlign: 'center'
     },
-    editingActionButton: {
+
+    editingCancelButton: {
         width: '31%',
         paddingHorizontal: '1%',
     },
     editingButtonText: {
         fontSize: 14,
+        color: '#307Fb6',
     },
     cancelButton: {
         backgroundColor: '#de2f2f',
@@ -619,14 +651,20 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#B6C6D1',
         justifyContent: 'center',
+        boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
     },
-        landscapeActionButton: {
-        flex: 1,
-        width: 'auto',
-        maxWidth: 240,
-        // height: '80%',
-        // minHeight: 44,
-        // paddingHorizontal: 8,
+    landscapeEditButton: {
+        backgroundColor: '#fff',
+        paddingHorizontal: '1%',
+        borderRadius: 12,
+        width: 200,
+        height: '80%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
+        borderWidth: 1,
+        borderColor: '#B6C6D1',
+        color: '#307Fb6',
     },
     landscapeButton: {
         backgroundColor: '#fff',
@@ -637,7 +675,17 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#B6C6D1',
         justifyContent: 'center',
+        boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
     },
+    landscapeActionButton: {
+        flex: 1,
+        width: 'auto',
+        maxWidth: 240,
+    },
+
+
+    
+
     cancelButtonText: {
         color: '#fff',
         fontSize: 16,
@@ -807,6 +855,7 @@ const styles = StyleSheet.create({
         width: '100%',
         paddingHorizontal: '8%',
         paddingRight: '10%',
+        marginBottom: '6%'
     },
         malePill: {
             flexDirection: 'row',
@@ -940,7 +989,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderBottomLeftRadius: 20,
         borderBottomRightRadius: 20,
-        marginBottom: '1.25%',
+        marginBottom: '2%',
         boxShadow: '4',
         shadowColor: '#11334b',
         shadowOffset: { width: 2, height: 2 },
@@ -965,21 +1014,13 @@ const styles = StyleSheet.create({
         width: '17.5%',
         justifyContent: 'flex-start',
     },
-    landscapeButtonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        width: '80%',
-        gap: 12,
-        paddingBottom: 12,
-        height: '14%'
-    },
+
 
     landscapeEditButtonContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         width: '100%',
         gap: 12,
-        marginTop: 16,
         paddingBottom: 12,
     },
     landscapeContainer: {
@@ -1005,7 +1046,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         color: "#D32f2f",
         width: '100%',
-        minHeight: 35,
+        height: 33,
         paddingHorizontal: 12,
         borderRadius: 8,
         marginBottom: 8,
@@ -1013,8 +1054,9 @@ const styles = StyleSheet.create({
     },
     landscapeFighter2Input: {
         backgroundColor: '#fff',
+        color: "#307Fb6",
         width: '100%',
-        minHeight: 35,
+        height: 31,
         paddingHorizontal: 12,
         borderRadius: 8,
         marginBottom: 8,
