@@ -34,7 +34,7 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
             id: String(id),
             title: 'Edit Scorecard Details',
             backText: 'Menu',
-            buttonText: "Edit Scores",
+            buttonText: "Continue",
             isEdit: "true",
             fighter1,
             fighter2,

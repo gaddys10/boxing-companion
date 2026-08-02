@@ -406,13 +406,8 @@ export default function MatchInfoScreen() {
                 <Pressable 
                     style={isLandscape ? styles.landscapeButton : styles.button}
                     // onPress={() => router.push('/')}
-                    onLongPress={handleSaveScorecard}
-                    onPressIn={() => isLandscape ? startLandscapeLongPressFill(exitProgress, 2000) : startLongPressFill(exitProgress, 4000)}
-                    onPressOut={() => resetLongPressFill(exitProgress)}
-                    delayLongPress={2000}
+                    onPress={handleSaveScorecard}
                 >
-                    <Animated.View 
-                        style={[styles.fillOverlay, { width: exitProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                     <Text style={isLandscape ? styles.landscapeButtonText : styles.buttonText}>
                         {isEditingScorecard ? 'Save' : 'Save & Exit'}
                     </Text>

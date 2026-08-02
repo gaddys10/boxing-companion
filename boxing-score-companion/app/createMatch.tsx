@@ -476,18 +476,11 @@ export default function CreateMatch() {
             :
                 <View style={isEditing ? styles.landscapeEditButtonContainer: styles.landscapeButtonContainer}>
 
-
-
-                    
-
-
-
                     {/* Cancel button  */}
                     <Pressable
                         style={[
-                            styles.landscapeCancelButton,
+                            isEditing ? styles.landscapeEditCancelButton : styles.landscapeCancelButton,
                             styles.landscapeActionButton,
-                            isEditing && styles.landscapeEditingCancelButton
                         ]}
                         onPress={() => router.dismissTo('/')}
                     >
@@ -498,7 +491,7 @@ export default function CreateMatch() {
                     {/* save and exit button  */}
                     {isEditing && 
                         <Pressable
-                            style={[styles.landscapeEditButton, styles.landscapeActionButton]}
+                            style={[styles.landscapeEditSaveButton, styles.landscapeActionButton]}
                             onPress={handleSaveChangesAndExit}
                         >
                             <Text style={[styles.buttonText, styles.editingButtonText]}>Save & Exit</Text>
@@ -509,9 +502,8 @@ export default function CreateMatch() {
                     {/* Enter scorecard button  */}
                     <Pressable
                         style={[
-                            styles.landscapeButton,
+                            isEditing? styles.landscapeEditContinueButton : styles.landscapeButton,
                             styles.landscapeActionButton,
-                            isEditing && styles.landscapeEditingButton
                         ]}
                         onPress={handleStartFight}
                     >
@@ -636,7 +628,7 @@ const styles = StyleSheet.create({
         // paddingVertical: '2%',
         borderRadius: 12,
         // marginTop: 25,
-        width: '48%',
+        width: '31%',
         height: '18%',
         alignItems: 'center',
         justifyContent: 'center',
@@ -646,8 +638,18 @@ const styles = StyleSheet.create({
         backgroundColor: '#de2f2f',
         paddingHorizontal: 24,
         borderRadius: 12,
-        width: 200,
+        // width: '400',
         height: '80%',
+        borderWidth: 1,
+        borderColor: '#B6C6D1',
+        justifyContent: 'center',
+        boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
+    },
+    landscapeEditCancelButton: {
+        backgroundColor: '#de2f2f',
+        paddingHorizontal: 24,
+        borderRadius: 12,
+        height: '100%',
         borderWidth: 1,
         borderColor: '#B6C6D1',
         justifyContent: 'center',
@@ -658,7 +660,20 @@ const styles = StyleSheet.create({
         paddingHorizontal: '1%',
         borderRadius: 12,
         width: 200,
-        height: '80%',
+        height: '39%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
+        borderWidth: 1,
+        borderColor: '#B6C6D1',
+        color: '#307Fb6',
+    },
+    landscapeEditSaveButton: {
+        backgroundColor: '#fff',
+        paddingHorizontal: '1%',
+        borderRadius: 12,
+        width: 200,
+        height: '100%',
         alignItems: 'center',
         justifyContent: 'center',
         boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
@@ -672,6 +687,17 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         width: 200,
         height: '80%',
+        borderWidth: 1,
+        borderColor: '#B6C6D1',
+        justifyContent: 'center',
+        boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
+    },
+    landscapeEditContinueButton: {
+        backgroundColor: '#fff',
+        paddingHorizontal: 24,
+        borderRadius: 12,
+        width: 200,
+        height: '100%',
         borderWidth: 1,
         borderColor: '#B6C6D1',
         justifyContent: 'center',
@@ -1022,6 +1048,7 @@ const styles = StyleSheet.create({
         width: '100%',
         gap: 12,
         paddingBottom: 12,
+        height: '10.5%'
     },
     landscapeContainer: {
         flexGrow: 1,

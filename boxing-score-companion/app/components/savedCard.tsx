@@ -36,7 +36,7 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
           id: String(id),
           title: 'Edit Scorecard Details',
           backText: 'Menu',
-          buttonText: "Edit Scores",
+          buttonText: "Continue",
           isEdit: "true",
           fighter1,
           fighter2,
