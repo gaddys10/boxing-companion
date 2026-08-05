@@ -450,7 +450,7 @@ export default function CreateMatch() {
                 
                     {/* Cancel button  */}
                     <Pressable
-                        style={[styles.cancelButton]}
+                        style={isLandscape ? styles.landscapeCancelButton : styles.cancelButton}
                         onPress={() => router.dismissTo('/')}
                     >
                         <Text style={styles.cancelButtonText}>Cancel</Text>
@@ -459,7 +459,7 @@ export default function CreateMatch() {
                     {/* save and exit button  */}
                     {isEditing && 
                         <Pressable
-                            style={[styles.button, styles.editingActionButton]}
+                            style={[isLandscape ? styles.landscapeEditSaveButton : styles.editButton, styles.editingActionButton]}
                             onPress={handleSaveChangesAndExit}
                         >
                             <Text style={[styles.buttonText, styles.editingButtonText]}>Save & Exit</Text>
@@ -467,7 +467,7 @@ export default function CreateMatch() {
                     }
                     {/* Enter scorecard button  */}
                     <Pressable
-                        style={[styles.button, isEditing && styles.editingActionButton]}
+                        style={[isLandscape ? styles.landscapeButton : styles.button, isEditing && styles.editingActionButton]}
                         onPress={handleStartFight}
                     >
                         <Text style={[styles.buttonText, isEditing && styles.editingButtonText]} onPress={handleStartFight}>{buttonText}</Text>
@@ -480,7 +480,6 @@ export default function CreateMatch() {
                     <Pressable
                         style={[
                             isEditing ? styles.landscapeEditCancelButton : styles.landscapeCancelButton,
-                            styles.landscapeActionButton,
                         ]}
                         onPress={() => router.dismissTo('/')}
                     >
@@ -503,7 +502,6 @@ export default function CreateMatch() {
                     <Pressable
                         style={[
                             isEditing? styles.landscapeEditContinueButton : styles.landscapeButton,
-                            styles.landscapeActionButton,
                         ]}
                         onPress={handleStartFight}
                     >
@@ -651,6 +649,7 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         height: '100%',
         borderWidth: 1,
+        width: '31%',
         borderColor: '#B6C6D1',
         justifyContent: 'center',
         boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',

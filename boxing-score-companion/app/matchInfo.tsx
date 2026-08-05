@@ -409,7 +409,7 @@ export default function MatchInfoScreen() {
                     onPress={handleSaveScorecard}
                 >
                     <Text style={isLandscape ? styles.landscapeButtonText : styles.buttonText}>
-                        {isEditingScorecard ? 'Save' : 'Save & Exit'}
+                        Save & Exit
                     </Text>
                 </Pressable>
             </View>
@@ -616,12 +616,13 @@ const styles = StyleSheet.create({
         paddingHorizontal: 24,
         paddingVertical: 6,
         borderRadius: 12,
-        width: '25%',
+        width: '20%',
         minHeight: 44,
         position: 'absolute',
         top: 8,
-        right: 16,
+        right: '10%',
         // center button in landscape
+        justifyContent: 'center',
         alignItems: 'center',
         overflow: 'hidden',
         boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
@@ -658,10 +659,10 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         justifyContent: 'space-between',
         alignItems: 'flex-end',
-        height: '100%',
+        height: '69.5%',
         width: '7%',
-        paddingVertical: 12,
         paddingRight: 5,
+        top: 16.25,
         marginRight: 5,
         alignSelf: 'center',
     },

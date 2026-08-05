@@ -407,7 +407,8 @@ const styles = StyleSheet.create({
   },
   rdPillText: {
     color: "#fff",
-    fontSize: 12
+    fontSize: 12,
+    fontWeight: '700', 
   },
   roundBoxes: {
     width: '17.5%',
