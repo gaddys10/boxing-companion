@@ -34,7 +34,7 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
             id: String(id),
             title: 'Edit Scorecard Details',
             backText: 'Menu',
-            buttonText: "Edit Scores",
+            buttonText: "Continue",
             isEdit: "true",
             fighter1,
             fighter2,
@@ -72,18 +72,21 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
         return 0;
     })();
 
+    const normalizedGender = typeof gender === 'string' ? gender.trim().toLowerCase() : '';
+    const isUnknownGender = !normalizedGender || normalizedGender === 'idk' || normalizedGender === 'null' || normalizedGender === 'undefined';
+
     return (
         <>
-            <View style={[styles.savedCardShadow, { width: Math.max(156, Math.min(210, width * .22)) }]}>
+            <View style={[styles.savedCardShadow, { width: width * 0.201 }]}>
                 <Pressable style={styles.savedCard}>
                     <View style={styles.savedCardInfoRows}>
                     {/* Fighter name row -- Row 1  */}
                     <View style={styles.savedCardNameRow}>
                         <View style={styles.f1NameBox}>
-                            <Text numberOfLines={1} ellipsizeMode="tail" style={styles.fighter1}>{fighter1}</Text>
+                            <Text numberOfLines={2} style={styles.fighter1}>{fighter1}</Text>
                         </View>
                         <View style={styles.f2NameBox}>
-                            <Text numberOfLines={1} ellipsizeMode="tail" style={styles.fighter2}>{fighter2}</Text>
+                            <Text numberOfLines={2} style={styles.fighter2}>{fighter2}</Text>
                         </View>
                     </View>
 
@@ -118,16 +121,25 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
                             </View>
                         </View>
                         <View style={styles.genderWeightBox}>
-                            {(gender === 'mens' || gender === 'womens') && (
-                                <View style={[styles.genderIcon, gender==='mens' && styles.maleIcon]}>
+                            {(normalizedGender === 'mens' || normalizedGender === 'womens') && (
+                                <View style={[
+                                    styles.genderIcon,
+                                    normalizedGender === 'mens' && styles.maleIcon,
+                                    normalizedGender === 'womens' && styles.femaleIcon,
+                                ]}>
                                     <Ionicons
-                                        name={gender === 'womens' ? 'female-outline' : 'male-outline'}
+                                        name={normalizedGender === 'womens' ? 'female-outline' : 'male-outline'}
                                         size={14}
                                         color='#fff'
                                     />
                                 </View>
                             )}
-                            <Text style={styles.weightClass}>{weight ? `${weight}lbs` : ''}</Text>
+                            {isUnknownGender && (
+                                <View style={styles.genderIcon}>
+                                    <Text style={styles.unknownGenderText}>?</Text>
+                                </View>
+                            )}
+                            <Text style={styles.weightClass}>{weight ? `${weight}lbs` : '? lbs'}</Text>
                         </View>
                     </View>
 
@@ -339,8 +351,7 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     genderIcon: {
-        // backgroundColor: '#d32f2f',
-        backgroundColor: '#d32fba',
+        backgroundColor: '#878787',
         alignItems: 'center',
         justifyContent: 'center',
         width: '30%',
@@ -348,13 +359,25 @@ const styles = StyleSheet.create({
         borderRadius: 25
     },
     maleIcon: {
-        // backgroundColor: '#d32f2f',
         backgroundColor: '#307Fb6',
         alignItems: 'center',
         justifyContent: 'center',
         width: '30%',
         height: '60%',
         borderRadius: 25
+    },
+    femaleIcon: {
+        backgroundColor: '#d32fba',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '30%',
+        height: '60%',
+        borderRadius: 25
+    },
+    unknownGenderText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '700',
     },
     genderWeightBox: {
         width: '50%',
@@ -390,8 +413,7 @@ const styles = StyleSheet.create({
     },
     savedCardShadow: {
         height: '100%',
-        maxHeight: 245,
-        minHeight: 210,
+        top: '0%',
         backgroundColor: 'white',
         borderRadius: 15,
         marginBottom: 17,
@@ -480,7 +502,6 @@ const styles = StyleSheet.create({
         paddingVertical: 2,
         borderRightWidth: 1,
         borderColor: '#767676',
-        paddingTop: '3%'
     },
     scoreBox2: {
         height: '100%',
@@ -488,7 +509,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 2,
-        paddingTop: '3%'
     },
 
     cancelButton: {

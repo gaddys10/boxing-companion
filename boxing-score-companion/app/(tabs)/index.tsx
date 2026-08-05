@@ -115,18 +115,19 @@ export default function HomeScreen() {
   const borderFadeColor = isLandscape ? '#307FB6' : '#F1F5F8';
 
   return (
-    <LinearGradient
-      colors={[
-        'rgba(211, 47, 47, 0.9)',
-        borderFadeColor,
-        borderFadeColor,
-        'rgba(48, 127, 182, 0.9)',
-      ]}
-      locations={[0, 0.32, 0.68, 1]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={[styles.neonPageBorder, isLandscape && styles.landscapeNeonPageBorder]}
-    >
+    // <LinearGradient
+    //   colors={[
+    //     'rgba(211, 47, 47, 0.9)',
+    //     borderFadeColor,
+    //     borderFadeColor,
+    //     'rgba(48, 127, 182, 0.9)',
+    //   ]}
+    //   locations={[0, 0.32, 0.68, 1]}
+    //   start={{ x: 0, y: 0 }}
+    //   end={{ x: 1, y: 1 }}
+    //   style={[styles.neonPageBorder, isLandscape && styles.landscapeNeonPageBorder]}
+    // >
+    <>
       <StatusBar style="dark" />
       <View style={[
         isLandscape ? styles.landscapeContainer : styles.container,
@@ -251,7 +252,8 @@ export default function HomeScreen() {
         )}
         
       </View>
-    </LinearGradient>
+      </>
+    // </LinearGradient>
   );
 }
 
@@ -406,6 +408,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingHorizontal: 14,
     minHeight: 44,
+    position: 'absolute',
+    top: '10%',
+    right: '1.25%',
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
@@ -420,7 +425,7 @@ const styles = StyleSheet.create({
   landscapeContainer: {
     flex: 1,
     backgroundColor: '#f1f5f8',
-    borderRadius: 40,
+    // borderRadius: 40,
     padding: 8,
     gap: 8,
   },
@@ -431,35 +436,35 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   landscapeSavedCardContainer: {
-    flex: 1,
+    position: 'absolute',
+    top: '45%',
+    bottom: 0,
+    left: '8%',
     width: '100%',
+    height: '55%',
     backgroundColor: '#f1f5f8',
-    // borderRadius: 40,
     overflow: 'hidden',
-    // shadowColor: '#0f172a',
-    // shadowOffset: { width: -2, height: -2 },
-    // shadowOpacity: 0.2,
-    // shadowRadius: 8,
     elevation: 2,
+
   },
   landscapeSavedCardContent: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     paddingLeft: 0,
-    gap: 8,
+    gap: 13,
     paddingRight: 5,
     paddingBottom: 8,
   },
   landscapeSearchBox: {
-    flex: 1,
-    minWidth: 170,
-    maxWidth: 360,
-    height: 44,
-    alignSelf: 'center',
+    position: 'absolute',
+    top: '128%',
+    left: '.25%',
+    width: '33%',
+    height: '25%',
   },
   landscapeHeader: {
     width: '100%',
-    minHeight: 52,
+    height: '23%',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
@@ -469,11 +474,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     borderRadius: 15,
-    height: 50,
+    position: 'absolute',
+    top: 10,
+    left: -2,
+    
     backgroundColor: '#307Fb6',
-    width: '30%',
-    minWidth: 175,
-    maxWidth: 250,
+    width: '33.5%',
+    // aspectRatio: 5.2,
+    height: '100%'
   },
   landscapeTitle: {
     color: '#fff',
@@ -491,7 +499,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '700',
-    marginBottom: 50,
+    marginBottom: 0,
     marginLeft: 3
   },
   landscapeTitleRight: {

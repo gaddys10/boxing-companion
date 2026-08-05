@@ -579,18 +579,18 @@ const styles = StyleSheet.create({
     },
     leftTriangle: {
         position: 'absolute',
-        left: '41.5%',
-        height: 9,
-        top: 15,
+        left: '42%',
+        height: 14,
+        top: 12,
         transform: [{ rotate: '-90deg' }],
         color: "#d32f2f"
     },
     rightTriangle: {
         position: 'absolute',
-        left: '55.1%',
-        top: 15,
+        left: '54.75%',
+        top: 12,
         transform: [{ rotate: '90deg' }],
-        height: 9,
+        height: 14,
         color: "#1976D2"
     },
     plusMinus: {
@@ -655,14 +655,14 @@ const styles = StyleSheet.create({
         boxShadow: '1px 2px 2px rgba(103, 103, 103, 0.4)',
 
         justifyContent: 'center',
-        backgroundColor: "#2a2a2a",
+        backgroundColor: "#D32F2F",
         alignItems: 'center',
         color: '#fff'
     },
     roundEvents2: {
         position: 'absolute',
         left: '67.25%',
-        backgroundColor: "#2a2a2a",
+        backgroundColor: "#1976D2",
         alignItems: 'center',
         shadowOffset: {height: 5, width: 0},
         boxShadow: '0px 2px 2px rgba(103, 103, 103, 0.4)',

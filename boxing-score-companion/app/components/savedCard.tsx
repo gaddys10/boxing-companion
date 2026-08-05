@@ -36,7 +36,7 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
           id: String(id),
           title: 'Edit Scorecard Details',
           backText: 'Menu',
-          buttonText: "Edit Scores",
+          buttonText: "Continue",
           isEdit: "true",
           fighter1,
           fighter2,
@@ -73,6 +73,9 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
 
     return 0;
   })();
+
+  const normalizedGender = typeof gender === 'string' ? gender.trim().toLowerCase() : '';
+  const isUnknownGender = !normalizedGender || normalizedGender === 'idk' || normalizedGender === 'null' || normalizedGender === 'undefined';
 
   useEffect(() => {
     const viewportStart = scrollY;
@@ -151,18 +154,24 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
               <Text style={[styles.roundText]}>{scoredRoundsCount}/{rounds}</Text>
             </View>
             <View style={styles.roundBox}>
-              {(gender === "mens" || gender === "womens") && (
-                <View style={gender === "mens" ? styles.malePill : styles.femalePill}>
-                  <Ionicons
-                    name={gender === "mens" ? "male-outline" : "female-outline"}
-                    size={13}
-                    color="#fff"
-                  />
+              
+                <View style={[
+                  normalizedGender === "mens" && styles.malePill, 
+                  normalizedGender === "womens" && styles.femalePill, 
+                  isUnknownGender && styles.idkPill]}>
+                  {normalizedGender === 'mens' || normalizedGender === 'womens' ? (
+                    <Ionicons
+                      name={normalizedGender === "mens" ? "male-outline" : "female-outline"}
+                      size={13}
+                      color="#fff"
+                    />
+                  ) : 
+                    <Text style={{color: '#fff', fontSize: 10}}>?</Text>
+                  }
                 </View>
-              )}
 
               <Text style={styles.roundText}>
-                {weight ? `${weight} lbs` : ""}
+                {weight ? `${weight} lbs` : "? lbs"}
               </Text>
             </View>
           </View>
@@ -376,6 +385,16 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     justifyContent: 'center',
   },
+  idkPill: {
+    backgroundColor: '#878787',
+    width: '59%',
+    height: '39%',
+    color: '#fff',
+    borderRadius: 15,
+    alignItems: 'center',
+    alignSelf: 'center',
+    justifyContent: 'center',
+  },
   rdPill: {
     backgroundColor: '#000',
     width: '59%',
@@ -388,7 +407,8 @@ const styles = StyleSheet.create({
   },
   rdPillText: {
     color: "#fff",
-    fontSize: 12
+    fontSize: 12,
+    fontWeight: '700', 
   },
   roundBoxes: {
     width: '17.5%',

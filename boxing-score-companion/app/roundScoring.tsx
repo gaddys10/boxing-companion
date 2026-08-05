@@ -134,12 +134,7 @@ export default function RoundScoringScreen() {
 
     return (
         
-        <View style={[styles.container, {
-            paddingLeft: Math.max(insets.left, 6),
-            paddingRight: Math.max(insets.right, 6),
-            paddingTop: Math.max(insets.top, 4) + toolbarHeight + 4,
-            paddingBottom: Math.max(insets.bottom, 4),
-        }]}>
+        <View style={[styles.container]}>
             <Stack.Screen options={{ headerShown: false }} />
 
             <Pressable 
@@ -447,7 +442,6 @@ const styles = StyleSheet.create({
         minHeight: 44,
         borderBottomRightRadius: 15,
         borderBottomLeftRadius: 15,
-
         justifyContent: 'center',
         alignItems: 'center',
         top: 0,
@@ -493,8 +487,8 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         height: 40,
         position: 'absolute',
-        left: 8,
-        width: '43%',
+        left: '10%',
+        width: '26%',
         borderBottomLeftRadius: 15,
         borderBottomRightRadius: 15,
     },
@@ -507,7 +501,7 @@ const styles = StyleSheet.create({
         height: 40,
         position: 'absolute',
         right: 8,
-        width: '43%',
+        width: '26%',
         borderBottomLeftRadius: 15,
         borderBottomRightRadius: 15,
     },
@@ -518,8 +512,8 @@ const styles = StyleSheet.create({
         height: 40,
         overflow: 'hidden',
         position: 'absolute',
-        right: 8,
-        width: '43%',
+        left: '44%',
+        width: '26%',
         borderBottomLeftRadius: 15,
         borderBottomRightRadius: 15,
     },
@@ -530,8 +524,8 @@ const styles = StyleSheet.create({
         height: 40,
         overflow: 'hidden',
         position: 'absolute',
-        left: 8,
-        width: '43%',
+        left: '32%',
+        width: '26%',
         borderBottomLeftRadius: 15,
         borderBottomRightRadius: 15,
     },

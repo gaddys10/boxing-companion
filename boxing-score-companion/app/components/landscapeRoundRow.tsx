@@ -301,28 +301,31 @@ export default function LandscapeRoundRow({
 }
 
 const styles = StyleSheet.create({
-    plusMinusSlot: {
-    flex: 1,
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
+plusMinusSlot: {
+        flex: 1,
+        width: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bottom: '3.75%',
+    
 },
 
 plusMinusPillText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '700',
+    lineHeight: 18,
     textAlign: 'center',
 },
-    plusMinusPill: {
+plusMinusPill: {
     minWidth: 28,
     minHeight: 22,
     borderRadius: 999,
     paddingHorizontal: 7,
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden',
 },
+
     bluePlusMinusPill: {
         backgroundColor: '#1976D2',
     },
@@ -599,8 +602,7 @@ plusMinusPillText: {
         // paddingVertical: 2,
         overflow: 'hidden',
         boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
-        width: 52,
-        minWidth: 52,
+        width: 40,
         paddingBottom: 5
     },
     rowContainer: {
