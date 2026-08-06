@@ -52,9 +52,7 @@ export default function RoundScoringScreen() {
     const undoHeight = Math.max(38, Math.min(44, usableHeight * 0.13));
     const bottomControlHeight = Math.max(48, Math.min(56, usableHeight * 0.14));
     const centerHeight = Math.max(120, usableHeight - toolbarHeight - undoHeight - bottomControlHeight);
-    const nameTop = undoHeight + Math.max(14, centerHeight * 0.12);
     const scoreBottom = bottomControlHeight + Math.max(6, centerHeight * 0.04);
-    const plusTop = undoHeight + centerHeight * 0.28;
     const compact = usableHeight < 370;
 
     const startLongPressFill = (progress: Animated.Value, duration: number) => {
@@ -67,11 +65,7 @@ export default function RoundScoringScreen() {
     };
 
     const resetLongPressFill = (progress: Animated.Value) => {
-        Animated.timing(progress, {
-            toValue: 0,
-            duration: 100,
-            useNativeDriver: false,
-        }).start();
+        progress.setValue(0);
     };
 
     // useEffect(() => {
@@ -159,13 +153,14 @@ export default function RoundScoringScreen() {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         handleScorePress('left');
                     }}
-                    onPressIn={() => startLongPressFill(leftDeductUndoProgress, 2000)}
+                    onPressIn={() => startLongPressFill(leftDeductUndoProgress, 1000)}
                     onPressOut={() => resetLongPressFill(leftDeductUndoProgress)}
                     onLongPress={() => {
                         void confirmHaptic();
                         setLeftDeductions((current) => current > 0 ? current - 1 : 0);
+                        resetLongPressFill(leftDeductUndoProgress);
                     }}
-                    delayLongPress={1500}
+                    delayLongPress={1000}
                     style={[styles.undoDeductLeft, { height: undoHeight }]}
                 >
                     <LinearGradient
@@ -186,14 +181,16 @@ export default function RoundScoringScreen() {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         handleScorePress('left');
                     }}
-                    onPressIn={() => startLongPressFill(leftKDUndoProgress, 2000)}
+                    onPressIn={() => startLongPressFill(leftKDUndoProgress, 1000)}
                     onPressOut={() => resetLongPressFill(leftKDUndoProgress)}
                     onLongPress={() => {
                         void confirmHaptic();
+                        setScore((currentScore) => currentScore - 30);
                         setLeftKnockdowns((current) => current > 0 ? current - 1 : 0);
+                        resetLongPressFill(leftKDUndoProgress);
                     }}
                     style={[styles.undoKDLeft, { height: undoHeight }]}
-                    delayLongPress={1500}>
+                    delayLongPress={950}>
                         <LinearGradient
                             colors={['#f7e7a8', '#d7b55d', '#b78c35']}
                             start={{ x: 0, y: 0 }}
@@ -209,9 +206,9 @@ export default function RoundScoringScreen() {
                 { score > 0 &&
                     <Text style={[styles.leftScore, { bottom: scoreBottom }]}>{score}&nbsp;<Ionicons name="caret-back" size={36} color="white" /></Text>
                 }
-                <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.62} style={[styles.leftName, { marginTop: nameTop }, compact && styles.compactName]}>{fighter1}</Text>
+                <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.62} style={[styles.leftName, compact && styles.compactName]}>{fighter1}</Text>
 
-                <Animated.Text style={[styles.plusSign, { top: plusTop, transform: [{ scale: leftPulseAnim }] }]} >+</Animated.Text>
+                <Animated.Text style={[styles.plusSign, { transform: [{ scale: leftPulseAnim }] }]} >+</Animated.Text>
 
                 {/* Left PEN */}
                 <Pressable
@@ -221,13 +218,14 @@ export default function RoundScoringScreen() {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         handleScorePress('left');
                     }}
-                    onPressIn={() => startLongPressFill(leftDeductProgress, 2000)}
+                    onPressIn={() => startLongPressFill(leftDeductProgress, 1000)}
                     onPressOut={() => resetLongPressFill(leftDeductProgress)}
                     onLongPress={() => {
                         void confirmHaptic();
                         setLeftDeductions((current) => current + 1);
+                        resetLongPressFill(leftDeductProgress);
                     }}
-                    delayLongPress={1500}
+                    delayLongPress={1000}
                 >
                     <LinearGradient
                         colors={['#f7e7a8', '#d7b55d', '#b78c35']}
@@ -247,14 +245,15 @@ export default function RoundScoringScreen() {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         handleScorePress('left');
                     }}
-                    onPressIn={() => startLongPressFill(leftKdProgress, 2000)}
+                    onPressIn={() => startLongPressFill(leftKdProgress, 1000)}
                     onPressOut={() => resetLongPressFill(leftKdProgress)}
                     onLongPress={() => {
                         void confirmHaptic();
                         setScore((currentScore) => currentScore + 30);
                         setLeftKnockdowns((current) => current + 1);
+                        resetLongPressFill(leftKdProgress);
                     }}
-                    delayLongPress={1900}
+                    delayLongPress={1000}
                 >
                     <LinearGradient
                         colors={['#f7e7a8', '#d7b55d', '#b78c35']}
@@ -285,14 +284,16 @@ export default function RoundScoringScreen() {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         handleScorePress('right');
                     }}
-                    onPressIn={() => startLongPressFill(rightKDUndoProgress, 2000)}
+                    onPressIn={() => startLongPressFill(rightKDUndoProgress, 1000)}
                     onPressOut={() => resetLongPressFill(rightKDUndoProgress)}
                     onLongPress={() => {
                         void confirmHaptic();
+                        setScore((currentScore) => currentScore + 30);
                         setRightKnockdowns((current) => current > 0 ? current - 1 : 0);
+                        resetLongPressFill(rightKDUndoProgress);
                     }}
                     style={[styles.undoKDright, { height: undoHeight }]}
-                    delayLongPress={1500}>
+                    delayLongPress={1000}>
                         <LinearGradient
                             colors={['#f7e7a8', '#d7b55d', '#b78c35']}
                             start={{ x: 0, y: 0 }}
@@ -315,13 +316,14 @@ export default function RoundScoringScreen() {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         handleScorePress('right');
                     }}
-                    onPressIn={() => startLongPressFill(rightDeductUndoProgress, 2000)}
+                    onPressIn={() => startLongPressFill(rightDeductUndoProgress, 1000)}
                     onPressOut={() => resetLongPressFill(rightDeductUndoProgress)}
                     onLongPress={() => {
                         void confirmHaptic();
                         setRightDeductions((current) => current > 0 ? current - 1 : 0);
+                        resetLongPressFill(rightDeductUndoProgress);
                     }}
-                    delayLongPress={1500}
+                    delayLongPress={700}
                     style={[styles.undoDeductRight, { height: undoHeight }]}
                 >
                     <LinearGradient
@@ -335,8 +337,8 @@ export default function RoundScoringScreen() {
                     <Text style={styles.leftDedUndo}>Hold to Undo</Text>
                 </Pressable>
 
-                <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.62} style={[styles.rightName, { marginTop: nameTop }, compact && styles.compactName]}>{fighter2}</Text>
-                <Animated.Text style={[styles.plusSign, { top: plusTop, transform: [{ scale: rightPulseAnim }] }]} >+</Animated.Text>
+                <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.62} style={[styles.rightName, compact && styles.compactName]}>{fighter2}</Text>
+                <Animated.Text style={[styles.plusSign, { transform: [{ scale: rightPulseAnim }] }]} >+</Animated.Text>
 
                 {/* Right Knockdown */}
                 <Pressable
@@ -346,14 +348,15 @@ export default function RoundScoringScreen() {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         handleScorePress('right');
                     }}
-                    onPressIn={() => startLongPressFill(rightKdProgress, 2000)}
+                    onPressIn={() => startLongPressFill(rightKdProgress, 1000)}
                     onPressOut={() => resetLongPressFill(rightKdProgress)}
                     onLongPress={() => {
                         void confirmHaptic();
                         setScore((currentScore) => currentScore - 30);
                         setRightKnockdowns((current) => current + 1);
+                        resetLongPressFill(rightKdProgress);
                     }}
-                    delayLongPress={1900}
+                    delayLongPress={1000}
                 >
                     <LinearGradient
                         colors={['#f7e7a8', '#d7b55d', '#b78c35']}
@@ -373,13 +376,14 @@ export default function RoundScoringScreen() {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         handleScorePress('right');
                     }}
-                    onPressIn={() => startLongPressFill(rightDeductProgress, 2000)}
+                    onPressIn={() => startLongPressFill(rightDeductProgress, 1000)}
                     onPressOut={() => resetLongPressFill(rightDeductProgress)}
                     onLongPress={() => {
                         void confirmHaptic();
                         setRightDeductions((current) => current + 1);
+                        resetLongPressFill(rightDeductProgress);
                     }}
-                    delayLongPress={1800}
+                    delayLongPress={1000}
                 >
                     <LinearGradient
                         colors={['#f7e7a8', '#d7b55d', '#b78c35']}
@@ -395,10 +399,11 @@ export default function RoundScoringScreen() {
             {/* Exit  */}
             <Pressable
                 style={[styles.exitButton]}
-                onPressIn={() => startLongPressFill(exitProgress, 2000)}
+                onPressIn={() => startLongPressFill(exitProgress, 1000)}
                 onPressOut={() => resetLongPressFill(exitProgress)}
                 onLongPress={() => {
                     void tripleHaptic(Haptics.ImpactFeedbackStyle.Medium);
+                    resetLongPressFill(exitProgress);
                     router.replace({
                         pathname: '/matchInfo',
                         params: {
@@ -418,7 +423,7 @@ export default function RoundScoringScreen() {
                         },
                     });
                 }}
-                delayLongPress={1695}
+                delayLongPress={1000}
             >
                 <LinearGradient
                     colors={['#f7e7a8', '#d7b55d', '#b78c35']}
