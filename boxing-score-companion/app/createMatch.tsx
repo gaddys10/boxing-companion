@@ -54,7 +54,7 @@ export default function CreateMatch() {
 
 
     const buttonText = String(params.buttonText || "Create Scorecard");
-    const rounds = [4, 5, 6, 8, 10, 12];
+    const rounds = [4, 5, 6, 8, 10, 12, 15];
     const { width, height } = useWindowDimensions();
     const insets = useSafeAreaInsets();
     const id = params.id ? String(params.id) : undefined;

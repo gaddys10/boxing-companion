@@ -521,7 +521,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     headerActionSpacer: {
-        width: 41,
+        width: 42,
     },
     leftHeader: {
         color: 'red',
@@ -560,14 +560,14 @@ const styles = StyleSheet.create({
     },
     summaryCard: {
         backgroundColor: '#fff',
-        borderBottomLeftRadius: 12,
-        borderBottomRightRadius: 12,
+        borderRadius: 12,
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
         paddingTop: 10,
         height: '15.5%',
         marginBottom: 18,
         marginRight: '1%',
+        justifyContent: 'space-around',
         boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
     },
     title: {

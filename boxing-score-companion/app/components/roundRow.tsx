@@ -430,13 +430,7 @@ const styles = StyleSheet.create({
         marginLeft: 0,
         width: 'auto',
     },
-    saveQuickButton: {
-        backgroundColor: '#1976D2',
-    },
-    saveQuickButtonText: {
-        color: '#fff',
-        fontWeight: '700',
-    },
+
     fullScoring: {
         width: '100%',
         height: '15%',
@@ -455,9 +449,9 @@ const styles = StyleSheet.create({
     },
     cancelButton: {
         backgroundColor: '#d32f2f',
-        width: '85%',
-        marginLeft: 0,
-        top: '50%',
+        // width: '85%',
+        // marginLeft: 0,
+        // top: '50%',
         boxShadow: '4',
         shadowColor: '#11334b',
         shadowOffset: { width: 2, height: 2 },
@@ -471,6 +465,18 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontWeight: '700',
     },
+    saveQuickButton: {
+        backgroundColor: '#1976D2',
+        boxShadow: '4',
+        shadowColor: '#11334b',
+        shadowOffset: { width: 2, height: 2 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1
+    },
+    saveQuickButtonText: {
+        color: '#fff',
+        fontWeight: '700',
+    },
     modalOverlay: {
         flex: 1,
         backgroundColor: 'rgba(0, 0, 0, 0.45)',
@@ -480,7 +486,7 @@ const styles = StyleSheet.create({
     },
     deleteModal: {
         width: '100%',
-        height: '57%',
+        height: '66%',
         maxWidth: 340,
         backgroundColor: '#fff',
         borderRadius: 12,

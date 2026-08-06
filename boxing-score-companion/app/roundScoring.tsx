@@ -1,5 +1,6 @@
 import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
 import { View, Text, Pressable, StyleSheet, Animated, useWindowDimensions, Image } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
 import * as Haptics from 'expo-haptics';
@@ -49,7 +50,7 @@ export default function RoundScoringScreen() {
     const usableHeight = height - insets.top - insets.bottom;
     const toolbarHeight = Math.max(44, Math.min(50, usableHeight * 0.14));
     const undoHeight = Math.max(38, Math.min(44, usableHeight * 0.13));
-    const bottomControlHeight = Math.max(48, Math.min(56, usableHeight * 0.17));
+    const bottomControlHeight = Math.max(48, Math.min(56, usableHeight * 0.14));
     const centerHeight = Math.max(120, usableHeight - toolbarHeight - undoHeight - bottomControlHeight);
     const nameTop = undoHeight + Math.max(14, centerHeight * 0.12);
     const scoreBottom = bottomControlHeight + Math.max(6, centerHeight * 0.04);
@@ -167,6 +168,12 @@ export default function RoundScoringScreen() {
                     delayLongPress={1500}
                     style={[styles.undoDeductLeft, { height: undoHeight }]}
                 >
+                    <LinearGradient
+                        colors={['#f7e7a8', '#d7b55d', '#b78c35']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={StyleSheet.absoluteFillObject}
+                    />
                     <Animated.View style={[styles.fillOverlayTopLeft, { width: leftDeductUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                     <Text style={styles.leftEvents}>Deductions: {leftDeductions}</Text>
                     <Text style={styles.leftDedUndo}>Hold to Undo</Text>
@@ -187,6 +194,12 @@ export default function RoundScoringScreen() {
                     }}
                     style={[styles.undoKDLeft, { height: undoHeight }]}
                     delayLongPress={1500}>
+                        <LinearGradient
+                            colors={['#f7e7a8', '#d7b55d', '#b78c35']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={StyleSheet.absoluteFillObject}
+                        />
                         <Animated.View style={[styles.fillOverlayTopLeft, { width: leftKDUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                         <Text style={styles.leftEvents2}>Knockdowns: {leftKnockdowns}</Text>
                         <Text style={styles.leftKdUndo}>Hold to Undo</Text>
@@ -216,6 +229,12 @@ export default function RoundScoringScreen() {
                     }}
                     delayLongPress={1500}
                 >
+                    <LinearGradient
+                        colors={['#f7e7a8', '#d7b55d', '#b78c35']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={StyleSheet.absoluteFillObject}
+                    />
                     <Animated.View style={[styles.fillOverlayLeft, { width: leftDeductProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                     <Text style={[styles.buttonText, styles.deductLeftText]}>Hold to{"\n"}Deduct</Text>
                 </Pressable>
@@ -237,6 +256,12 @@ export default function RoundScoringScreen() {
                     }}
                     delayLongPress={1900}
                 >
+                    <LinearGradient
+                        colors={['#f7e7a8', '#d7b55d', '#b78c35']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={StyleSheet.absoluteFillObject}
+                    />
                     <Animated.View style={[styles.fillOverlay, { width: leftKdProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                     <Text style={styles.buttonText}>Hold for Knockdown</Text>
                 </Pressable>
@@ -268,6 +293,12 @@ export default function RoundScoringScreen() {
                     }}
                     style={[styles.undoKDright, { height: undoHeight }]}
                     delayLongPress={1500}>
+                        <LinearGradient
+                            colors={['#f7e7a8', '#d7b55d', '#b78c35']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={StyleSheet.absoluteFillObject}
+                        />
                         <Animated.View style={[styles.fillOverlayTopLeft, { width: rightKDUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                         <Text style={styles.rightEvents2}>Knockdowns: {rightKnockdowns}</Text>
                         <Text style={styles.rightKdUndo}>Hold to Undo</Text>
@@ -293,6 +324,12 @@ export default function RoundScoringScreen() {
                     delayLongPress={1500}
                     style={[styles.undoDeductRight, { height: undoHeight }]}
                 >
+                    <LinearGradient
+                        colors={['#f7e7a8', '#d7b55d', '#b78c35']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={StyleSheet.absoluteFillObject}
+                    />
                     <Animated.View style={[styles.fillOverlayTopLeft, { width: rightDeductUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '150%'] }) }]} />
                     <Text style={styles.rightDedEvents}>Deductions: {rightDeductions}</Text>
                     <Text style={styles.leftDedUndo}>Hold to Undo</Text>
@@ -318,6 +355,12 @@ export default function RoundScoringScreen() {
                     }}
                     delayLongPress={1900}
                 >
+                    <LinearGradient
+                        colors={['#f7e7a8', '#d7b55d', '#b78c35']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={StyleSheet.absoluteFillObject}
+                    />
                     <Animated.View style={[styles.fillOverlay, { width: rightKdProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                     <Text style={styles.buttonText}>Hold for Knockdown</Text>
                 </Pressable>
@@ -338,6 +381,12 @@ export default function RoundScoringScreen() {
                     }}
                     delayLongPress={1800}
                 >
+                    <LinearGradient
+                        colors={['#f7e7a8', '#d7b55d', '#b78c35']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={StyleSheet.absoluteFillObject}
+                    />
                     <Animated.View style={[styles.fillOverlay, { width: rightDeductProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '105%'] }) }]} />
                     <Text style={[styles.deductRightText, styles.buttonText]}>Hold to{"\n"}Deduct</Text>
                 </Pressable>
@@ -345,7 +394,7 @@ export default function RoundScoringScreen() {
 
             {/* Exit  */}
             <Pressable
-                style={[styles.exitButton, { height: toolbarHeight, top: Math.max(insets.top, 4) }]}
+                style={[styles.exitButton]}
                 onPressIn={() => startLongPressFill(exitProgress, 2000)}
                 onPressOut={() => resetLongPressFill(exitProgress)}
                 onLongPress={() => {
@@ -371,6 +420,12 @@ export default function RoundScoringScreen() {
                 }}
                 delayLongPress={1695}
             >
+                <LinearGradient
+                    colors={['#f7e7a8', '#d7b55d', '#b78c35']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={StyleSheet.absoluteFillObject}
+                />
                 <Animated.View style={[styles.fillOverlay, { width: exitProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                 <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={styles.exitButtonText}>Hold to Save & Exit Round {round}</Text>
             </Pressable>
@@ -387,13 +442,11 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#fff',
         flexDirection: 'row',
-        gap: 4,
     },
     deductLeft: {
         position: 'absolute',
         bottom: 0,
         left: 0,
-        backgroundColor: 'gold',
         width: 90,
         height: 58,
         // paddingLeft: ,
@@ -413,7 +466,6 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: 0,
         right: 0,
-        backgroundColor: 'gold',
         width: 90,
         height: 58,
         borderTopLeftRadius: 10,
@@ -436,7 +488,6 @@ const styles = StyleSheet.create({
         
     exitButton: {
         position: 'absolute',
-        backgroundColor: 'gold',
         width: 230,
         maxWidth: '38%',
         minHeight: 44,
@@ -481,7 +532,6 @@ const styles = StyleSheet.create({
     },
     undoDeductLeft: {
         alignItems: 'center',
-        backgroundColor: 'gold',
         justifyContent: 'center',
         gap: 2,
         overflow: 'hidden',
@@ -494,44 +544,40 @@ const styles = StyleSheet.create({
     },
     undoDeductRight: {
         alignItems: 'center',
-        backgroundColor: 'gold',
         justifyContent: 'center',
         gap: 2,
         overflow: 'hidden',
         height: 40,
         position: 'absolute',
-        right: 8,
+        right: '10%',
         width: '26%',
         borderBottomLeftRadius: 15,
         borderBottomRightRadius: 15,
     },
     undoKDLeft: {
         alignItems: 'center',
-        backgroundColor: 'gold',
         justifyContent: 'center',
         height: 40,
         overflow: 'hidden',
         position: 'absolute',
-        left: '44%',
+        left: '41.5%',
         width: '26%',
         borderBottomLeftRadius: 15,
         borderBottomRightRadius: 15,
     },
     undoKDright: {
         alignItems: 'center',
-        backgroundColor: 'gold',
         justifyContent: 'center',
         height: 40,
         overflow: 'hidden',
         position: 'absolute',
-        left: '32%',
+        right: '41.5%',
         width: '26%',
         borderBottomLeftRadius: 15,
         borderBottomRightRadius: 15,
     },
     kdButton: {
         position: 'absolute',
-        // justifyContent: 'center',
         alignItems: 'center',
         justifyContent: 'center',
         width: 150,
@@ -539,7 +585,6 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         transform: [{ translateX: -75 }],
-        backgroundColor: 'gold',
         paddingTop: 5,
         overflow: 'hidden',
     },
@@ -548,7 +593,6 @@ const styles = StyleSheet.create({
         flex: 1,
         minWidth: 0,
         overflow: 'hidden',
-        borderRadius: 12,
     },
     leftAreaImage: {
         position: 'absolute',
@@ -607,7 +651,6 @@ const styles = StyleSheet.create({
         flex: 1,
         minWidth: 0,
         overflow: 'hidden',
-        borderRadius: 12,
     },
     rightDedEvents: {
         color: '#000',
