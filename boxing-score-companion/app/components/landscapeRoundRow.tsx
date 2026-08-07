@@ -22,6 +22,7 @@ type RoundRowProps = {
     rounds: string;
     id?: string;
     savedScores: string;
+    stoppageReason?: 'KO' | 'TKO' | 'DQ';
     onClearRound: (roundNumber: number) => void;
     onSaveRound: (roundNumber: number, score: {
         left: string;
@@ -33,6 +34,7 @@ type RoundRowProps = {
         rightKnockdowns: string;
         scoringMethod: 'quick';
     }) => void;
+    onMarkStoppage: (roundNumber: number, reason: 'KO' | 'TKO' | 'DQ') => void;
 };
 
 export default function LandscapeRoundRow({
@@ -52,13 +54,16 @@ export default function LandscapeRoundRow({
     rounds,
     id,
     savedScores,
+    stoppageReason,
     onClearRound,
     onSaveRound,
+    onMarkStoppage,
 }: RoundRowProps) {
     const swipeableRef = React.useRef<Swipeable | null>(null);
     const plusMinusNumber = plusMinus && plusMinus !== '-' ? Number(plusMinus) : null;
     const [scoringModalVisible, setScoringModalVisible] = useState(false);
     const [quickScoringVisible, setQuickScoringVisible] = useState(false);
+    const [stoppageModalVisible, setStoppageModalVisible] = useState(false);
     const [quickLeftScore, setQuickLeftScore] = useState(10);
     const [quickRightScore, setQuickRightScore] = useState(10);
     const [quickLeftKds, setQuickLeftKds] = useState(0);
@@ -121,15 +126,26 @@ export default function LandscapeRoundRow({
                     : '#b0b0b0';
 
     const renderRightActions = () => (
-        <Pressable
-            style={styles.clearAction}
-            onPress={() => {
-                swipeableRef.current?.close();
-                onClearRound(roundNumber);
-            }}
-        >
-            <Text style={styles.clearActionText}>Clear{"\n"}Round</Text>
-        </Pressable>
+        <View style={styles.swipeActions}>
+            <Pressable
+                style={styles.stoppageAction}
+                onPress={() => {
+                    swipeableRef.current?.close();
+                    setStoppageModalVisible(true);
+                }}
+            >
+                <Text style={styles.clearActionText}>{stoppageReason ? stoppageReason : 'Mark'+'\n'+'Stoppage'}</Text>
+            </Pressable>
+            <Pressable
+                style={styles.clearAction}
+                onPress={() => {
+                    swipeableRef.current?.close();
+                    onClearRound(roundNumber);
+                }}
+            >
+                <Text style={styles.clearActionText}>Clear{"\n"}Round</Text>
+            </Pressable>
+        </View>
     );
 
     return (
@@ -319,6 +335,37 @@ export default function LandscapeRoundRow({
                 </View>
             </View>
         </Modal>
+        <Modal
+            animationType="fade"
+            transparent
+            visible={stoppageModalVisible}
+            supportedOrientations={['landscape', 'landscape-left', 'landscape-right']}
+            onRequestClose={() => setStoppageModalVisible(false)}
+        >
+            <View style={styles.modalOverlay}>
+                <View style={styles.scoringModal}>
+                    <Text style={styles.modalTitle}>Mark Stoppage</Text>
+                    <Text style={styles.modalText}>Select why the fight was stopped.</Text>
+                    <View style={styles.stoppageOptions}>
+                        {(['KO', 'TKO', 'DQ'] as const).map((option) => (
+                            <Pressable
+                                key={option}
+                                style={[styles.stoppageOption, stoppageReason === option && styles.selectedStoppageOption]}
+                                onPress={() => {
+                                    onMarkStoppage(roundNumber, option);
+                                    setStoppageModalVisible(false);
+                                }}
+                            >
+                                <Text style={[styles.stoppageOptionText, stoppageReason === option && styles.selectedStoppageOptionText]}>{option}</Text>
+                            </Pressable>
+                        ))}
+                    </View>
+                    <Pressable style={[styles.modalButton, styles.cancelButton]} onPress={() => setStoppageModalVisible(false)}>
+                        <Text style={styles.cancelButtonText}>Cancel</Text>
+                    </Pressable>
+                </View>
+            </View>
+        </Modal>
         </>
     );
 }
@@ -388,6 +435,21 @@ plusMinusPill: {
         color: '#fff',
         fontWeight: '700',
     },
+    swipeActions: {
+        flexDirection: 'row',
+        gap: 6,
+    },
+    stoppageAction: {
+        alignItems: 'center',
+        backgroundColor: '#000',
+        justifyContent: 'center',
+        paddingHorizontal: 0,
+        height: '85%',
+        marginRight: 0,
+        marginTop: 2,
+        borderRadius: 12,
+        width: 75,
+    },
     clearAction: {
         alignItems: 'center',
         backgroundColor: '#bc1616',
@@ -405,6 +467,28 @@ plusMinusPill: {
         fontSize: 12,
         fontWeight: '700',
         textAlign: 'center',
+    },
+    stoppageOptions: {
+        gap: 10,
+        marginTop: 8,
+    },
+    stoppageOption: {
+        alignItems: 'center',
+        backgroundColor: '#EEF1F3',
+        borderRadius: 10,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+    },
+    selectedStoppageOption: {
+        backgroundColor: '#1976D2',
+    },
+    stoppageOptionText: {
+        color: '#333A3F',
+        fontSize: 16,
+        fontWeight: '700',
+    },
+    selectedStoppageOptionText: {
+        color: '#fff',
     },
     leftRoundScore: {
         color: '#D32F2F',

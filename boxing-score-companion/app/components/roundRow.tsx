@@ -22,6 +22,7 @@ type RoundRowProps = {
     rounds: string;
     id?: string;
     savedScores: string;
+    stoppageReason?: 'KO' | 'TKO' | 'DQ' | 'NC';
     onClearRound: (roundNumber: number) => void;
     onSaveRound: (roundNumber: number, score: {
         left: string;
@@ -33,6 +34,7 @@ type RoundRowProps = {
         rightKnockdowns: string;
         scoringMethod: 'quick';
     }) => void;
+    onMarkStoppage: (roundNumber: number, reason: 'KO' | 'TKO' | 'DQ' | 'NC') => void;
 };
 
 export default function RoundRow({
@@ -52,13 +54,16 @@ export default function RoundRow({
     rounds,
     id,
     savedScores,
+    stoppageReason,
     onClearRound,
     onSaveRound,
+    onMarkStoppage,
 }: RoundRowProps) {
     const swipeableRef = React.useRef<Swipeable | null>(null);
     const plusMinusNumber = plusMinus && plusMinus !== '-' ? Number(plusMinus) : null;
     const [scoringModalVisible, setScoringModalVisible] = useState(false);
     const [quickScoringVisible, setQuickScoringVisible] = useState(false);
+    const [stoppageModalVisible, setStoppageModalVisible] = useState(false);
     const [quickLeftScore, setQuickLeftScore] = useState(10);
     const [quickRightScore, setQuickRightScore] = useState(10);
     const [quickLeftKds, setQuickLeftKds] = useState(0);
@@ -136,10 +141,10 @@ export default function RoundRow({
                 style={styles.stoppageAction}
                 onPress={() => {
                     swipeableRef.current?.close();
-                    onClearRound(roundNumber);
+                    setStoppageModalVisible(true);
                 }}
             >
-                <Text style={styles.clearActionText}>Mark{"\n"}Stoppage</Text>
+                <Text style={styles.clearActionText}>{'Mark'+'\n'+'Stoppage'}</Text>
             </Pressable>
             <Pressable
                 style={styles.clearAction}
@@ -325,11 +330,132 @@ export default function RoundRow({
                     </View>
                 </View>
             </Modal>
+            <Modal
+                animationType="fade"
+                transparent
+                visible={stoppageModalVisible}
+                onRequestClose={() => setStoppageModalVisible(false)}
+            >
+                <View style={styles.stoppageModalOverlay}>
+                    <View style={styles.stoppageModalCard}>
+                        <Text style={styles.stoppageModalTitle}>Mark Stoppage</Text>
+                        <Text style={[styles.stoppageModalText, {textAlign: 'center'}]}>Select why the fight was stopped.</Text>
+                        <View style={styles.stoppageOptions}>
+                            {(['KO', 'TKO', 'DQ', 'NC'] as const).map((option) => (
+                                <Pressable
+                                    key={option}
+                                    style={[styles.stoppageOption, stoppageReason === option && styles.selectedStoppageOption]}
+                                    onPress={() => {
+                                        onMarkStoppage(roundNumber, option);
+                                        // setStoppageModalVisible(false);
+                                    }}
+                                >
+                                    <Text style={[styles.stoppageOptionText, stoppageReason === option && styles.selectedStoppageOptionText]}>{option}</Text>
+                                </Pressable>
+                            ))}
+                        </View>
+                        <View style={styles.stoppageModalActions}>
+                            <Pressable style={[styles.stoppageModalButton, styles.stoppageCancelButton]} onPress={() => setStoppageModalVisible(false)}>
+                                <Text style={styles.stoppageCancelButtonText}>Cancel</Text>
+                            </Pressable>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </>
     );
 }
 
 const styles = StyleSheet.create({
+    stoppageModalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.45)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 24,
+    },
+    stoppageModalCard: {
+        width: '100%',
+        maxWidth: 340,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.25,
+        shadowRadius: 8,
+        elevation: 6,
+    },
+    stoppageModalTitle: {
+        color: '#333A3F',
+        fontSize: 20,
+        fontWeight: '700',
+        marginBottom: 8,
+        textAlign: 'center',
+    },
+    stoppageModalText: {
+        color: '#333A3F',
+        fontSize: 15,
+        lineHeight: 21,
+        marginBottom: 20,
+    },
+    stoppageModalActions: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginTop: 8,
+    },
+    stoppageModalButton: {
+        minWidth: 88,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginLeft: 10,
+    },
+    stoppageCancelButton: {
+        backgroundColor: '#d32f2f',
+        marginLeft: 0,
+        boxShadow: '4',
+        shadowColor: '#11334b',
+        shadowOffset: { width: 2, height: 2 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1,
+        borderWidth: 1,
+        borderColor: 'rgba(200, 200, 200, 0.7)',
+    },
+    stoppageCancelButtonText: {
+        color: '#fff',
+        fontWeight: '700',
+    },
+    stoppageOptions: {
+        gap: 15,
+        marginTop: 4,
+        marginBottom: 20,
+        alignItems: 'center'
+    },
+    stoppageOption: {
+        alignItems: 'center',
+        backgroundColor: '#EEF1F3',
+        borderRadius: 10,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderWidth: 1,
+        width: '40%',
+        borderColor: 'rgba(200, 200, 200, 0.7)',
+
+
+    },
+    selectedStoppageOption: {
+        backgroundColor: '#1976D2',
+    },
+    stoppageOptionText: {
+        color: '#333A3F',
+        fontSize: 16,
+        fontWeight: '700',
+    },
+    selectedStoppageOptionText: {
+        color: '#fff',
+    },
     quickScoring: {
         width: '100%',
         backgroundColor: '#1976D2',
@@ -343,7 +469,8 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 2, height: 2 },
         shadowOpacity: 0.4,
         shadowRadius: 1,
-
+        borderWidth: 1,
+        borderColor: 'rgba(200, 200, 200, 0.7)',
     },
     quickScoringText: {
         fontSize: 24,

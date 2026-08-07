@@ -36,6 +36,7 @@ export default function MatchInfoScreen() {
         leftKnockdowns?: string;
         rightKnockdowns?: string;
         scoringMethod?: 'quick' | 'full';
+        stoppageReason?: 'KO' | 'TKO' | 'DQ';
     };
 
     const [roundScores, setRoundScores] = useState<Record<number, RoundScore>>({});
@@ -216,10 +217,31 @@ export default function MatchInfoScreen() {
         });
     };
 
+    const handleMarkStoppage = (roundNumber: number, stoppageReason: 'KO' | 'TKO' | 'DQ') => {
+        setRoundScores((currentScores) => ({
+            ...currentScores,
+            [roundNumber]: {
+                ...(currentScores[roundNumber] ?? {
+                    left: '',
+                    right: '',
+                    plusMinus: '',
+                    leftDeductions: '0',
+                    rightDeductions: '0',
+                    leftKnockdowns: '0',
+                    rightKnockdowns: '0',
+                }),
+                stoppageReason,
+            },
+        }));
+    };
+
     const handleSaveRound = (roundNumber: number, score: RoundScore) => {
         setRoundScores((currentScores) => ({
             ...currentScores,
-            [roundNumber]: score,
+            [roundNumber]: {
+                ...(currentScores[roundNumber] ?? {}),
+                ...score,
+            },
         }));
     };
 
@@ -351,6 +373,7 @@ export default function MatchInfoScreen() {
                                     leftPen={roundScores[roundNumber]?.leftDeductions}
                                     rightKds={roundScores[roundNumber]?.rightKnockdowns}
                                     rightPen={roundScores[roundNumber]?.rightDeductions}
+                                    stoppageReason={roundScores[roundNumber]?.stoppageReason}
                                     // savedPlusMinus={savedPlusMinusForRound}
                                     fighter1={String(fighter1)}
                                     fighter2={String(fighter2)}
@@ -359,6 +382,7 @@ export default function MatchInfoScreen() {
                                     savedScores={JSON.stringify(roundScores)}
                                     onClearRound={handleClearRound}
                                     onSaveRound={handleSaveRound}
+                                    onMarkStoppage={handleMarkStoppage}
                                 />
                             );
                         })}
@@ -388,6 +412,7 @@ export default function MatchInfoScreen() {
                                         leftPen={roundScores[roundNumber]?.leftDeductions}
                                         rightKds={roundScores[roundNumber]?.rightKnockdowns}
                                         rightPen={roundScores[roundNumber]?.rightDeductions}
+                                        stoppageReason={roundScores[roundNumber]?.stoppageReason}
                                         // savedPlusMinus={savedPlusMinusForRound}
                                         fighter1={String(fighter1)}
                                         fighter2={String(fighter2)}
@@ -396,6 +421,7 @@ export default function MatchInfoScreen() {
                                         savedScores={JSON.stringify(roundScores)}
                                         onClearRound={handleClearRound}
                                         onSaveRound={handleSaveRound}
+                                        onMarkStoppage={handleMarkStoppage}
                                     />
                                 
                             );
@@ -567,7 +593,7 @@ const styles = StyleSheet.create({
         height: '15.5%',
         marginBottom: 18,
         marginRight: '1%',
-        justifyContent: 'space-around',
+        justifyContent: 'center',
         boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
     },
     title: {

@@ -185,8 +185,10 @@ export default function RoundScoringScreen() {
                     onPressOut={() => resetLongPressFill(leftKDUndoProgress)}
                     onLongPress={() => {
                         void confirmHaptic();
-                        setScore((currentScore) => currentScore - 30);
+                        setScore((currentScore) => currentScore <= -70 ? currentScore = -99 : currentScore - 30);
                         setLeftKnockdowns((current) => current > 0 ? current - 1 : 0);
+                        {/* setScore((currentScore) => currentScore + 30);
+                        setRightKnockdowns((current) => current > 0 ? current - 1 : 0); */}
                         resetLongPressFill(leftKDUndoProgress);
                     }}
                     style={[styles.undoKDLeft, { height: undoHeight }]}
@@ -201,10 +203,10 @@ export default function RoundScoringScreen() {
                         <Text style={styles.leftEvents2}>Knockdowns: {leftKnockdowns}</Text>
                         <Text style={styles.leftKdUndo}>Hold to Undo</Text>
                 </Pressable>
-
+                        
 
                 { score > 0 &&
-                    <Text style={[styles.leftScore, { bottom: scoreBottom }]}>{score}&nbsp;<Ionicons name="caret-back" size={36} color="white" /></Text>
+                    <Text style={[styles.leftScore, { bottom: scoreBottom }]}>{score}&nbsp;<Ionicons name="caret-back" size={48} color="white" /></Text>
                 }
                 <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.62} style={[styles.leftName, compact && styles.compactName]}>{fighter1}</Text>
 
@@ -249,7 +251,7 @@ export default function RoundScoringScreen() {
                     onPressOut={() => resetLongPressFill(leftKdProgress)}
                     onLongPress={() => {
                         void confirmHaptic();
-                        setScore((currentScore) => currentScore + 30);
+                        setScore((currentScore) => currentScore >= 70 ? currentScore = 99 : currentScore + 30);
                         setLeftKnockdowns((current) => current + 1);
                         resetLongPressFill(leftKdProgress);
                     }}
@@ -306,7 +308,7 @@ export default function RoundScoringScreen() {
                 </Pressable>
 
                 { score < 0 &&
-                    <Text style={[styles.rightScore, { bottom: scoreBottom }]}><Ionicons name="caret-forward" size={36} color="white" />&nbsp;{absScore}</Text>
+                    <Text style={[styles.rightScore, { bottom: scoreBottom }]}><Ionicons name="caret-forward" size={48} color="white" />&nbsp;{absScore}</Text>
                 }
 
                 {/* Undo right deductions */}
@@ -636,12 +638,18 @@ const styles = StyleSheet.create({
     },
     leftScore: {
         position: 'absolute',
-        bottom: 50,
-        right: 30,
+        right: '5%',
         color: '#fff',
-        fontSize: 48,
+        fontSize: 63,
         fontWeight: '700',
         textAlign: 'right'
+    },
+    rightScore: {
+        position: 'absolute',
+        left: '5%',
+        color: '#fff',
+        fontSize: 63,
+        fontWeight: '700',
     },
     plusSign: {
         position: 'absolute',
@@ -692,14 +700,7 @@ const styles = StyleSheet.create({
         marginTop: 88,
         paddingHorizontal: 18,
     },
-    rightScore: {
-        position: 'absolute',
-        bottom: 50,
-        left: 30,
-        color: '#fff',
-        fontSize: 48,
-        fontWeight: '700',
-    },
+
     compactName: {
         fontSize: 20,
     },
