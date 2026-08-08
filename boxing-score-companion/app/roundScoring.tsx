@@ -68,14 +68,6 @@ export default function RoundScoringScreen() {
         progress.setValue(0);
     };
 
-    // useEffect(() => {
-    //     void ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
-
-    //     return () => {
-    //         void ScreenOrientation.unlockAsync();
-    //     };
-    // }, []);
-
     useEffect(() => {
         if (score > 0) {
             setRightScore(9 - rightDeductions - leftKnockdowns);
