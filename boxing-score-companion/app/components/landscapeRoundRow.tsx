@@ -22,7 +22,7 @@ type RoundRowProps = {
     rounds: string;
     id?: string;
     savedScores: string;
-    stoppageReason?: 'KO' | 'TKO' | 'DQ';
+    stoppageReason?: 'KO' | 'TKO' | 'DQ' | 'NC';
     onClearRound: (roundNumber: number) => void;
     onSaveRound: (roundNumber: number, score: {
         left: string;
@@ -34,7 +34,7 @@ type RoundRowProps = {
         rightKnockdowns: string;
         scoringMethod: 'quick';
     }) => void;
-    onMarkStoppage: (roundNumber: number, reason: 'KO' | 'TKO' | 'DQ') => void;
+    onMarkStoppage: (roundNumber: number, reason: 'KO' | 'TKO' | 'DQ' | 'NC') => void;
 };
 
 export default function LandscapeRoundRow({
