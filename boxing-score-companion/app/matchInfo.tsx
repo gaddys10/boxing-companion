@@ -431,6 +431,15 @@ export default function MatchInfoScreen() {
                         </Text>
                     </Pressable>
 
+                    <Pressable 
+                        style={isLandscape ? styles.landscapeButton : styles.shareButton}
+                        onPress={handleCardDetails}
+                    >
+                        <Text style={isLandscape ? styles.landscapeButtonText : styles.shareButtonText}>
+                            Share
+                        </Text>
+                    </Pressable>
+
                     {/* save button  */}
                     <Pressable 
                         style={isLandscape ? styles.landscapeButton : styles.button}
@@ -462,19 +471,40 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontWeight: '700',
     },
-    cardDetailsButton: {
-        backgroundColor: '#1976D2',
+    shareButton: {
+        backgroundColor: '#fff',
         paddingHorizontal: '6%',
         paddingVertical: '2.5%',
         borderRadius: 12,
         overflow: 'hidden',
         alignSelf: 'center',
         alignItems: 'center',
-        bottom: '4%'
+        bottom: '4%',
+        borderWidth: 1,
+        borderColor: 'rgba(200, 200, 200, 0.7)',
+    
+    },
+    shareButtonText: {
+        color: '#1976D2',
+        fontSize: 14,
+        fontWeight: '700',
+        zIndex: 1
+    },
+    cardDetailsButton: {
+        backgroundColor: '#fff',
+        paddingHorizontal: '6%',
+        paddingVertical: '2.5%',
+        borderRadius: 12,
+        overflow: 'hidden',
+        alignSelf: 'center',
+        alignItems: 'center',
+        bottom: '4%',
+        borderWidth: 1,
+        borderColor: 'rgba(200, 200, 200, 0.7)',
     },
     cardDetailsButtonText: {
-        color: '#fff',
-        fontSize: 16,
+        color: '#1976D2',
+        fontSize: 14,
         fontWeight: '700',
         zIndex: 1
     },
@@ -491,7 +521,7 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         color: '#fff',
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: '700',
         zIndex: 1
     },
@@ -549,6 +579,7 @@ const styles = StyleSheet.create({
     buttonContainer: {
         flexDirection: 'row',
         justifyContent: 'space-around',
+        bottom: '1%',
     },
     headerText: {
         textAlign: 'center',
@@ -602,7 +633,7 @@ const styles = StyleSheet.create({
     },
     rowContainer: {
         flex: 1,
-        marginBottom: 16,
+        marginBottom: 5,
         paddingHorizontal: 15,
         marginHorizontal: -24,
     },
@@ -636,7 +667,7 @@ const styles = StyleSheet.create({
     totalEvents: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 25,
+        marginBottom: '2%',
         width: '85%',
         marginLeft: 23,
     },
