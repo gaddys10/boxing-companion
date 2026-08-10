@@ -1,5 +1,5 @@
 import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
-import { View, Text, Pressable, StyleSheet, Animated, useWindowDimensions, Image } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Animated, useWindowDimensions, Image, Modal } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
@@ -31,6 +31,7 @@ export default function RoundScoringScreen() {
     const [rightKnockdowns, setRightKnockdowns] = useState(Number(savedRound?.rightKnockdowns ?? 0));
     const [leftScore, setLeftScore] = useState(Number(savedRound?.left ?? 10));
     const [rightScore, setRightScore] = useState(Number(savedRound?.right ?? 10));
+    const [tenEightModalVisible, setTenEightModalVisible] = useState(false);
 
     const leftPulseAnim = useRef<Animated.Value>(new Animated.Value(1)).current;
     const rightPulseAnim = useRef<Animated.Value>(new Animated.Value(1)).current;
@@ -118,6 +119,37 @@ export default function RoundScoringScreen() {
     };
 
     const absScore = Math.abs(score);
+    const qualifiesForTenEightPrompt =
+        absScore >= 35 &&
+        leftKnockdowns === 0 &&
+        rightKnockdowns === 0 &&
+        leftDeductions === 0 &&
+        rightDeductions === 0;
+
+    const saveRoundAndExit = (makeTenEight: boolean) => {
+        const savedLeftScore = makeTenEight ? (score > 0 ? 10 : 8) : leftScore;
+        const savedRightScore = makeTenEight ? (score < 0 ? 10 : 8) : rightScore;
+
+        setTenEightModalVisible(false);
+        router.replace({
+            pathname: '/matchInfo',
+            params: {
+                fighter1: params.fighter1,
+                fighter2: params.fighter2,
+                rounds: params.rounds,
+                id: params.id,
+                savedScores: params.savedScores,
+                savedRound: String(round),
+                savedLeftScore: String(savedLeftScore),
+                savedRightScore: String(savedRightScore),
+                savedPlusMinus: String(score),
+                savedLeftDeductions: String(leftDeductions),
+                savedRightDeductions: String(rightDeductions),
+                savedLeftKnockdowns: String(leftKnockdowns),
+                savedRightKnockdowns: String(rightKnockdowns),
+            },
+        });
+    };
 
     return (
         
@@ -398,24 +430,12 @@ export default function RoundScoringScreen() {
                 onLongPress={() => {
                     void tripleHaptic(Haptics.ImpactFeedbackStyle.Medium);
                     resetLongPressFill(exitProgress);
-                    router.replace({
-                        pathname: '/matchInfo',
-                        params: {
-                            fighter1: params.fighter1,
-                            fighter2: params.fighter2,
-                            rounds: params.rounds,
-                            id: params.id,
-                            savedScores: params.savedScores,
-                            savedRound: String(round),
-                            savedLeftScore: String(leftScore),
-                            savedRightScore: String(rightScore),
-                            savedPlusMinus: String(score),
-                            savedLeftDeductions: String(leftDeductions),
-                            savedRightDeductions: String(rightDeductions),
-                            savedLeftKnockdowns: String(leftKnockdowns),
-                            savedRightKnockdowns: String(rightKnockdowns),
-                        },
-                    });
+                    if (qualifiesForTenEightPrompt) {
+                        setTenEightModalVisible(true);
+                        return;
+                    }
+
+                    saveRoundAndExit(false);
                 }}
                 delayLongPress={1000}
             >
@@ -428,6 +448,31 @@ export default function RoundScoringScreen() {
                 <Animated.View style={[styles.fillOverlay, { width: exitProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                 <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={styles.exitButtonText}>Hold to Save & Exit Round {round}</Text>
             </Pressable>
+
+            <Modal
+                animationType="fade"
+                transparent
+                visible={tenEightModalVisible}
+                supportedOrientations={['landscape', 'landscape-left', 'landscape-right']}
+                onRequestClose={() => setTenEightModalVisible(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.tenEightModal}>
+                        <Text style={styles.modalTitle}>Make this a 10–8 round?</Text>
+                        <Text style={styles.modalText}>
+                            This round reached {absScore} momentum points. Would you like the losing fighter to receive 8 points?
+                        </Text>
+                        <View style={styles.modalActions}>
+                            <Pressable style={[styles.modalButton, styles.keepTenNineButton]} onPress={() => saveRoundAndExit(false)}>
+                                <Text style={styles.keepTenNineButtonText}>No, keep 10–9</Text>
+                            </Pressable>
+                            <Pressable style={[styles.modalButton, styles.makeTenEightButton]} onPress={() => saveRoundAndExit(true)}>
+                                <Text style={styles.makeTenEightButtonText}>Yes, make it 10–8</Text>
+                            </Pressable>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 }
@@ -441,6 +486,62 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#fff',
         flexDirection: 'row',
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.55)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 20,
+    },
+    tenEightModal: {
+        width: 420,
+        maxWidth: '90%',
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        padding: 22,
+    },
+    modalTitle: {
+        color: '#111',
+        fontSize: 21,
+        fontWeight: '700',
+        textAlign: 'center',
+    },
+    modalText: {
+        color: '#333',
+        fontSize: 15,
+        lineHeight: 21,
+        marginTop: 10,
+        textAlign: 'center',
+    },
+    modalActions: {
+        flexDirection: 'row',
+        gap: 10,
+        marginTop: 20,
+    },
+    modalButton: {
+        flex: 1,
+        minHeight: 44,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 12,
+    },
+    keepTenNineButton: {
+        backgroundColor: '#EEF1F3',
+    },
+    keepTenNineButtonText: {
+        color: '#333A3F',
+        fontWeight: '700',
+        textAlign: 'center',
+    },
+    makeTenEightButton: {
+        backgroundColor: '#D32F2F',
+    },
+    makeTenEightButtonText: {
+        color: '#fff',
+        fontWeight: '700',
+        textAlign: 'center',
     },
     deductLeft: {
         position: 'absolute',
