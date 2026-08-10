@@ -70,6 +70,7 @@ export default function MatchInfoScreen() {
                 rightDeductions: String(savedRightDeductions ?? 0),
                 leftKnockdowns: String(savedLeftKnockdowns ?? 0),
                 rightKnockdowns: String(savedRightKnockdowns ?? 0),
+                scoringMethod: 'full',
             };
         }
 
