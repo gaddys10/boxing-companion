@@ -4,6 +4,9 @@ import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } fr
 import LandscapeRoundRow from './components/landscapeRoundRow';
 import RoundRow from './components/roundRow';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const SAVED_CARDS_KEY = 'savedScorecards';
 
 export default function MatchInfoScreen() {
     const router = useRouter();
@@ -198,21 +201,48 @@ export default function MatchInfoScreen() {
         });
     };
 
-    const handleCardDetails = () => {
+    const handleCardDetails = async () => {
+        const savedRoundScores = getSavedScores();
+        const cardId = isEditingScorecard ? scorecardId : Date.now();
+        const scorecard = {
+            id: cardId,
+            fighter1: String(fighter1 || 'Fighter 1'),
+            fighter2: String(fighter2 || 'Fighter 2'),
+            rounds: Number(rounds || 3),
+            savedScores: JSON.stringify(savedRoundScores),
+            weight: Number(weight || null),
+            gender: String(gender || null),
+            ...scorecardTotals,
+            fighter1Score: fighter1LatestTotal,
+            fighter2Score: fighter2LatestTotal,
+        };
+
+        const storedCards = await AsyncStorage.getItem(SAVED_CARDS_KEY);
+        const currentCards = storedCards ? JSON.parse(storedCards) : [];
+        const existingCardIndex = currentCards.findIndex((card: { id: number }) => card.id === cardId);
+
+        if (existingCardIndex === -1) {
+            currentCards.unshift(scorecard);
+        } else {
+            currentCards[existingCardIndex] = scorecard;
+        }
+
+        await AsyncStorage.setItem(SAVED_CARDS_KEY, JSON.stringify(currentCards));
+
         router.push({
             pathname: '/createMatch',
             params: {
-                id: id ? String(id) : undefined,
+                id: String(cardId),
                 title: 'Edit Scorecard Details',
                 backText: 'Menu',
                 buttonText: 'Continue',
                 isEdit: 'true',
-                fighter1: String(fighter1 || 'Fighter 1'),
-                fighter2: String(fighter2 || 'Fighter 2'),
-                rounds: Number(rounds || 3),
-                savedScores: JSON.stringify(getSavedScores()),
-                gender: String(gender || null),
-                weight: Number(weight || null),
+                fighter1: scorecard.fighter1,
+                fighter2: scorecard.fighter2,
+                rounds: scorecard.rounds,
+                savedScores: scorecard.savedScores,
+                gender: scorecard.gender,
+                weight: scorecard.weight,
             },
         });
     };
