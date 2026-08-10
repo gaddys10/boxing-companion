@@ -287,8 +287,7 @@ export default function MatchInfoScreen() {
             <View style={[
                 isLandscape ? styles.landscapeContainer : styles.container,
                 isLandscape && {
-                    paddingLeft: Math.max(insets.left, 8),
-                    paddingRight: Math.max(insets.right, 8),
+                
                     paddingBottom: Math.max(insets.bottom, 8),
                 },
             ]}>
@@ -339,7 +338,7 @@ export default function MatchInfoScreen() {
                         {/* Fighter 1 vs fighter 2 */}
                         <View style={styles.landscapeTopDescription}>
                             
-                            <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.65} style={[styles.landscapeFighterText, styles.landscapeFighter1Name]}>
+                            <Text style={[styles.landscapeFighterText, styles.landscapeFighter1Name]}>
                                 {isLandscape ? formatLandScapeName(String(fighter1)) : fighter1}
                             </Text>
                             <Text style={[styles.fighter1PointHeader, isLatestRoundNoContest && styles.noContestPointHeader]}>{fighter1LatestTotal}</Text>
@@ -349,7 +348,7 @@ export default function MatchInfoScreen() {
                             
                             <Text style={[styles.landscapeFighterText, styles.landscapeVsText]}>vs</Text>
 
-                            <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.65} style={[styles.landscapeFighterText, styles.landscapeFighter2Name]}>
+                            <Text style={[styles.landscapeFighterText, styles.landscapeFighter2Name]}>
                                 {isLandscape ? formatLandScapeName(String(fighter2)) : fighter2}
                             </Text>
                             <Text style={[styles.fighter2PointHeader, isLatestRoundNoContest && styles.noContestPointHeader]}>{fighter2LatestTotal}</Text>
@@ -359,6 +358,20 @@ export default function MatchInfoScreen() {
                         </View>
                     </View>
                 }
+
+                {isLandscape && (
+                    <View style={styles.landscapeButtonContainer}>
+                        <Pressable style={styles.landscapeCardDetailsButton} onPress={handleCardDetails}>
+                            <Text onPress={handleCardDetails} style={styles.landscapecardDetailsButtonText}>Card Details</Text>
+                        </Pressable>
+                        <Pressable style={styles.landscapeShareButton} onPress={handleSaveScorecard}>
+                            <Text style={styles.landscapeShareButtonText}>Share</Text>
+                        </Pressable>
+                        <Pressable style={styles.landscapeButton} onPress={handleSaveScorecard}>
+                            <Text style={styles.landscapeButtonText}>Save & Exit</Text>
+                        </Pressable>
+                    </View>
+                )}
 
                 {/* Total, round, +/- header  */}
                 {isLandscape ? (
@@ -471,38 +484,41 @@ export default function MatchInfoScreen() {
                             );
                         })}
                     </ScrollView>
+                    
                 }
-                <View style={styles.buttonContainer}>
-                    {/* save button  */}
-                    <Pressable 
-                        style={isLandscape ? styles.landscapeButton : styles.cardDetailsButton}
-                        onPress={handleCardDetails}
-                    >
-                        <Text style={isLandscape ? styles.landscapeButtonText : styles.cardDetailsButtonText}>
-                            Card Details
-                        </Text>
-                    </Pressable>
+                {!isLandscape &&
+                    <View style={styles.buttonContainer}>
+                        {/* save button  */}
+                        <Pressable 
+                            style={isLandscape ? styles.landscapeButton : styles.cardDetailsButton}
+                            onPress={handleCardDetails}
+                        >
+                            <Text style={isLandscape ? styles.landscapeButtonText : styles.cardDetailsButtonText}>
+                                Card Details
+                            </Text>
+                        </Pressable>
 
-                    <Pressable 
-                        style={isLandscape ? styles.landscapeButton : styles.shareButton}
-                        onPress={handleCardDetails}
-                    >
-                        <Text style={isLandscape ? styles.landscapeButtonText : styles.shareButtonText}>
-                            Share
-                        </Text>
-                    </Pressable>
+                        <Pressable 
+                            style={isLandscape ? styles.landscapeButton : styles.shareButton}
+                            onPress={handleCardDetails}
+                        >
+                            <Text style={isLandscape ? styles.landscapeButtonText : styles.shareButtonText}>
+                                Share
+                            </Text>
+                        </Pressable>
 
-                    {/* save button  */}
-                    <Pressable 
-                        style={isLandscape ? styles.landscapeButton : styles.button}
-                        // onPress={() => router.push('/')}
-                        onPress={handleSaveScorecard}
-                    >
-                        <Text style={isLandscape ? styles.landscapeButtonText : styles.buttonText}>
-                            Save & Exit
-                        </Text>
-                    </Pressable>
-                </View>
+                        {/* save button  */}
+                        <Pressable 
+                            style={isLandscape ? styles.landscapeButton : styles.button}
+                            // onPress={() => router.push('/')}
+                            onPress={handleSaveScorecard}
+                        >
+                            <Text style={isLandscape ? styles.landscapeButtonText : styles.buttonText}>
+                                Save & Exit
+                            </Text>
+                        </Pressable>
+                    </View>
+                }
             </View>
         </>
     );
@@ -534,7 +550,6 @@ const styles = StyleSheet.create({
         bottom: '4%',
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
-    
     },
     shareButtonText: {
         color: '#1976D2',
@@ -627,9 +642,15 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 0,
-        // marginLeft: '.5%',
-        // marginRight: '2%',
         paddingBottom: 5,
+    },
+    landscapeButtonContainer: {
+        position: 'absolute',
+        right: '5%',
+        top: 5,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 15
     },
     buttonContainer: {
         flexDirection: 'row',
@@ -660,7 +681,6 @@ const styles = StyleSheet.create({
     leftHeader: {
         color: 'red',
         width: '45%',
-        // marginLeft: 15
     },
     leftTotal: {
         marginLeft: 10
@@ -747,19 +767,57 @@ const styles = StyleSheet.create({
     //LANDSCAPE STYLES
     landscapeButton: {
         backgroundColor: '#D32F2F',
-        paddingHorizontal: 24,
-        paddingVertical: 6,
+        paddingHorizontal: 25,
+        paddingVertical: 4,
         borderRadius: 12,
-        width: '20%',
-        minHeight: 44,
-        position: 'absolute',
+        width: 140,
+        minHeight: 36,
         top: 8,
-        right: '10%',
-        // center button in landscape
+        right: '8%',
+        zIndex: 2,
         justifyContent: 'center',
         alignItems: 'center',
         overflow: 'hidden',
         boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
+    },
+    landscapeCardDetailsButton: {
+        backgroundColor: '#fff',
+        paddingHorizontal: 25,
+        paddingVertical: 4,
+        borderRadius: 12,
+        width: 140,
+        minHeight: 36,
+        top: 8,
+        right: '8%',
+        zIndex: 2,
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'hidden',
+        boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
+    },
+
+    landscapeShareButton: {
+        backgroundColor: '#fff',
+        paddingHorizontal: 25,
+        paddingVertical: 4,
+        borderRadius: 12,
+        width: 140,
+        minHeight: 36,
+        top: 8,
+        right: '8%',
+        zIndex: 2,
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'hidden',
+        boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
+    },
+    landscapecardDetailsButtonText: {
+        color: '#1976D2',
+        fontWeight: 700
+    },
+    landscapeShareButtonText: {
+        color: '#1976D2',
+        fontWeight: 700
     },
     landscapeButtonText: {
         color: '#fff',
@@ -783,7 +841,6 @@ const styles = StyleSheet.create({
     landscapeFighter1Name: {
         color: '#D32F2F',
         textAlign: 'center',
-        minHeight: 24
     },
     landscapeFighter2Name: {
         color: '#1976D2',
@@ -828,14 +885,13 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
         height: '100%',
-        marginLeft: 0,
+        marginLeft: '1.5%',
         width: '20%',
         minWidth: 126,
         maxWidth: 170,
         boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
-        flexDirection: 'row',
-        // justifyContent: 'space-between',
-        // alignItems: 'stretch',
+        flexDirection: 'column',
+        paddingTop: "3.15%",
         paddingHorizontal: 5,
     },
     landscapeTopDescription: {

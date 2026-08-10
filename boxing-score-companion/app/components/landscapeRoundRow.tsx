@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, Modal } from 'react-native';
 import { router } from 'expo-router';
-import { Swipeable } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Ionicons, MaterialCommunityIcons} from '@expo/vector-icons';
+
+const SWIPE_ACTIONS_HEIGHT = 85;
+const SWIPE_ACTIONS_BOTTOM = 5;
+const SWIPE_REVEAL_BUFFER = 1;
+const SWIPE_REVEAL_DISTANCE = SWIPE_ACTIONS_HEIGHT + SWIPE_ACTIONS_BOTTOM + SWIPE_REVEAL_BUFFER;
 
 type RoundRowProps = {
     roundNumber: number;
@@ -60,7 +66,8 @@ export default function LandscapeRoundRow({
     onSaveRound,
     onMarkStoppage,
 }: RoundRowProps) {
-    const swipeableRef = React.useRef<Swipeable | null>(null);
+    const swipeOffset = useSharedValue(0);
+    const swipeStartOffset = useSharedValue(0);
     const plusMinusNumber = plusMinus && plusMinus !== '-' ? Number(plusMinus) : null;
     const [scoringModalVisible, setScoringModalVisible] = useState(false);
     const [quickScoringVisible, setQuickScoringVisible] = useState(false);
@@ -126,21 +133,46 @@ export default function LandscapeRoundRow({
                     ? '#1976D2'
                     : '#b0b0b0';
 
-    const renderRightActions = () => (
+    const closeSwipeActions = () => {
+        swipeOffset.value = withTiming(0);
+    };
+
+    const verticalSwipe = Gesture.Pan()
+        .activeOffsetY([-10, 10])
+        .failOffsetX([-10, 10])
+        .onStart(() => {
+            swipeStartOffset.value = swipeOffset.value;
+        })
+        .onUpdate((event) => {
+            swipeOffset.value = Math.max(
+                -SWIPE_REVEAL_DISTANCE,
+                Math.min(0, swipeStartOffset.value + event.translationY),
+            );
+        })
+        .onEnd((event) => {
+            const shouldOpen = event.velocityY < -300 || swipeOffset.value < -SWIPE_REVEAL_DISTANCE / 2;
+            swipeOffset.value = withTiming(shouldOpen ? -SWIPE_REVEAL_DISTANCE : 0);
+        });
+
+    const swipeContentStyle = useAnimatedStyle(() => ({
+        transform: [{ translateY: swipeOffset.value }],
+    }));
+
+    const renderSwipeActions = () => (
         <View style={styles.swipeActions}>
             <Pressable
                 style={styles.stoppageAction}
                 onPress={() => {
-                    swipeableRef.current?.close();
+                    closeSwipeActions();
                     setStoppageModalVisible(true);
                 }}
             >
-                <Text style={styles.clearActionText}>{stoppageReason ? stoppageReason : 'Mark'+'\n'+'Stoppage'}</Text>
+                <Text style={styles.stoppageActionText}>Stop{"\n"}Fight</Text>
             </Pressable>
             <Pressable
                 style={styles.clearAction}
                 onPress={() => {
-                    swipeableRef.current?.close();
+                    closeSwipeActions();
                     onClearRound(roundNumber);
                 }}
             >
@@ -151,252 +183,242 @@ export default function LandscapeRoundRow({
 
     return (
         <>
-        <Swipeable ref={swipeableRef} renderRightActions={renderRightActions} overshootRight={false}>
-            <View style={styles.row}>
-                <View style={[styles.roundLabelContainer, { backgroundColor: roundLabelColor }]}> 
-                    <Text style={styles.roundLabel}>R{roundNumber}</Text>
-                </View>
-                <Text style={[styles.scoreText, styles.leftTotalScore]}>{leftTotal ?? '-'}</Text>
-                <Text style={[styles.scoreText, styles.leftRoundScore]}>{leftScore ?? '-'}</Text>
+            <GestureDetector gesture={verticalSwipe}>
+                <View style={styles.swipeViewport}>
+                    {renderSwipeActions()}
+                    <Animated.View style={[styles.swipeContent, swipeContentStyle]}>
+                    <View style={styles.row}>
+                        <View style={[styles.roundLabelContainer, { backgroundColor: roundLabelColor }]}>
+                            <Text style={styles.roundLabel}>R{roundNumber}</Text>
+                        </View>
+                        <Text style={[styles.scoreText, styles.leftTotalScore]}>{leftTotal ?? '-'}</Text>
+                        <Text style={[styles.scoreText, styles.leftRoundScore]}>{leftScore ?? '-'}</Text>
 
-                {plusMinusNumber !== null && plusMinusNumber > 0 && (
-                    <Ionicons name="triangle" style={styles.leftTriangle} />
-                )}
-
-                
-
-                
-                {/* <Text style={[styles.scoreText, plusMinusStyle]}>
-                    <Text style={plusMinusPillStyle}>
-                        {isQuickScore && plusMinusNumber !== null ? '\u00A0' : plusMinusDisplay}
-                    </Text>
-                </Text> */}
-
-                <View style={styles.plusMinusSlot}>
-                    <View style={plusMinusPillStyle}>
-                        <Text style={styles.plusMinusPillText}>
-                            {isQuickScore && plusMinusNumber !== null
-                                ? '\u00A0'
-                                : plusMinusDisplay}
-                        </Text>
-                    </View>
-                </View>
-
-
-
-                {plusMinusNumber !== null && plusMinusNumber < 0 && (
-                    <Ionicons name="triangle" style={styles.rightTriangle} />
-                )}
-                <Text style={[styles.scoreText, styles.rightRoundScore, ]}>{rightScore ?? '-'}</Text>
-                <Text style={[styles.scoreText, styles.rightTotalScore]}>{rightTotal ?? '-'}</Text>
-                <Pressable
-                    style={styles.button}
-                    onPress={() => setScoringModalVisible(true)}
-                >
-                    <MaterialCommunityIcons 
-                        name="pencil" size={20} 
-                        color="#333A3F" 
-                        // style={styles.editButtonIcon}
-                    />
-                    {/* <Ionicons name="pencil" size={20} color="#333" /> */}
-                </Pressable>
-            </View>
-            {
-                (Number(leftKds) > 0 || Number(leftPen) > 0) && (
-                    <View style={styles.roundEvents}>
-                        {Number(leftKds) > 0 && Number(leftPen) > 0 && (
-                            <Text style={styles.roundEventsText}>KD&nbsp;&nbsp;&nbsp;{leftKds}{"\n"}PEN{leftPen}</Text>
+                        {plusMinusNumber !== null && plusMinusNumber > 0 && (
+                            <Ionicons name="triangle" style={styles.leftTriangle} />
                         )}
-                        {Number(leftKds) > 0 && Number(leftPen) === 0 && (
-                            <Text style={styles.roundEventsText}>KD{leftKds}</Text>
-                        )}
-                        {Number(leftKds) === 0 && Number(leftPen) > 0 && (
-                            <Text style={styles.roundEventsText}>PD{leftPen}</Text>
-                        )}
-                    </View>
-                )
-            }
-            {
-                (Number(rightKds) > 0 || Number(rightPen) > 0) && (
-                    <View style={styles.roundEvents2}>
-                        {Number(rightKds) > 0 && Number(rightPen) > 0 && (
-                            <Text style={styles.roundEventsText}>KD{rightKds}{"\n"}PD{rightPen}</Text>
-                        )}
-                        {Number(rightKds) > 0 && Number(rightPen) === 0 && (
-                            <Text style={styles.roundEventsText}>KD{rightKds}</Text>
-                        )}
-                        {Number(rightKds) === 0 && Number(rightPen) > 0 && (
-                            <Text style={styles.roundEventsText}>PD{rightPen}</Text>
-                        )}
-                    </View>
-                )
-            }
-        </Swipeable>
-        <Modal
-            animationType="fade"
-            transparent
-            visible={scoringModalVisible}
-            supportedOrientations={['landscape', 'landscape-left', 'landscape-right']}
-            onRequestClose={closeScoringModal}
-        >
-            <View style={styles.modalOverlay}>
-                <View style={styles.scoringModal}>
-                    {!quickScoringVisible ? (
-                        <>
-                            <Text style={styles.modalTitle}>Select Scoring Method</Text>
-                            <View style={styles.methodRow}>
-                                <View style={styles.methodOption}>
-                                    <Pressable style={styles.scoringButton} onPress={openQuickScoring}>
-                                        <Text style={styles.scoringButtonText}>Quick Scoring</Text>
-                                    </Pressable>
-                                    <Text style={styles.modalText}>Score the round in just a few taps!</Text>
-                                </View>
-                                <View style={styles.methodOption}>
-                                    <Pressable
-                                        style={styles.scoringButton}
-                                        onPress={() => {
-                                            closeScoringModal();
-                                            router.push({
-                                                pathname: '/roundScoring',
-                                                params: {
-                                                    roundNumber: String(roundNumber),
-                                                    fighter1,
-                                                    fighter2,
-                                                    rounds,
-                                                    id,
-                                                    savedScores,
-                                                },
-                                            });
-                                        }}
-                                    >
-                                        <Text style={styles.scoringButtonText}>Full Scoring</Text>
-                                    </Pressable>
-                                    <Text style={styles.modalText}>Interactive live scoring with momentum tracking</Text>
-                                </View>
+
+                        <View style={styles.plusMinusSlot}>
+                            <View style={plusMinusPillStyle}>
+                                <Text style={styles.plusMinusPillText}>
+                                    {isQuickScore && plusMinusNumber !== null
+                                        ? '\u00A0'
+                                        : plusMinusDisplay}
+                                </Text>
                             </View>
-                            <Pressable style={[styles.modalButton, styles.cancelButton]} onPress={closeScoringModal}>
-                                <Text style={styles.cancelButtonText}>Cancel</Text>
-                            </Pressable>
-                        </>
-                    ) : (
-                        <>
-                            <Text style={styles.modalTitle}>Quick Score Round {roundNumber}</Text>
-                            <View style={styles.quickCornerRow}>
-                                <Text numberOfLines={1} style={[styles.quickCornerName, styles.quickLeftName]}>{fighter1}</Text>
-                                <Text numberOfLines={1} style={[styles.quickCornerName, styles.quickRightName]}>{fighter2}</Text>
+                        </View>
+
+                        {plusMinusNumber !== null && plusMinusNumber < 0 && (
+                            <Ionicons name="triangle" style={styles.rightTriangle} />
+                        )}
+                        <Text style={[styles.scoreText, styles.rightRoundScore, ]}>{rightScore ?? '-'}</Text>
+                        <Text style={[styles.scoreText, styles.rightTotalScore]}>{rightTotal ?? '-'}</Text>
+                        <Pressable
+                            style={styles.button}
+                            onPress={() => setScoringModalVisible(true)}
+                        >
+                            <MaterialCommunityIcons
+                                name="pencil" size={20}
+                                color="#333A3F"
+                            />
+                        </Pressable>
+                    </View>
+                    {
+                        (Number(leftKds) > 0 || Number(leftPen) > 0) && (
+                            <View style={styles.roundEvents}>
+                                {Number(leftKds) > 0 && Number(leftPen) > 0 && (
+                                    <Text style={styles.roundEventsText}>KD{leftKds}{"\n"}PD{leftPen}</Text>
+                                )}
+                                {Number(leftKds) > 0 && Number(leftPen) === 0 && (
+                                    <Text style={styles.roundEventsText}>KD{leftKds}</Text>
+                                )}
+                                {Number(leftKds) === 0 && Number(leftPen) > 0 && (
+                                    <Text style={styles.roundEventsText}>PD{leftPen}</Text>
+                                )}
                             </View>
-                            <View style={styles.quickFieldsRow}>
-                                <View key={"Round Score"} style={styles.quickField}>
-                                    <Text style={styles.quickEventLabel}>Round Score</Text>
-                                    <View style={styles.quickCornerRow}>
-                                        <View style={styles.stepper}>
-                                            <Pressable style={styles.stepperButton} onPress={() => setQuickLeftScore(Math.max(0, quickLeftScore - 1))}><Text style={styles.stepperButtonText}>−</Text></Pressable>
-                                            <Text style={[styles.stepperValue, styles.quickLeftName]}>{quickLeftScore}</Text>
-                                            <Pressable style={styles.stepperButton} onPress={() => setQuickLeftScore(Math.min(10, quickLeftScore + 1))}><Text style={styles.stepperButtonText}>+</Text></Pressable>
-                                        </View>
-                                        <View style={styles.stepper}>
-                                            <Pressable style={styles.stepperButton} onPress={() => setQuickRightScore(Math.max(0, quickRightScore - 1))}><Text style={styles.stepperButtonText}>−</Text></Pressable>
-                                            <Text style={[styles.stepperValue, styles.quickRightName]}>{quickRightScore}</Text>
-                                            <Pressable style={styles.stepperButton} onPress={() => setQuickRightScore(Math.min(10, quickRightScore + 1))}><Text style={styles.stepperButtonText}>+</Text></Pressable>
-                                        </View>
+                        )
+                    }
+                    {
+                        (Number(rightKds) > 0 || Number(rightPen) > 0) && (
+                            <View style={styles.roundEvents2}>
+                                {Number(rightKds) > 0 && Number(rightPen) > 0 && (
+                                    <Text style={styles.roundEventsText}>KD{rightKds}{"\n"}PD{rightPen}</Text>
+                                )}
+                                {Number(rightKds) > 0 && Number(rightPen) === 0 && (
+                                    <Text style={styles.roundEventsText}>KD{rightKds}</Text>
+                                )}
+                                {Number(rightKds) === 0 && Number(rightPen) > 0 && (
+                                    <Text style={styles.roundEventsText}>PD{rightPen}</Text>
+                                )}
+                            </View>
+                        )
+                    }
+                    </Animated.View>
+                </View>
+            </GestureDetector>
+            <Modal
+                animationType="fade"
+                transparent
+                visible={scoringModalVisible}
+                supportedOrientations={['landscape', 'landscape-left', 'landscape-right']}
+                onRequestClose={closeScoringModal}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.scoringModal}>
+                        {!quickScoringVisible ? (
+                            <>
+                                <Text style={styles.modalTitle}>Select Scoring Method</Text>
+                                <View style={styles.methodRow}>
+                                    <View style={styles.methodOption}>
+                                        <Pressable style={styles.scoringButton} onPress={openQuickScoring}>
+                                            <Text style={styles.scoringButtonText}>Quick Scoring</Text>
+                                        </Pressable>
+                                        <Text style={styles.modalText}>Score the round in just a few taps!</Text>
+                                    </View>
+                                    <View style={styles.methodOption}>
+                                        <Pressable
+                                            style={styles.scoringButton}
+                                            onPress={() => {
+                                                closeScoringModal();
+                                                router.push({
+                                                    pathname: '/roundScoring',
+                                                    params: {
+                                                        roundNumber: String(roundNumber),
+                                                        fighter1,
+                                                        fighter2,
+                                                        rounds,
+                                                        id,
+                                                        savedScores,
+                                                    },
+                                                });
+                                            }}
+                                        >
+                                            <Text style={styles.scoringButtonText}>Full Scoring</Text>
+                                        </Pressable>
+                                        <Text style={styles.modalText}>Interactive live scoring with momentum tracking</Text>
                                     </View>
                                 </View>
-                                {[
-                                    // { label: 'Round score', left: quickLeftScore, right: quickRightScore, setLeft: setQuickLeftScore, setRight: setQuickRightScore, max: 10 },
-                                    { label: 'Knockdowns', left: quickLeftKds, right: quickRightKds, setLeft: setQuickLeftKds, setRight: setQuickRightKds },
-                                    { label: 'Point deductions', left: quickLeftPen, right: quickRightPen, setLeft: setQuickLeftPen, setRight: setQuickRightPen },
-                                ].map((field) => (
-                                    <View key={field.label} style={styles.quickField}>
-                                        <Text style={styles.quickEventLabel}>{field.label}</Text>
+                                <Pressable style={[styles.modalButton, styles.cancelButton]} onPress={closeScoringModal}>
+                                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                                </Pressable>
+                            </>
+                        ) : (
+                            <>
+                                <Text style={styles.modalTitle}>Quick Score Round {roundNumber}</Text>
+                                <View style={styles.quickCornerRow}>
+                                    <Text numberOfLines={1} style={[styles.quickCornerName, styles.quickLeftName]}>{fighter1}</Text>
+                                    <Text numberOfLines={1} style={[styles.quickCornerName, styles.quickRightName]}>{fighter2}</Text>
+                                </View>
+                                <View style={styles.quickFieldsRow}>
+                                    <View key={"Round Score"} style={styles.quickField}>
+                                        <Text style={styles.quickEventLabel}>Round Score</Text>
                                         <View style={styles.quickCornerRow}>
                                             <View style={styles.stepper}>
-                                                <Pressable style={styles.stepperButton} onPress={() => field.setLeft(Math.max(0, field.left - 1))}><Text style={styles.stepperButtonText}>−</Text></Pressable>
-                                                <Text style={[styles.stepperValue, field.label === 'Round score' && styles.quickLeftName]}>{field.left}</Text>
-                                                <Pressable style={styles.stepperButton} onPress={() => field.setLeft(field.max ? Math.min(field.max, field.left + 1) : field.left + 1)}><Text style={styles.stepperButtonText}>+</Text></Pressable>
+                                                <Pressable style={styles.stepperButton} onPress={() => setQuickLeftScore(Math.max(0, quickLeftScore - 1))}><Text style={styles.stepperButtonText}>−</Text></Pressable>
+                                                <Text style={[styles.stepperValue, styles.quickLeftName]}>{quickLeftScore}</Text>
+                                                <Pressable style={styles.stepperButton} onPress={() => setQuickLeftScore(Math.min(10, quickLeftScore + 1))}><Text style={styles.stepperButtonText}>+</Text></Pressable>
                                             </View>
                                             <View style={styles.stepper}>
-                                                <Pressable style={styles.stepperButton} onPress={() => field.setRight(Math.max(0, field.right - 1))}><Text style={styles.stepperButtonText}>−</Text></Pressable>
-                                                <Text style={[styles.stepperValue, field.label === 'Round score' && styles.quickRightName]}>{field.right}</Text>
-                                                <Pressable style={styles.stepperButton} onPress={() => field.setRight(field.max ? Math.min(field.max, field.right + 1) : field.right + 1)}><Text style={styles.stepperButtonText}>+</Text></Pressable>
+                                                <Pressable style={styles.stepperButton} onPress={() => setQuickRightScore(Math.max(0, quickRightScore - 1))}><Text style={styles.stepperButtonText}>−</Text></Pressable>
+                                                <Text style={[styles.stepperValue, styles.quickRightName]}>{quickRightScore}</Text>
+                                                <Pressable style={styles.stepperButton} onPress={() => setQuickRightScore(Math.min(10, quickRightScore + 1))}><Text style={styles.stepperButtonText}>+</Text></Pressable>
                                             </View>
                                         </View>
                                     </View>
-                                ))}
-                            </View>
-                            <View style={styles.quickModalActions}>
-                                <Pressable style={[styles.modalButton, styles.backButton]} onPress={() => setQuickScoringVisible(false)}>
-                                    <Text style={styles.backButtonText}>Back</Text>
-                                </Pressable>
-                                <Pressable style={[styles.modalButton, styles.saveButton]} onPress={saveQuickScore}>
-                                    <Text style={styles.saveButtonText}>Save Round</Text>
-                                </Pressable>
-                            </View>
-                        </>
-                    )}
-                </View>
-            </View>
-        </Modal>
-        <Modal
-            animationType="fade"
-            transparent
-            visible={stoppageModalVisible}
-            supportedOrientations={['landscape', 'landscape-left', 'landscape-right']}
-            onRequestClose={() => setStoppageModalVisible(false)}
-        >
-            <View style={styles.modalOverlay}>
-                <View style={styles.scoringModal}>
-                    <Text style={styles.modalTitle}>Mark Stoppage</Text>
-                    <Text style={styles.modalText}>Select why the fight was stopped.</Text>
-                    <View style={styles.stoppageOptions}>
-                        {(['KO', 'TKO', 'DQ'] as const).map((option) => (
-                            <Pressable
-                                key={option}
-                                style={[styles.stoppageOption, stoppageReason === option && styles.selectedStoppageOption]}
-                                onPress={() => {
-                                    onMarkStoppage(roundNumber, option);
-                                    setStoppageModalVisible(false);
-                                }}
-                            >
-                                <Text style={[styles.stoppageOptionText, stoppageReason === option && styles.selectedStoppageOptionText]}>{option}</Text>
-                            </Pressable>
-                        ))}
+                                    {[
+                                        // { label: 'Round score', left: quickLeftScore, right: quickRightScore, setLeft: setQuickLeftScore, setRight: setQuickRightScore, max: 10 },
+                                        { label: 'Knockdowns', left: quickLeftKds, right: quickRightKds, setLeft: setQuickLeftKds, setRight: setQuickRightKds },
+                                        { label: 'Point deductions', left: quickLeftPen, right: quickRightPen, setLeft: setQuickLeftPen, setRight: setQuickRightPen },
+                                    ].map((field) => (
+                                        <View key={field.label} style={styles.quickField}>
+                                            <Text style={styles.quickEventLabel}>{field.label}</Text>
+                                            <View style={styles.quickCornerRow}>
+                                                <View style={styles.stepper}>
+                                                    <Pressable style={styles.stepperButton} onPress={() => field.setLeft(Math.max(0, field.left - 1))}><Text style={styles.stepperButtonText}>−</Text></Pressable>
+                                                    <Text style={[styles.stepperValue, field.label === 'Round score' && styles.quickLeftName]}>{field.left}</Text>
+                                                    <Pressable style={styles.stepperButton} onPress={() => field.setLeft(field.max ? Math.min(field.max, field.left + 1) : field.left + 1)}><Text style={styles.stepperButtonText}>+</Text></Pressable>
+                                                </View>
+                                                <View style={styles.stepper}>
+                                                    <Pressable style={styles.stepperButton} onPress={() => field.setRight(Math.max(0, field.right - 1))}><Text style={styles.stepperButtonText}>−</Text></Pressable>
+                                                    <Text style={[styles.stepperValue, field.label === 'Round score' && styles.quickRightName]}>{field.right}</Text>
+                                                    <Pressable style={styles.stepperButton} onPress={() => field.setRight(field.max ? Math.min(field.max, field.right + 1) : field.right + 1)}><Text style={styles.stepperButtonText}>+</Text></Pressable>
+                                                </View>
+                                            </View>
+                                        </View>
+                                    ))}
+                                </View>
+                                <View style={styles.quickModalActions}>
+                                    <Pressable style={[styles.modalButton, styles.backButton]} onPress={() => setQuickScoringVisible(false)}>
+                                        <Text style={styles.backButtonText}>Back</Text>
+                                    </Pressable>
+                                    <Pressable style={[styles.modalButton, styles.saveButton]} onPress={saveQuickScore}>
+                                        <Text style={styles.saveButtonText}>Save Round</Text>
+                                    </Pressable>
+                                </View>
+                            </>
+                        )}
                     </View>
-                    <Pressable style={[styles.modalButton, styles.cancelButton]} onPress={() => setStoppageModalVisible(false)}>
-                        <Text style={styles.cancelButtonText}>Cancel</Text>
-                    </Pressable>
                 </View>
-            </View>
-        </Modal>
+            </Modal>
+            <Modal
+                animationType="fade"
+                transparent
+                visible={stoppageModalVisible}
+                supportedOrientations={['landscape', 'landscape-left', 'landscape-right']}
+                onRequestClose={() => setStoppageModalVisible(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.scoringModal}>
+                        <Text style={styles.modalTitle}>Mark Stoppage</Text>
+                        <Text style={styles.modalText}>Select why the fight was stopped.</Text>
+                        <View style={styles.stoppageOptions}>
+                            {(['KO', 'TKO', 'DQ'] as const).map((option) => (
+                                <Pressable
+                                    key={option}
+                                    style={[styles.stoppageOption, stoppageReason === option && styles.selectedStoppageOption]}
+                                    onPress={() => {
+                                        onMarkStoppage(roundNumber, option);
+                                        setStoppageModalVisible(false);
+                                    }}
+                                >
+                                    <Text style={[styles.stoppageOptionText, stoppageReason === option && styles.selectedStoppageOptionText]}>{option}</Text>
+                                </Pressable>
+                            ))}
+                        </View>
+                        <Pressable style={[styles.modalButton, styles.cancelButton]} onPress={() => setStoppageModalVisible(false)}>
+                            <Text style={styles.cancelButtonText}>Cancel</Text>
+                        </Pressable>
+                    </View>
+                </View>
+            </Modal>
         </>
     );
 }
 
 const styles = StyleSheet.create({
-plusMinusSlot: {
-        flex: 1,
-        width: '100%',
+    plusMinusSlot: {
+            flex: 1,
+            width: '100%',
+            alignItems: 'center',
+            justifyContent: 'center',
+            bottom: '3.75%',
+    },
+
+    plusMinusPillText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '700',
+        lineHeight: 18,
+        textAlign: 'center',
+    },
+    plusMinusPill: {
+        minWidth: 28,
+        minHeight: 22,
+        borderRadius: 999,
+        paddingHorizontal: 7,
         alignItems: 'center',
         justifyContent: 'center',
-        bottom: '3.75%',
-    
-},
-
-plusMinusPillText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
-    lineHeight: 18,
-    textAlign: 'center',
-},
-plusMinusPill: {
-    minWidth: 28,
-    minHeight: 22,
-    borderRadius: 999,
-    paddingHorizontal: 7,
-    alignItems: 'center',
-    justifyContent: 'center',
-},
-
+    },
     bluePlusMinusPill: {
         backgroundColor: '#1976D2',
     },
@@ -437,35 +459,47 @@ plusMinusPill: {
         fontWeight: '700',
     },
     swipeActions: {
-        flexDirection: 'row',
-        gap: 6,
+        justifyContent: 'center',
+        flexDirection: 'column',
+        height: SWIPE_ACTIONS_HEIGHT,
+        left: '1.5%',
+        position: 'absolute',
+        width: '88%',
+        bottom: SWIPE_ACTIONS_BOTTOM,
+        gap: 2,
+    },
+    swipeContent: {
+        height: '100%',
+    },
+    swipeViewport: {
+        height: '100%',
+        overflow: 'hidden',
     },
     stoppageAction: {
         alignItems: 'center',
         backgroundColor: '#000',
         justifyContent: 'center',
+        flex: 1,
         paddingHorizontal: 0,
-        height: '85%',
-        marginRight: 0,
-        marginTop: 2,
-        borderRadius: 12,
-        width: 75,
+        borderRadius: 15,
+    },
+    stoppageActionText: {
+        color: '#fff',
+        fontSize: 10,
+        fontWeight: '700',
+        textAlign: 'center',
     },
     clearAction: {
         alignItems: 'center',
         backgroundColor: '#bc1616',
         justifyContent: 'center',
-        // marginBottom: 5,
+        flex: 1,
         paddingHorizontal: 0,
-        height: '85%',
-        marginRight: 4,
-        marginTop: 2,
-        borderRadius: 12,
-        width: 75,
+        borderRadius: 15,
     },
     clearActionText: {
         color: '#fff',
-        fontSize: 12,
+        fontSize: 10,
         fontWeight: '700',
         textAlign: 'center',
     },
@@ -660,8 +694,8 @@ plusMinusPill: {
         position: 'absolute',
         left: '3%',
         right: 0,
-        top: '25.5%',
-        height: '7.5%',
+        top: '26%',
+        height: '6.5%',
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#D32F2F',
@@ -672,8 +706,8 @@ plusMinusPill: {
         position: 'absolute',
         left: '3%',
         right: 0,
-        top: '67.5%',
-        height: '7.5%',
+        top: '68%',
+        height: '6.5%',
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#1976D2',
