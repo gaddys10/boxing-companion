@@ -23,6 +23,7 @@ type RoundRowProps = {
     id?: string;
     savedScores: string;
     stoppageReason?: 'KO' | 'TKO' | 'DQ' | 'NC';
+    stoppageWinner?: string;
     onClearRound: (roundNumber: number) => void;
     onSaveRound: (roundNumber: number, score: {
         left: string;

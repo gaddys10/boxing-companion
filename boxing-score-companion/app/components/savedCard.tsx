@@ -8,8 +8,8 @@ type SavedCardProps = {
   id: number;
   fighter1: string;
   fighter2: string;
-  fighter1Score: number;
-  fighter2Score: number;
+  fighter1Score: number | string;
+  fighter2Score: number | string;
   fighter1KD: number;
   fighter2KD: number;
   fighter1Pen: number;
@@ -125,7 +125,7 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
                 <Text style={styles.fighter1}>{fighter1}</Text>
               </View>
               <View style={styles.scoreBox1}>
-                <Text style={styles.f1Score}>{fighter1Score}</Text>
+                <Text style={[styles.f1Score, fighter1Score === 'NC' && styles.noContestScore]}>{fighter1Score}</Text>
               </View>
               <View style={styles.eventBox1}>
                 <Text style={styles.knockdowns1}>KD: {fighter1KD}</Text>
@@ -138,7 +138,7 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
                 <Text style={styles.fighter2}>{fighter2}</Text>
               </View>
               <View style={styles.scoreBox2}>
-                <Text style={styles.f2Score}>{fighter2Score}</Text>
+                <Text style={[styles.f2Score, fighter2Score === 'NC' && styles.noContestScore]}>{fighter2Score}</Text>
               </View>
               <View style={styles.eventBox2}>
                 <Text style={styles.knockdowns2}>KD: {fighter2KD}</Text>
@@ -289,6 +289,9 @@ const styles = StyleSheet.create({
     color: '#307Fb6',
     fontSize: 28,
     fontWeight: 700
+  },
+  noContestScore: {
+    color: '#808080',
   },
   // pillColumn: {
   //   flexDirection:

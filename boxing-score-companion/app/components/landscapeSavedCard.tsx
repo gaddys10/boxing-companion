@@ -8,8 +8,8 @@ type SavedCardProps = {
     id: number;
     fighter1: string;
     fighter2: string;
-    fighter1Score: number;
-    fighter2Score: number;
+    fighter1Score: number | string;
+    fighter2Score: number | string;
     fighter1KD: number;
     fighter2KD: number;
     fighter1Pen: number;
@@ -93,11 +93,11 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
                     {/* Score row -- Row 3  */}
                     <View style={styles.savedCardScoreRow}>
                         <View style={styles.scoreBox1}>
-                            <Text style={styles.f1Score}>{fighter1Score}</Text>
+                            <Text style={[styles.f1Score, fighter1Score === 'NC' && styles.noContestScore]}>{fighter1Score}</Text>
                         </View>
                         
                         <View style={styles.scoreBox2}>
-                            <Text style={styles.f2Score}>{fighter2Score}</Text>
+                            <Text style={[styles.f2Score, fighter2Score === 'NC' && styles.noContestScore]}>{fighter2Score}</Text>
                         </View>
                     </View>
 
@@ -298,6 +298,9 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 5
 
+    },
+    noContestScore: {
+        color: '#808080',
     },
     fighter1: {
         color: '#fff',
