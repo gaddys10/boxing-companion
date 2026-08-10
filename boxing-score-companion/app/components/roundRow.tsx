@@ -33,7 +33,7 @@ type RoundRowProps = {
         rightDeductions: string;
         leftKnockdowns: string;
         rightKnockdowns: string;
-        scoringMethod: 'quick';
+        scoringMethod: 'quick' | 'full';
     }) => void;
     onMarkStoppage: (roundNumber: number, reason: 'KO' | 'TKO' | 'DQ' | 'NC') => void;
     onConfirmStoppage: (roundNumber: number, reason: 'KO' | 'TKO' | 'DQ' | 'NC', winner?: string) => void;
@@ -92,15 +92,17 @@ export default function RoundRow({
     };
 
     const saveQuickScore = () => {
+        const hasFullScoringMomentum = !isQuickScore && plusMinus !== undefined && plusMinus !== '' && plusMinus !== '-';
+
         onSaveRound(roundNumber, {
             left: String(quickLeftScore),
             right: String(quickRightScore),
-            plusMinus: String(quickLeftScore - quickRightScore),
+            plusMinus: hasFullScoringMomentum ? plusMinus : String(quickLeftScore - quickRightScore),
             leftDeductions: String(quickLeftPen),
             rightDeductions: String(quickRightPen),
             leftKnockdowns: String(quickLeftKds),
             rightKnockdowns: String(quickRightKds),
-            scoringMethod: 'quick',
+            scoringMethod: hasFullScoringMomentum ? 'full' : 'quick',
         });
         closeScoringModal();
     };

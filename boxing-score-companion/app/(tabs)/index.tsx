@@ -115,18 +115,6 @@ export default function HomeScreen() {
   const borderFadeColor = isLandscape ? '#307FB6' : '#F1F5F8';
 
   return (
-    // <LinearGradient
-    //   colors={[
-    //     'rgba(211, 47, 47, 0.9)',
-    //     borderFadeColor,
-    //     borderFadeColor,
-    //     'rgba(48, 127, 182, 0.9)',
-    //   ]}
-    //   locations={[0, 0.32, 0.68, 1]}
-    //   start={{ x: 0, y: 0 }}
-    //   end={{ x: 1, y: 1 }}
-    //   style={[styles.neonPageBorder, isLandscape && styles.landscapeNeonPageBorder]}
-    // >
     <>
       <StatusBar style="dark" />
       <View style={[

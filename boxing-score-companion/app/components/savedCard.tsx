@@ -28,6 +28,8 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [cardLayout, setCardLayout] = useState<{ y: number; height: number } | null>(null);
   const fadeAnim = useRef(new Animated.Value(1)).current;
+  const displayedFighter1Score = fighter1Score === '' || fighter1Score === '-' || fighter1Score == null ? 0 : fighter1Score;
+  const displayedFighter2Score = fighter2Score === '' || fighter2Score === '-' || fighter2Score == null ? 0 : fighter2Score;
 
   const handleEditCard = () => {
       router.push({
@@ -125,7 +127,7 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
                 <Text style={styles.fighter1}>{fighter1}</Text>
               </View>
               <View style={styles.scoreBox1}>
-                <Text style={[styles.f1Score, fighter1Score === 'NC' && styles.noContestScore]}>{fighter1Score}</Text>
+                <Text style={[styles.f1Score, fighter1Score === 'NC' && styles.noContestScore]}>{displayedFighter1Score}</Text>
               </View>
               <View style={styles.eventBox1}>
                 <Text style={styles.knockdowns1}>KD: {fighter1KD}</Text>
@@ -138,7 +140,7 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
                 <Text style={styles.fighter2}>{fighter2}</Text>
               </View>
               <View style={styles.scoreBox2}>
-                <Text style={[styles.f2Score, fighter2Score === 'NC' && styles.noContestScore]}>{fighter2Score}</Text>
+                <Text style={[styles.f2Score, fighter2Score === 'NC' && styles.noContestScore]}>{displayedFighter2Score}</Text>
               </View>
               <View style={styles.eventBox2}>
                 <Text style={styles.knockdowns2}>KD: {fighter2KD}</Text>
