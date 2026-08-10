@@ -22,6 +22,8 @@ type RoundRowProps = {
     rounds: string;
     id?: string;
     savedScores: string;
+    stoppageReason?: 'KO' | 'TKO' | 'DQ' | 'NC';
+    stoppageWinner?: string;
     onClearRound: (roundNumber: number) => void;
     onSaveRound: (roundNumber: number, score: {
         left: string;
@@ -33,6 +35,7 @@ type RoundRowProps = {
         rightKnockdowns: string;
         scoringMethod: 'quick';
     }) => void;
+    onMarkStoppage: (roundNumber: number, reason: 'KO' | 'TKO' | 'DQ' | 'NC') => void;
 };
 
 export default function LandscapeRoundRow({
@@ -52,13 +55,16 @@ export default function LandscapeRoundRow({
     rounds,
     id,
     savedScores,
+    stoppageReason,
     onClearRound,
     onSaveRound,
+    onMarkStoppage,
 }: RoundRowProps) {
     const swipeableRef = React.useRef<Swipeable | null>(null);
     const plusMinusNumber = plusMinus && plusMinus !== '-' ? Number(plusMinus) : null;
     const [scoringModalVisible, setScoringModalVisible] = useState(false);
     const [quickScoringVisible, setQuickScoringVisible] = useState(false);
+    const [stoppageModalVisible, setStoppageModalVisible] = useState(false);
     const [quickLeftScore, setQuickLeftScore] = useState(10);
     const [quickRightScore, setQuickRightScore] = useState(10);
     const [quickLeftKds, setQuickLeftKds] = useState(0);
@@ -121,15 +127,26 @@ export default function LandscapeRoundRow({
                     : '#b0b0b0';
 
     const renderRightActions = () => (
-        <Pressable
-            style={styles.clearAction}
-            onPress={() => {
-                swipeableRef.current?.close();
-                onClearRound(roundNumber);
-            }}
-        >
-            <Text style={styles.clearActionText}>Clear{"\n"}Round</Text>
-        </Pressable>
+        <View style={styles.swipeActions}>
+            <Pressable
+                style={styles.stoppageAction}
+                onPress={() => {
+                    swipeableRef.current?.close();
+                    setStoppageModalVisible(true);
+                }}
+            >
+                <Text style={styles.clearActionText}>{stoppageReason ? stoppageReason : 'Mark'+'\n'+'Stoppage'}</Text>
+            </Pressable>
+            <Pressable
+                style={styles.clearAction}
+                onPress={() => {
+                    swipeableRef.current?.close();
+                    onClearRound(roundNumber);
+                }}
+            >
+                <Text style={styles.clearActionText}>Clear{"\n"}Round</Text>
+            </Pressable>
+        </View>
     );
 
     return (
@@ -184,28 +201,36 @@ export default function LandscapeRoundRow({
                     {/* <Ionicons name="pencil" size={20} color="#333" /> */}
                 </Pressable>
             </View>
-            <View style={styles.roundEvents}>
-                {Number(leftKds) > 0 && Number(leftPen) > 0 && (
-                    <Text style={styles.roundEventsText}>KD&nbsp;&nbsp;&nbsp;{leftKds}{"\n"}PEN{leftPen}</Text>
-                )}
-                {Number(leftKds) > 0 && Number(leftPen) === 0 && (
-                    <Text style={styles.roundEventsText}>KD{leftKds}</Text>
-                )}
-                {Number(leftKds) === 0 && Number(leftPen) > 0 && (
-                    <Text style={styles.roundEventsText}>PD{leftPen}</Text>
-                )}
-            </View>
-            <View style={styles.roundEvents2}>
-                {Number(rightKds) > 0 && Number(rightPen) > 0 && (
-                    <Text style={styles.roundEventsText}>KD{rightKds}{"\n"}PD{rightPen}</Text>
-                )}
-                {Number(rightKds) > 0 && Number(rightPen) === 0 && (
-                    <Text style={styles.roundEventsText}>KD{rightKds}</Text>
-                )}
-                {Number(rightKds) === 0 && Number(rightPen) > 0 && (
-                    <Text style={styles.roundEventsText}>PD{rightPen}</Text>
-                )}
-            </View>
+            {
+                (Number(leftKds) > 0 || Number(leftPen) > 0) && (
+                    <View style={styles.roundEvents}>
+                        {Number(leftKds) > 0 && Number(leftPen) > 0 && (
+                            <Text style={styles.roundEventsText}>KD&nbsp;&nbsp;&nbsp;{leftKds}{"\n"}PEN{leftPen}</Text>
+                        )}
+                        {Number(leftKds) > 0 && Number(leftPen) === 0 && (
+                            <Text style={styles.roundEventsText}>KD{leftKds}</Text>
+                        )}
+                        {Number(leftKds) === 0 && Number(leftPen) > 0 && (
+                            <Text style={styles.roundEventsText}>PD{leftPen}</Text>
+                        )}
+                    </View>
+                )
+            }
+            {
+                (Number(rightKds) > 0 || Number(rightPen) > 0) && (
+                    <View style={styles.roundEvents2}>
+                        {Number(rightKds) > 0 && Number(rightPen) > 0 && (
+                            <Text style={styles.roundEventsText}>KD{rightKds}{"\n"}PD{rightPen}</Text>
+                        )}
+                        {Number(rightKds) > 0 && Number(rightPen) === 0 && (
+                            <Text style={styles.roundEventsText}>KD{rightKds}</Text>
+                        )}
+                        {Number(rightKds) === 0 && Number(rightPen) > 0 && (
+                            <Text style={styles.roundEventsText}>PD{rightPen}</Text>
+                        )}
+                    </View>
+                )
+            }
         </Swipeable>
         <Modal
             animationType="fade"
@@ -261,8 +286,23 @@ export default function LandscapeRoundRow({
                                 <Text numberOfLines={1} style={[styles.quickCornerName, styles.quickRightName]}>{fighter2}</Text>
                             </View>
                             <View style={styles.quickFieldsRow}>
+                                <View key={"Round Score"} style={styles.quickField}>
+                                    <Text style={styles.quickEventLabel}>Round Score</Text>
+                                    <View style={styles.quickCornerRow}>
+                                        <View style={styles.stepper}>
+                                            <Pressable style={styles.stepperButton} onPress={() => setQuickLeftScore(Math.max(0, quickLeftScore - 1))}><Text style={styles.stepperButtonText}>−</Text></Pressable>
+                                            <Text style={[styles.stepperValue, styles.quickLeftName]}>{quickLeftScore}</Text>
+                                            <Pressable style={styles.stepperButton} onPress={() => setQuickLeftScore(Math.min(10, quickLeftScore + 1))}><Text style={styles.stepperButtonText}>+</Text></Pressable>
+                                        </View>
+                                        <View style={styles.stepper}>
+                                            <Pressable style={styles.stepperButton} onPress={() => setQuickRightScore(Math.max(0, quickRightScore - 1))}><Text style={styles.stepperButtonText}>−</Text></Pressable>
+                                            <Text style={[styles.stepperValue, styles.quickRightName]}>{quickRightScore}</Text>
+                                            <Pressable style={styles.stepperButton} onPress={() => setQuickRightScore(Math.min(10, quickRightScore + 1))}><Text style={styles.stepperButtonText}>+</Text></Pressable>
+                                        </View>
+                                    </View>
+                                </View>
                                 {[
-                                    { label: 'Round score', left: quickLeftScore, right: quickRightScore, setLeft: setQuickLeftScore, setRight: setQuickRightScore, max: 10 },
+                                    // { label: 'Round score', left: quickLeftScore, right: quickRightScore, setLeft: setQuickLeftScore, setRight: setQuickRightScore, max: 10 },
                                     { label: 'Knockdowns', left: quickLeftKds, right: quickRightKds, setLeft: setQuickLeftKds, setRight: setQuickRightKds },
                                     { label: 'Point deductions', left: quickLeftPen, right: quickRightPen, setLeft: setQuickLeftPen, setRight: setQuickRightPen },
                                 ].map((field) => (
@@ -293,6 +333,37 @@ export default function LandscapeRoundRow({
                             </View>
                         </>
                     )}
+                </View>
+            </View>
+        </Modal>
+        <Modal
+            animationType="fade"
+            transparent
+            visible={stoppageModalVisible}
+            supportedOrientations={['landscape', 'landscape-left', 'landscape-right']}
+            onRequestClose={() => setStoppageModalVisible(false)}
+        >
+            <View style={styles.modalOverlay}>
+                <View style={styles.scoringModal}>
+                    <Text style={styles.modalTitle}>Mark Stoppage</Text>
+                    <Text style={styles.modalText}>Select why the fight was stopped.</Text>
+                    <View style={styles.stoppageOptions}>
+                        {(['KO', 'TKO', 'DQ'] as const).map((option) => (
+                            <Pressable
+                                key={option}
+                                style={[styles.stoppageOption, stoppageReason === option && styles.selectedStoppageOption]}
+                                onPress={() => {
+                                    onMarkStoppage(roundNumber, option);
+                                    setStoppageModalVisible(false);
+                                }}
+                            >
+                                <Text style={[styles.stoppageOptionText, stoppageReason === option && styles.selectedStoppageOptionText]}>{option}</Text>
+                            </Pressable>
+                        ))}
+                    </View>
+                    <Pressable style={[styles.modalButton, styles.cancelButton]} onPress={() => setStoppageModalVisible(false)}>
+                        <Text style={styles.cancelButtonText}>Cancel</Text>
+                    </Pressable>
                 </View>
             </View>
         </Modal>
@@ -365,6 +436,21 @@ plusMinusPill: {
         color: '#fff',
         fontWeight: '700',
     },
+    swipeActions: {
+        flexDirection: 'row',
+        gap: 6,
+    },
+    stoppageAction: {
+        alignItems: 'center',
+        backgroundColor: '#000',
+        justifyContent: 'center',
+        paddingHorizontal: 0,
+        height: '85%',
+        marginRight: 0,
+        marginTop: 2,
+        borderRadius: 12,
+        width: 75,
+    },
     clearAction: {
         alignItems: 'center',
         backgroundColor: '#bc1616',
@@ -382,6 +468,28 @@ plusMinusPill: {
         fontSize: 12,
         fontWeight: '700',
         textAlign: 'center',
+    },
+    stoppageOptions: {
+        gap: 10,
+        marginTop: 8,
+    },
+    stoppageOption: {
+        alignItems: 'center',
+        backgroundColor: '#EEF1F3',
+        borderRadius: 10,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+    },
+    selectedStoppageOption: {
+        backgroundColor: '#1976D2',
+    },
+    stoppageOptionText: {
+        color: '#333A3F',
+        fontSize: 16,
+        fontWeight: '700',
+    },
+    selectedStoppageOptionText: {
+        color: '#fff',
     },
     leftRoundScore: {
         color: '#D32F2F',
@@ -550,21 +658,31 @@ plusMinusPill: {
     },
     roundEvents: {
         position: 'absolute',
-        left: '27.5%',
-        top: '22.75%',
-        height: 42,
-        justifyContent: 'center'
+        left: '3%',
+        right: 0,
+        top: '25.5%',
+        height: '7.5%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#D32F2F',
+        width: '85.5%',
+        paddingHorizontal: 6,
     },
     roundEvents2: {
         position: 'absolute',
-        left: '27.5%',
-        top: '64.5%',
-        height: 42,
-        justifyContent: 'center'
+        left: '3%',
+        right: 0,
+        top: '67.5%',
+        height: '7.5%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#1976D2',
+        width: '87%',
+        paddingHorizontal: 6,
     },
     roundEventsText: {
         fontSize: 7.5,
-        color: '#333',
+        color: '#fff',
         fontWeight: 600
     },
     roundLabel: {
@@ -602,7 +720,7 @@ plusMinusPill: {
         // paddingVertical: 2,
         overflow: 'hidden',
         boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
-        width: 40,
+        width: 39.5,
         paddingBottom: 5
     },
     rowContainer: {

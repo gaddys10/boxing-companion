@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const tIcon = require('../assets/images/flatwhitet.png');
 
@@ -15,6 +15,8 @@ type RoundScore = {
     rightDeductions?: string;
     leftKnockdowns?: string;
     rightKnockdowns?: string;
+    stoppageReason?: 'KO' | 'TKO' | 'DQ' | 'NC';
+    stoppageWinner?: string;
 };
 
 export default function CreateMatch() {
@@ -54,7 +56,7 @@ export default function CreateMatch() {
 
 
     const buttonText = String(params.buttonText || "Create Scorecard");
-    const rounds = [4, 5, 6, 8, 10, 12];
+    const rounds = [4, 5, 6, 8, 10, 12, 15];
     const { width, height } = useWindowDimensions();
     const insets = useSafeAreaInsets();
     const id = params.id ? String(params.id) : undefined;
@@ -122,6 +124,34 @@ export default function CreateMatch() {
         );
     };
 
+    const getSavedCardTotals = (savedScores: Record<number, RoundScore>) => {
+        const totals = getScorecardTotals(savedScores);
+        const latestResult = Object.entries(savedScores)
+            .sort(([firstRound], [secondRound]) => Number(firstRound) - Number(secondRound))
+            .map(([, roundScore]) => roundScore)
+            .filter((roundScore) => Boolean(roundScore.stoppageWinner) || (
+                roundScore.left !== undefined && roundScore.left !== '' &&
+                roundScore.right !== undefined && roundScore.right !== ''
+            ))
+            .pop();
+
+        if (!latestResult?.stoppageWinner) return totals;
+
+        if (latestResult.stoppageWinner === 'NC') {
+            return {...totals, fighter1Score: 'NC', fighter2Score: 'NC'};
+        }
+
+        return {
+            ...totals,
+            fighter1Score: latestResult.stoppageWinner === fighter1
+                ? latestResult.stoppageReason ?? '-'
+                : '',
+            fighter2Score: latestResult.stoppageWinner === fighter2
+                ? latestResult.stoppageReason ?? '-'
+                : '',
+        };
+    };
+
     const handleSaveChangesAndExit = () => {
         const savedScores = getSavedScoresForRoundCount();
 
@@ -136,7 +166,7 @@ export default function CreateMatch() {
                     savedScores: JSON.stringify(savedScores),
                     gender: selectedGender,
                     weight: selectedWeight,
-                    ...getScorecardTotals(savedScores),
+                    ...getSavedCardTotals(savedScores),
                 }),
             },
         });
@@ -212,10 +242,7 @@ export default function CreateMatch() {
     );
 
     return (
-        <KeyboardAvoidingView
-            style={styles.screen}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        >
+        <View style={styles.screen}>
             <Stack.Screen options={{ headerShown: false }} />
             <ScrollView
                 style={styles.formScroll}
@@ -513,7 +540,7 @@ export default function CreateMatch() {
             }
             {/* <Image source={tIcon} style={styles.icon} resizeMode="contain" /> */}
             </ScrollView>
-        </KeyboardAvoidingView>
+        </View>
     );
 }
 

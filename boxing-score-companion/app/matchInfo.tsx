@@ -1,6 +1,6 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View, Modal } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import LandscapeRoundRow from './components/landscapeRoundRow';
 import RoundRow from './components/roundRow';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -36,10 +36,11 @@ export default function MatchInfoScreen() {
         leftKnockdowns?: string;
         rightKnockdowns?: string;
         scoringMethod?: 'quick' | 'full';
+        stoppageReason?: 'KO' | 'TKO' | 'DQ' | 'NC';
+        stoppageWinner?: string;
     };
 
     const [roundScores, setRoundScores] = useState<Record<number, RoundScore>>({});
-    const exitProgress = useRef<Animated.Value>(new Animated.Value(0)).current;
 
 
     const isLandscape = width > height;
@@ -85,32 +86,6 @@ export default function MatchInfoScreen() {
         savedRightKnockdowns,
     ]);
 
-    const startLongPressFill = (progress: Animated.Value, duration: number) => {
-        progress.setValue(0);
-        Animated.timing(progress, {
-            toValue: 1.75,
-            duration,
-            useNativeDriver: false,
-        }).start();
-    };
-
-    const startLandscapeLongPressFill = (progress: Animated.Value, duration: number) => {
-        progress.setValue(0);
-        Animated.timing(progress, {
-            toValue: 1.7,
-            duration,
-            useNativeDriver: false,
-        }).start();
-    };
-
-    const resetLongPressFill = (progress: Animated.Value) => {
-        Animated.timing(progress, {
-            toValue: 0,
-            duration: 100,
-            useNativeDriver: false,
-        }).start();
-    };
-
     const isRoundScored = (roundNumber: number) => {
         return !!roundScores[roundNumber]?.left && !!roundScores[roundNumber]?.right;
     };
@@ -128,11 +103,23 @@ export default function MatchInfoScreen() {
     };
 
     const latestScoredRound = Array.from({ length: selectedRoundCount }, (_, index) => index + 1)
-        .filter((roundNumber) => isRoundScored(roundNumber))
+        .filter((roundNumber) => isRoundScored(roundNumber) || Boolean(roundScores[roundNumber]?.stoppageWinner))
         .pop();
 
-    const fighter1LatestTotal = latestScoredRound ? String(getTotalScore('left', latestScoredRound)) : '-';
-    const fighter2LatestTotal = latestScoredRound ? String(getTotalScore('right', latestScoredRound)) : '-';
+    const latestRoundScore = latestScoredRound ? roundScores[latestScoredRound] : undefined;
+    const latestStoppageReason = latestRoundScore?.stoppageReason;
+    const latestStoppageWinner = latestRoundScore?.stoppageWinner;
+    const isLatestRoundNoContest = latestStoppageWinner === 'NC';
+    const fighter1LatestTotal = isLatestRoundNoContest
+        ? 'NC'
+        : latestStoppageWinner
+            ? latestStoppageWinner === String(fighter1) ? latestStoppageReason ?? '-' : ''
+            : latestScoredRound ? String(getTotalScore('left', latestScoredRound)) : '-';
+    const fighter2LatestTotal = isLatestRoundNoContest
+        ? 'NC'
+        : latestStoppageWinner
+            ? latestStoppageWinner === String(fighter2) ? latestStoppageReason ?? '-' : ''
+            : latestScoredRound ? String(getTotalScore('right', latestScoredRound)) : '-';
 
     const getScorecardTotals = () => {
         return getSavedRoundScores().reduce(
@@ -203,7 +190,28 @@ export default function MatchInfoScreen() {
                     weight: Number(weight || null),
                     gender: String(gender || null),
                     ...scorecardTotals,
+                    fighter1Score: fighter1LatestTotal,
+                    fighter2Score: fighter2LatestTotal,
                 }),
+            },
+        });
+    };
+
+    const handleCardDetails = () => {
+        router.push({
+            pathname: '/createMatch',
+            params: {
+                id: id ? String(id) : undefined,
+                title: 'Edit Scorecard Details',
+                backText: 'Menu',
+                buttonText: 'Continue',
+                isEdit: 'true',
+                fighter1: String(fighter1 || 'Fighter 1'),
+                fighter2: String(fighter2 || 'Fighter 2'),
+                rounds: Number(rounds || 3),
+                savedScores: JSON.stringify(getSavedScores()),
+                gender: String(gender || null),
+                weight: Number(weight || null),
             },
         });
     };
@@ -216,10 +224,52 @@ export default function MatchInfoScreen() {
         });
     };
 
+    const handleMarkStoppage = (roundNumber: number, stoppageReason: 'KO' | 'TKO' | 'DQ' | 'NC') => {
+        setRoundScores((currentScores) => ({
+            ...currentScores,
+            [roundNumber]: {
+                ...(currentScores[roundNumber] ?? {
+                    left: '',
+                    right: '',
+                    plusMinus: '',
+                    leftDeductions: '0',
+                    rightDeductions: '0',
+                    leftKnockdowns: '0',
+                    rightKnockdowns: '0',
+                }),
+                stoppageReason,
+            },
+        }));
+    };
+
+    const handleConfirmStoppage = (
+        roundNumber: number,
+        stoppageReason: 'KO' | 'TKO' | 'DQ' | 'NC',
+        stoppageWinner?: string,
+    ) => {
+        setRoundScores((currentScores) => ({
+            ...currentScores,
+            [roundNumber]: {
+                ...(currentScores[roundNumber] ?? {}),
+                left: '',
+                right: '',
+                leftDeductions: '0',
+                rightDeductions: '0',
+                leftKnockdowns: '0',
+                rightKnockdowns: '0',
+                stoppageReason,
+                stoppageWinner: stoppageReason === 'NC' ? 'NC' : stoppageWinner,
+            },
+        }));
+    };
+
     const handleSaveRound = (roundNumber: number, score: RoundScore) => {
         setRoundScores((currentScores) => ({
             ...currentScores,
-            [roundNumber]: score,
+            [roundNumber]: {
+                ...(currentScores[roundNumber] ?? {}),
+                ...score,
+            },
         }));
     };
 
@@ -260,9 +310,9 @@ export default function MatchInfoScreen() {
 
                         {/* Score 1 .. score 2  */}
                         <View style={isLandscape ? styles.landscapePointHeader : styles.pointHeader}>
-                            <Text style={styles.fighter1PointHeader}>{fighter1LatestTotal}</Text>
+                            <Text style={[styles.fighter1PointHeader, isLatestRoundNoContest && styles.noContestPointHeader]}>{fighter1LatestTotal}</Text>
                             <Text style={styles.vsPointHeader}></Text>
-                            <Text style={styles.fighter2PointHeader}>{fighter2LatestTotal}</Text>
+                            <Text style={[styles.fighter2PointHeader, isLatestRoundNoContest && styles.noContestPointHeader]}>{fighter2LatestTotal}</Text>
                         </View>
 
                         {/* round events (KD, PEN) */}
@@ -292,7 +342,7 @@ export default function MatchInfoScreen() {
                             <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.65} style={[styles.landscapeFighterText, styles.landscapeFighter1Name]}>
                                 {isLandscape ? formatLandScapeName(String(fighter1)) : fighter1}
                             </Text>
-                            <Text style={styles.fighter1PointHeader}>{fighter1LatestTotal}</Text>
+                            <Text style={[styles.fighter1PointHeader, isLatestRoundNoContest && styles.noContestPointHeader]}>{fighter1LatestTotal}</Text>
                             <Text style={[styles.totalEventsText, styles.landscapeFighter1TotalEvents]}>
                                 {getTotalEventsText(scorecardTotals.fighter1KD, scorecardTotals.fighter1Pen)}
                             </Text>
@@ -302,7 +352,7 @@ export default function MatchInfoScreen() {
                             <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.65} style={[styles.landscapeFighterText, styles.landscapeFighter2Name]}>
                                 {isLandscape ? formatLandScapeName(String(fighter2)) : fighter2}
                             </Text>
-                            <Text style={styles.fighter2PointHeader}>{fighter2LatestTotal}</Text>
+                            <Text style={[styles.fighter2PointHeader, isLatestRoundNoContest && styles.noContestPointHeader]}>{fighter2LatestTotal}</Text>
                             <Text style={[styles.totalEventsText, styles.fighter2TotalEvents]}>
                                 {getTotalEventsText(scorecardTotals.fighter2KD, scorecardTotals.fighter2Pen)}
                             </Text>
@@ -342,15 +392,31 @@ export default function MatchInfoScreen() {
                                     roundNumber={roundNumber}
                                     leftScore={roundScores[roundNumber]?.left}
                                     rightScore={roundScores[roundNumber]?.right}
-                                    leftTotal={isRoundScored(roundNumber) ? String(getTotalScore('left', roundNumber)) : '-'}
-                                    rightTotal={isRoundScored(roundNumber) ? String(getTotalScore('right', roundNumber)) : '-'}
+                                    leftTotal={roundScores[roundNumber]?.stoppageWinner === 'NC'
+                                        ? 'NC'
+                                        : roundScores[roundNumber]?.stoppageWinner
+                                        ? roundScores[roundNumber].stoppageWinner === String(fighter1)
+                                            ? roundScores[roundNumber].stoppageReason
+                                            : ''
+                                        : isRoundScored(roundNumber) ? String(getTotalScore('left', roundNumber)) : '-'}
+                                    rightTotal={roundScores[roundNumber]?.stoppageWinner === 'NC'
+                                        ? 'NC'
+                                        : roundScores[roundNumber]?.stoppageWinner
+                                        ? roundScores[roundNumber].stoppageWinner === String(fighter2)
+                                            ? roundScores[roundNumber].stoppageReason
+                                            : ''
+                                        : isRoundScored(roundNumber) ? String(getTotalScore('right', roundNumber)) : '-'}
                                     // plusMinus={isRoundScored(roundNumber) ? String(getPlusMinus(roundNumber)) : '-'}
-                                    plusMinus={isRoundScored(roundNumber) ? roundScores[roundNumber]?.plusMinus : '-'}
+                                    plusMinus={roundScores[roundNumber]?.stoppageWinner
+                                        ? roundScores[roundNumber]?.plusMinus
+                                        : isRoundScored(roundNumber) ? roundScores[roundNumber]?.plusMinus : '-'}
                                     isQuickScore={roundScores[roundNumber]?.scoringMethod === 'quick'}
                                     leftKds={roundScores[roundNumber]?.leftKnockdowns}
                                     leftPen={roundScores[roundNumber]?.leftDeductions}
                                     rightKds={roundScores[roundNumber]?.rightKnockdowns}
                                     rightPen={roundScores[roundNumber]?.rightDeductions}
+                                    stoppageReason={roundScores[roundNumber]?.stoppageReason}
+                                    stoppageWinner={roundScores[roundNumber]?.stoppageWinner}
                                     // savedPlusMinus={savedPlusMinusForRound}
                                     fighter1={String(fighter1)}
                                     fighter2={String(fighter2)}
@@ -359,6 +425,8 @@ export default function MatchInfoScreen() {
                                     savedScores={JSON.stringify(roundScores)}
                                     onClearRound={handleClearRound}
                                     onSaveRound={handleSaveRound}
+                                    onMarkStoppage={handleMarkStoppage}
+                                    onConfirmStoppage={handleConfirmStoppage}
                                 />
                             );
                         })}
@@ -388,6 +456,7 @@ export default function MatchInfoScreen() {
                                         leftPen={roundScores[roundNumber]?.leftDeductions}
                                         rightKds={roundScores[roundNumber]?.rightKnockdowns}
                                         rightPen={roundScores[roundNumber]?.rightDeductions}
+                                        stoppageReason={roundScores[roundNumber]?.stoppageReason}
                                         // savedPlusMinus={savedPlusMinusForRound}
                                         fighter1={String(fighter1)}
                                         fighter2={String(fighter2)}
@@ -396,24 +465,45 @@ export default function MatchInfoScreen() {
                                         savedScores={JSON.stringify(roundScores)}
                                         onClearRound={handleClearRound}
                                         onSaveRound={handleSaveRound}
+                                        onMarkStoppage={handleMarkStoppage}
                                     />
                                 
                             );
                         })}
                     </ScrollView>
                 }
-                {/* save button  */}
-                <Pressable 
-                    style={isLandscape ? styles.landscapeButton : styles.button}
-                    // onPress={() => router.push('/')}
-                    onPress={handleSaveScorecard}
-                >
-                    <Text style={isLandscape ? styles.landscapeButtonText : styles.buttonText}>
-                        Save & Exit
-                    </Text>
-                </Pressable>
+                <View style={styles.buttonContainer}>
+                    {/* save button  */}
+                    <Pressable 
+                        style={isLandscape ? styles.landscapeButton : styles.cardDetailsButton}
+                        onPress={handleCardDetails}
+                    >
+                        <Text style={isLandscape ? styles.landscapeButtonText : styles.cardDetailsButtonText}>
+                            Card Details
+                        </Text>
+                    </Pressable>
+
+                    <Pressable 
+                        style={isLandscape ? styles.landscapeButton : styles.shareButton}
+                        onPress={handleCardDetails}
+                    >
+                        <Text style={isLandscape ? styles.landscapeButtonText : styles.shareButtonText}>
+                            Share
+                        </Text>
+                    </Pressable>
+
+                    {/* save button  */}
+                    <Pressable 
+                        style={isLandscape ? styles.landscapeButton : styles.button}
+                        // onPress={() => router.push('/')}
+                        onPress={handleSaveScorecard}
+                    >
+                        <Text style={isLandscape ? styles.landscapeButtonText : styles.buttonText}>
+                            Save & Exit
+                        </Text>
+                    </Pressable>
+                </View>
             </View>
-            
         </>
     );
 }
@@ -433,7 +523,43 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontWeight: '700',
     },
-
+    shareButton: {
+        backgroundColor: '#fff',
+        paddingHorizontal: '6%',
+        paddingVertical: '2.5%',
+        borderRadius: 12,
+        overflow: 'hidden',
+        alignSelf: 'center',
+        alignItems: 'center',
+        bottom: '4%',
+        borderWidth: 1,
+        borderColor: 'rgba(200, 200, 200, 0.7)',
+    
+    },
+    shareButtonText: {
+        color: '#1976D2',
+        fontSize: 14,
+        fontWeight: '700',
+        zIndex: 1
+    },
+    cardDetailsButton: {
+        backgroundColor: '#fff',
+        paddingHorizontal: '6%',
+        paddingVertical: '2.5%',
+        borderRadius: 12,
+        overflow: 'hidden',
+        alignSelf: 'center',
+        alignItems: 'center',
+        bottom: '4%',
+        borderWidth: 1,
+        borderColor: 'rgba(200, 200, 200, 0.7)',
+    },
+    cardDetailsButtonText: {
+        color: '#1976D2',
+        fontSize: 14,
+        fontWeight: '700',
+        zIndex: 1
+    },
 
     button: {
         backgroundColor: '#D32F2F',
@@ -447,7 +573,7 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         color: '#fff',
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: '700',
         zIndex: 1
     },
@@ -480,6 +606,9 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         textAlign: 'center',
     },
+    noContestPointHeader: {
+        color: '#808080',
+    },
     fighterText: {
         fontSize: 16,
         flex: 1,
@@ -502,6 +631,11 @@ const styles = StyleSheet.create({
         // marginRight: '2%',
         paddingBottom: 5,
     },
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        bottom: '1%',
+    },
     headerText: {
         textAlign: 'center',
         color: '#333',
@@ -521,7 +655,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     headerActionSpacer: {
-        width: 41,
+        width: 42,
     },
     leftHeader: {
         color: 'red',
@@ -554,20 +688,20 @@ const styles = StyleSheet.create({
     },
     rowContainer: {
         flex: 1,
-        marginBottom: 16,
+        marginBottom: 5,
         paddingHorizontal: 15,
         marginHorizontal: -24,
     },
     summaryCard: {
         backgroundColor: '#fff',
-        borderBottomLeftRadius: 12,
-        borderBottomRightRadius: 12,
+        borderRadius: 12,
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
         paddingTop: 10,
         height: '15.5%',
         marginBottom: 18,
         marginRight: '1%',
+        justifyContent: 'center',
         boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
     },
     title: {
@@ -588,7 +722,7 @@ const styles = StyleSheet.create({
     totalEvents: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 25,
+        marginBottom: '2%',
         width: '85%',
         marginLeft: 23,
     },

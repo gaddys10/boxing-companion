@@ -16,8 +16,8 @@ type Scorecard = {
   id: number;
   fighter1: string;
   fighter2: string;
-  fighter1Score: number;
-  fighter2Score: number;
+  fighter1Score: number | string;
+  fighter2Score: number | string;
   fighter1KD: number;
   fighter2KD: number;
   fighter1Pen: number;

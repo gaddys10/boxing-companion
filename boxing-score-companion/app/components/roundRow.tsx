@@ -22,6 +22,8 @@ type RoundRowProps = {
     rounds: string;
     id?: string;
     savedScores: string;
+    stoppageReason?: 'KO' | 'TKO' | 'DQ' | 'NC';
+    stoppageWinner?: string;
     onClearRound: (roundNumber: number) => void;
     onSaveRound: (roundNumber: number, score: {
         left: string;
@@ -33,6 +35,8 @@ type RoundRowProps = {
         rightKnockdowns: string;
         scoringMethod: 'quick';
     }) => void;
+    onMarkStoppage: (roundNumber: number, reason: 'KO' | 'TKO' | 'DQ' | 'NC') => void;
+    onConfirmStoppage: (roundNumber: number, reason: 'KO' | 'TKO' | 'DQ' | 'NC', winner?: string) => void;
 };
 
 export default function RoundRow({
@@ -52,13 +56,19 @@ export default function RoundRow({
     rounds,
     id,
     savedScores,
+    stoppageReason,
+    stoppageWinner,
     onClearRound,
     onSaveRound,
+    onMarkStoppage,
+    onConfirmStoppage,
 }: RoundRowProps) {
     const swipeableRef = React.useRef<Swipeable | null>(null);
     const plusMinusNumber = plusMinus && plusMinus !== '-' ? Number(plusMinus) : null;
     const [scoringModalVisible, setScoringModalVisible] = useState(false);
     const [quickScoringVisible, setQuickScoringVisible] = useState(false);
+    const [stoppageModalVisible, setStoppageModalVisible] = useState(false);
+    const [selectedStoppageWinner, setSelectedStoppageWinner] = useState<string | undefined>(stoppageWinner);
     const [quickLeftScore, setQuickLeftScore] = useState(10);
     const [quickRightScore, setQuickRightScore] = useState(10);
     const [quickLeftKds, setQuickLeftKds] = useState(0);
@@ -136,10 +146,11 @@ export default function RoundRow({
                 style={styles.stoppageAction}
                 onPress={() => {
                     swipeableRef.current?.close();
-                    onClearRound(roundNumber);
+                    setSelectedStoppageWinner(stoppageWinner);
+                    setStoppageModalVisible(true);
                 }}
             >
-                <Text style={styles.clearActionText}>Mark{"\n"}Stoppage</Text>
+                <Text style={styles.clearActionText}>{'Mark'+'\n'+'Stoppage'}</Text>
             </Pressable>
             <Pressable
                 style={styles.clearAction}
@@ -161,7 +172,7 @@ export default function RoundRow({
                         <Text style={styles.roundLabel}>R{roundNumber}</Text>
                     </View>
                     <View style={[styles.scoreCell, styles.leftTotalScoreCell]}>
-                        <Text style={[styles.scoreText, styles.leftTotalScore]}>{leftTotal ?? '-'}</Text>
+                        <Text style={[styles.scoreText, styles.leftTotalScore, stoppageWinner === 'NC' && styles.noContestTotalScore]}>{leftTotal ?? '-'}</Text>
                     </View>
                     <View style={[styles.scoreCell, styles.leftRoundScoreCell]}>
                         <Text style={[styles.scoreText, styles.leftRoundScore]}>{leftScore ?? '-'}</Text>
@@ -183,7 +194,7 @@ export default function RoundRow({
                         <Text style={[styles.scoreText, styles.rightRoundScore]}>{rightScore ?? '-'}</Text>
                     </View>
                     <View style={[styles.scoreCell, styles.rightTotalScoreCell]}>
-                        <Text style={[styles.scoreText, styles.rightTotalScore]}>{rightTotal ?? '-'}</Text>
+                        <Text style={[styles.scoreText, styles.rightTotalScore, stoppageWinner === 'NC' && styles.noContestTotalScore]}>{rightTotal ?? '-'}</Text>
                     </View>
                     <Pressable
                         style={styles.button}
@@ -325,11 +336,237 @@ export default function RoundRow({
                     </View>
                 </View>
             </Modal>
+            <Modal
+                animationType="fade"
+                transparent
+                visible={stoppageModalVisible}
+                onRequestClose={() => setStoppageModalVisible(false)}
+            >
+                <View style={styles.stoppageModalOverlay}>
+                    <View style={styles.stoppageModalCard}>
+                        <Text style={styles.stoppageModalTitle}>Mark Stoppage</Text>
+                        <Text style={[styles.stoppageModalText, {textAlign: 'center'}]}>Select why the fight was stopped.</Text>
+                        <View style={styles.stoppageOptions}>
+                            <View style={styles.stoppageOptionTopRow}>
+                                <Pressable
+                                        style={[styles.stoppageOption, stoppageReason === 'KO' && styles.selectedStoppageOption]}
+                                        onPress={() => {
+                                            onMarkStoppage(roundNumber, 'KO');
+                                            setSelectedStoppageWinner(undefined);
+                                            // setStoppageModalVisible(false);
+                                        }}
+                                    >
+                                        <Text style={[styles.stoppageOptionText, stoppageReason === "KO" && styles.selectedStoppageOptionText]}>KO</Text>
+                                </Pressable>
+                                    <Pressable
+                                        style={[styles.stoppageOption, stoppageReason === 'TKO' && styles.selectedStoppageOption]}
+                                        onPress={() => {
+                                            onMarkStoppage(roundNumber, 'TKO');
+                                            setSelectedStoppageWinner(undefined);
+                                            // setStoppageModalVisible(false);
+                                        }}
+                                    >
+                                        <Text style={[styles.stoppageOptionText, stoppageReason === "TKO" && styles.selectedStoppageOptionText]}>TKO</Text>
+                                </Pressable>
+                            </View>
+                            <View style={styles.stoppageOptionBottomRow}>
+                                <Pressable
+                                        style={[styles.stoppageOption, stoppageReason === 'DQ' && styles.selectedStoppageOption]}
+                                        onPress={() => {
+                                            onMarkStoppage(roundNumber, 'DQ');
+                                            setSelectedStoppageWinner(undefined);
+                                            // setStoppageModalVisible(false);
+                                        }}
+                                    >
+                                        <Text style={[styles.stoppageOptionText, stoppageReason === "DQ" && styles.selectedStoppageOptionText]}>DQ</Text>
+                                </Pressable>
+                                    <Pressable
+                                        style={[styles.stoppageOption, stoppageReason === 'NC' && styles.selectedStoppageOption]}
+                                        onPress={() => {
+                                            onMarkStoppage(roundNumber, 'NC');
+                                            setSelectedStoppageWinner(undefined);
+                                            // setStoppageModalVisible(false);
+                                        }}
+                                    >
+                                        <Text style={[styles.stoppageOptionText, stoppageReason === "NC" && styles.selectedStoppageOptionText]}>NC</Text>
+                                </Pressable>
+                            </View>
+                        </View>
+                        {(stoppageReason === 'KO' || stoppageReason === 'TKO' || stoppageReason === 'DQ') && (
+                            <>
+                                <Text style={[styles.stoppageModalText, {textAlign: 'center'}, {marginTop: '10%'}]}>Who won the fight?</Text>
+                                <View style={styles.stoppageWinnerOptions}>
+                                    <Pressable
+                                        style={[styles.stoppageOption, selectedStoppageWinner === fighter1 && styles.selectedStoppageOption]}
+                                        onPress={() => setSelectedStoppageWinner(fighter1)}
+                                    >
+                                        <Text style={[styles.stoppageWinnerText, selectedStoppageWinner === fighter1 && styles.selectedStoppageOptionText]}>{fighter1}</Text>
+                                    </Pressable>
+                                    <Pressable
+                                        style={[styles.stoppageOption, selectedStoppageWinner === fighter2 && styles.selectedStoppageOption]}
+                                        onPress={() => setSelectedStoppageWinner(fighter2)}
+                                    >
+                                        <Text style={[styles.stoppageWinnerText, selectedStoppageWinner === fighter2 && styles.selectedStoppageWinnerText]}>{fighter2}</Text>
+                                    </Pressable>
+                                </View>
+                            </>
+                        )}
+                        <View style={styles.stoppageModalActions}>
+                            <Pressable style={[styles.stoppageModalButton, styles.stoppageCancelButton]} onPress={() => setStoppageModalVisible(false)}>
+                                <Text style={styles.stoppageCancelButtonText}>Cancel</Text>
+                            </Pressable>
+                            <Pressable
+                                style={[styles.stoppageModalButton, styles.stoppageConfirmButton]}
+                                onPress={() => {
+                                    if (stoppageReason === 'NC') {
+                                        onConfirmStoppage(roundNumber, stoppageReason);
+                                        setStoppageModalVisible(false);
+                                    } else if (
+                                        selectedStoppageWinner &&
+                                        (stoppageReason === 'KO' || stoppageReason === 'TKO' || stoppageReason === 'DQ')
+                                    ) {
+                                        onConfirmStoppage(roundNumber, stoppageReason, selectedStoppageWinner);
+                                        setStoppageModalVisible(false);
+                                    }
+                                }}
+                            >
+                                <Text style={styles.stoppageConfirmButtonText}>Confirm</Text>
+                            </Pressable>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </>
     );
 }
 
 const styles = StyleSheet.create({
+    stoppageModalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.45)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 24,
+    },
+    stoppageWinnerOptions: {
+        flexDirection: 'row',
+        gap: 10,
+        justifyContent: 'center'
+    },
+    stoppageOptionTopRow: {
+        flexDirection: 'row',
+        gap: 10
+    },
+    stoppageOptionBottomRow: {
+        flexDirection: 'row',
+        gap: 10
+    },
+    stoppageModalCard: {
+        width: '100%',
+        maxWidth: 340,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.25,
+        shadowRadius: 8,
+        elevation: 6,
+    },
+    stoppageModalTitle: {
+        color: '#333A3F',
+        fontSize: 20,
+        fontWeight: '700',
+        marginBottom: 8,
+        textAlign: 'center',
+    },
+    stoppageModalText: {
+        color: '#333A3F',
+        fontSize: 15,
+        lineHeight: 21,
+        marginBottom: 20,
+    },
+    stoppageModalActions: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        marginTop: '10%',
+        gap: 10
+    },
+    stoppageModalButton: {
+        minWidth: 88,
+        paddingVertical: 10,
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    stoppageCancelButton: {
+        backgroundColor: '#d32f2f',
+        marginLeft: 0,
+        boxShadow: '4',
+        shadowColor: '#11334b',
+        shadowOffset: { width: 2, height: 2 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1,
+        borderWidth: 1,
+        borderColor: 'rgba(200, 200, 200, 0.7)',
+    },
+    stoppageConfirmButton: {
+        backgroundColor: '#fff',
+        marginLeft: 0,
+        boxShadow: '4',
+        shadowColor: '#11334b',
+        shadowOffset: { width: 2, height: 2 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1,
+        borderWidth: 1,
+        borderColor: 'rgba(200, 200, 200, 0.7)',
+    },
+    stoppageConfirmButtonText: {
+        color: '#1976D2',
+        fontWeight: '700'
+    },
+    stoppageCancelButtonText: {
+        color: '#fff',
+        fontWeight: '700',
+    },
+    stoppageOptions: {
+        gap: 15,
+        marginTop: 4,
+        alignItems: 'center'
+    },
+    stoppageOption: {
+        alignItems: 'center',
+        backgroundColor: '#EEF1F3',
+        borderRadius: 10,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderWidth: 1,
+        width: '48%',
+        borderColor: 'rgba(200, 200, 200, 0.7)',
+        justifyContent: 'center'
+
+    },
+    selectedStoppageOption: {
+        backgroundColor: '#1976D2',
+    },
+    stoppageOptionText: {
+        color: '#333A3F',
+        fontSize: 16,
+        fontWeight: '700',
+    },
+    stoppageWinnerText: {
+        color: '#333A3F',
+        fontSize: 16,
+        fontWeight: '700',
+        width: '100%',
+        textAlign: 'center',
+    },
+
+    selectedStoppageOptionText: {
+        color: '#fff',
+    },
+    selectedStoppageWinnerText: {
+        color: '#fff',
+    },
     quickScoring: {
         width: '100%',
         backgroundColor: '#1976D2',
@@ -343,7 +580,8 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 2, height: 2 },
         shadowOpacity: 0.4,
         shadowRadius: 1,
-
+        borderWidth: 1,
+        borderColor: 'rgba(200, 200, 200, 0.7)',
     },
     quickScoringText: {
         fontSize: 24,
@@ -430,13 +668,7 @@ const styles = StyleSheet.create({
         marginLeft: 0,
         width: 'auto',
     },
-    saveQuickButton: {
-        backgroundColor: '#1976D2',
-    },
-    saveQuickButtonText: {
-        color: '#fff',
-        fontWeight: '700',
-    },
+
     fullScoring: {
         width: '100%',
         height: '15%',
@@ -455,9 +687,9 @@ const styles = StyleSheet.create({
     },
     cancelButton: {
         backgroundColor: '#d32f2f',
-        width: '85%',
-        marginLeft: 0,
-        top: '50%',
+        // width: '85%',
+        // marginLeft: 0,
+        // top: '50%',
         boxShadow: '4',
         shadowColor: '#11334b',
         shadowOffset: { width: 2, height: 2 },
@@ -471,6 +703,18 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontWeight: '700',
     },
+    saveQuickButton: {
+        backgroundColor: '#1976D2',
+        boxShadow: '4',
+        shadowColor: '#11334b',
+        shadowOffset: { width: 2, height: 2 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1
+    },
+    saveQuickButtonText: {
+        color: '#fff',
+        fontWeight: '700',
+    },
     modalOverlay: {
         flex: 1,
         backgroundColor: 'rgba(0, 0, 0, 0.45)',
@@ -480,7 +724,7 @@ const styles = StyleSheet.create({
     },
     deleteModal: {
         width: '100%',
-        height: '57%',
+        height: '66%',
         maxWidth: 340,
         backgroundColor: '#fff',
         borderRadius: 12,
@@ -626,6 +870,9 @@ const styles = StyleSheet.create({
         marginLeft: 0,
         flex: 0,
     },
+    noContestTotalScore: {
+        color: '#808080',
+    },
     scoreCell: {
         alignSelf: 'stretch',
         alignItems: 'center',
@@ -642,18 +889,12 @@ const styles = StyleSheet.create({
     },
     roundEvents: {
         position: 'absolute',
-        left: '24%',
-        // top: 11.5,
+        left: '24.65%',
         height: '90%',
-        // borderColor: 'rgba(200, 200, 200, 0.7)',
-        // borderBottomWidth: 1,
-        // borderTopWidth: 1,
-        borderLeftWidth: 0,
-        borderRightWidth: 0,
-        width: '7%',
+        borderColor: "#000",
+        width: '5.75%',
         shadowOffset: {height: 5, width: 0},
         boxShadow: '1px 2px 2px rgba(103, 103, 103, 0.4)',
-
         justifyContent: 'center',
         backgroundColor: "#D32F2F",
         alignItems: 'center',
@@ -661,14 +902,13 @@ const styles = StyleSheet.create({
     },
     roundEvents2: {
         position: 'absolute',
-        left: '67.25%',
+        left: '67.85%',
         backgroundColor: "#1976D2",
         alignItems: 'center',
         shadowOffset: {height: 5, width: 0},
         boxShadow: '0px 2px 2px rgba(103, 103, 103, 0.4)',
-        // top: 11.5,
         height: '90%',
-        width: '7%',
+        width: '5.75%',
         justifyContent: 'center'
     },
     roundEventsText: {
@@ -690,7 +930,6 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 15,
         borderBottomLeftRadius: 15,
         height: '150%',
-        // minHeight: 51,
     },
     row: {
         backgroundColor: '#fff',
