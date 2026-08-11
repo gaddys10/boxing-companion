@@ -300,14 +300,10 @@ export default function MatchInfoScreen() {
                 { !isLandscape ?
                     <View style={styles.summaryCard}>
                         {/* Fighter 1 vs fighter 2 */}
-                        <View style={isLandscape ? styles.landscapeTopDescription : styles.topDescription}>
-                            <Text style={isLandscape ? [styles.landscapeFighterText, styles.landscapeFighter1Name] : [styles.fighterText, styles.fighter1Name]}>
-                                {isLandscape ? formatLandScapeName(String(fighter1)) : fighter1}
-                            </Text>
-                            <Text style={isLandscape ? [styles.landscapeFighterText, styles.landscapeVsText] : [styles.fighterText, styles.vsText]}>vs</Text>
-                            <Text style={isLandscape ? [styles.landscapeFighterText, styles.landscapeFighter2Name] : [styles.fighterText, styles.fighter2Name]}>
-                                {isLandscape ? formatLandScapeName(String(fighter2)) : fighter2}
-                            </Text>
+                        <View style={styles.topDescription}>
+                            <Text style={[styles.fighterText, styles.fighter1Name]}>{fighter1}</Text>
+                            <Text style={[styles.fighterText, styles.vsText]}>vs</Text>
+                            <Text style={[styles.fighterText, styles.fighter2Name]}>{fighter2}</Text>
                         </View>
 
                         {/* Score 1 .. score 2  */}
@@ -620,9 +616,15 @@ const styles = StyleSheet.create({
     fighter1Name: {
         color: '#D32F2F',
         textAlign: 'center',
+        width: '50%'
+    },
+    fighterText: {
+        fontSize: 16,
+        flex: 1,
+        fontWeight: '700',
     },
     fighter1PointHeader: {
-        flex: 1,
+        flex: 1.2,
         color: '#D32F2F',
         fontSize: 24,
         fontWeight: '700',
@@ -633,7 +635,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     fighter2PointHeader: {
-        flex: 1,
+        flex: 1.2,
         color: '#1976D2',
         fontSize: 24,
         fontWeight: '700',
@@ -642,11 +644,7 @@ const styles = StyleSheet.create({
     noContestPointHeader: {
         color: '#808080',
     },
-    fighterText: {
-        fontSize: 16,
-        flex: 1,
-        fontWeight: '700',
-    },
+
     fillOverlay: {
         position: 'absolute',
         left: 0,
@@ -739,6 +737,7 @@ const styles = StyleSheet.create({
         height: '15.5%',
         marginBottom: 18,
         marginRight: '1%',
+        width: '100%',
         justifyContent: 'center',
         boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
     },
@@ -765,21 +764,22 @@ const styles = StyleSheet.create({
         marginLeft: 23,
     },
     totalEventsText: {
-        flex: 1,
+        flex: 1.2,
         color: '#333',
         fontSize: 9,
         fontWeight: '500',
         textAlign: 'center',
     },
     vsPointHeader: {
-        flex: 1,
+        flex: .8,
     },
     vsText: {
         color: '#000',
         textAlign: 'center',
+        flex: .8
     },
     vsTotalEvents: {
-        flex: 1,
+        flex: .8,
     },
 
     //LANDSCAPE STYLES
