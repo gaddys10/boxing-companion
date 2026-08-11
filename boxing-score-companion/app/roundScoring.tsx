@@ -51,7 +51,7 @@ export default function RoundScoringScreen() {
     const usableHeight = height - insets.top - insets.bottom;
     const toolbarHeight = Math.max(44, Math.min(50, usableHeight * 0.14));
     const undoHeight = Math.max(38, Math.min(44, usableHeight * 0.13));
-    const bottomControlHeight = Math.max(48, Math.min(56, usableHeight * 0.14));
+    const bottomControlHeight = Math.max(42, Math.min(42, usableHeight * 0.12));
     const centerHeight = Math.max(120, usableHeight - toolbarHeight - undoHeight - bottomControlHeight);
     const scoreBottom = bottomControlHeight + Math.max(6, centerHeight * 0.04);
     const compact = usableHeight < 370;
@@ -449,6 +449,36 @@ export default function RoundScoringScreen() {
                 <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={styles.exitButtonText}>Hold to Save & Exit Round {round}</Text>
             </Pressable>
 
+            {/* Mark Stoppage  */}
+            <Pressable
+                style={[styles.stoppageButton]}
+                onPressIn={() => startLongPressFill(exitProgress, 1000)}
+                onPressOut={() => resetLongPressFill(exitProgress)}
+                onLongPress={() => {
+                    void tripleHaptic(Haptics.ImpactFeedbackStyle.Medium);
+                    resetLongPressFill(exitProgress);
+
+                    // open stoppage modal
+                    
+                    // if (qualifiesForTenEightPrompt) {
+                    //     setTenEightModalVisible(true);
+                    //     return;
+                    // }
+
+                    saveRoundAndExit(false);
+                }}
+                delayLongPress={1000}
+            >
+                <LinearGradient
+                    colors={['#f7e7a8', '#d7b55d', '#b78c35']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={StyleSheet.absoluteFillObject}
+                />
+                <Animated.View style={[styles.fillOverlay, { width: exitProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
+                <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={styles.stoppageButtonText}>Hold to Mark Stoppage</Text>
+            </Pressable>
+
             <Modal
                 animationType="fade"
                 transparent
@@ -557,7 +587,7 @@ const styles = StyleSheet.create({
     deductLeftText: {
         //move text to right of box
         marginLeft: 34,
-        marginTop: 10,
+        top: 6,
         fontSize: 12,
         position: 'absolute',
         textAlign: 'right',
@@ -571,11 +601,11 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 10,
         overflow: 'hidden',
         paddingLeft: 5,
-        paddingTop: 1
+        // paddingTop: 1
     },
     deductRightText: {
         textAlign: 'left',
-        top: 10,
+        top: 6,
         left: 10,
         fontSize: 12,
     },
@@ -608,6 +638,7 @@ const styles = StyleSheet.create({
         marginTop: 0,
         zIndex: 1,
     },
+
     leftEvents: {
         color: '#000',
         fontSize: 12,
@@ -681,12 +712,35 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         width: 150,
-        height: 52,
+        minHeight: 44,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         transform: [{ translateX: -75 }],
         paddingTop: 5,
         overflow: 'hidden',
+    },
+        stoppageButton: {
+        position: 'absolute',
+        width: 230,
+        maxWidth: '38%',
+        minHeight: 44,
+        borderTopRightRadius: 15,
+        borderTopLeftRadius: 15,
+        justifyContent: 'center',
+        alignItems: 'center',
+        bottom: 0,
+        left: '50%',
+        transform: [{ translateX: -115 }],
+        overflow: 'hidden',
+        zIndex: 5,
+    },
+    stoppageButtonText: {
+
+    },
+    rightkd: {
+        bottom: 0,
+        left: '50%',
+        paddingBottom: 6
     },
     leftArea: {
         backgroundColor: '#b63030',
@@ -780,11 +834,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 12
     },
-    rightkd: {
-        bottom: 0,
-        left: '50%',
-        paddingBottom: 6
-    },
+
     rightName: {
         color: '#fff',
         fontSize: 24,

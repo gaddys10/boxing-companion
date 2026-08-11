@@ -42,6 +42,7 @@ type RoundRowProps = {
         scoringMethod: 'quick' | 'full';
     }) => void;
     onMarkStoppage: (roundNumber: number, reason: 'KO' | 'TKO' | 'DQ' | 'NC') => void;
+    onConfirmStoppage: (roundNumber: number, reason: 'KO' | 'TKO' | 'DQ' | 'NC', winner?: string) => void;
 };
 
 export default function LandscapeRoundRow({
@@ -62,9 +63,11 @@ export default function LandscapeRoundRow({
     id,
     savedScores,
     stoppageReason,
+    stoppageWinner,
     onClearRound,
     onSaveRound,
     onMarkStoppage,
+    onConfirmStoppage,
 }: RoundRowProps) {
     const swipeOffset = useSharedValue(0);
     const swipeStartOffset = useSharedValue(0);
@@ -72,6 +75,7 @@ export default function LandscapeRoundRow({
     const [scoringModalVisible, setScoringModalVisible] = useState(false);
     const [quickScoringVisible, setQuickScoringVisible] = useState(false);
     const [stoppageModalVisible, setStoppageModalVisible] = useState(false);
+    const [selectedStoppageWinner, setSelectedStoppageWinner] = useState<string | undefined>(stoppageWinner);
     const [quickLeftScore, setQuickLeftScore] = useState(10);
     const [quickRightScore, setQuickRightScore] = useState(10);
     const [quickLeftKds, setQuickLeftKds] = useState(0);
@@ -166,6 +170,7 @@ export default function LandscapeRoundRow({
                 style={styles.stoppageAction}
                 onPress={() => {
                     closeSwipeActions();
+                    setSelectedStoppageWinner(stoppageWinner);
                     setStoppageModalVisible(true);
                 }}
             >
@@ -197,7 +202,7 @@ export default function LandscapeRoundRow({
                         <Text style={[styles.scoreText, styles.leftRoundScore]}>{leftScore ?? '-'}</Text>
 
                         {plusMinusNumber !== null && plusMinusNumber > 0 && (
-                            <Ionicons name="triangle" style={styles.leftTriangle} />
+                            <Ionicons name="caret-up" style={styles.leftTriangle} />
                         )}
 
                         <View style={styles.plusMinusSlot}>
@@ -211,7 +216,7 @@ export default function LandscapeRoundRow({
                         </View>
 
                         {plusMinusNumber !== null && plusMinusNumber < 0 && (
-                            <Ionicons name="triangle" style={styles.rightTriangle} />
+                            <Ionicons name="caret-down" style={styles.rightTriangle} />
                         )}
                         <Text style={[styles.scoreText, styles.rightRoundScore, ]}>{rightScore ?? '-'}</Text>
                         <Text style={[styles.scoreText, styles.rightTotalScore]}>{rightTotal ?? '-'}</Text>
@@ -369,27 +374,78 @@ export default function LandscapeRoundRow({
                 supportedOrientations={['landscape', 'landscape-left', 'landscape-right']}
                 onRequestClose={() => setStoppageModalVisible(false)}
             >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.scoringModal}>
-                        <Text style={styles.modalTitle}>Mark Stoppage</Text>
-                        <Text style={styles.modalText}>Select why the fight was stopped.</Text>
+                <View style={styles.stoppageModalOverlay}>
+                    <View style={styles.stoppageModalCard}>
+                        <Text style={styles.stoppageModalTitle}>Mark Stoppage</Text>
+                        <Text style={[styles.stoppageModalText, { textAlign: 'center' }]}>Select why the fight was stopped.</Text>
                         <View style={styles.stoppageOptions}>
-                            {(['KO', 'TKO', 'DQ'] as const).map((option) => (
-                                <Pressable
-                                    key={option}
-                                    style={[styles.stoppageOption, stoppageReason === option && styles.selectedStoppageOption]}
-                                    onPress={() => {
-                                        onMarkStoppage(roundNumber, option);
-                                        setStoppageModalVisible(false);
-                                    }}
-                                >
-                                    <Text style={[styles.stoppageOptionText, stoppageReason === option && styles.selectedStoppageOptionText]}>{option}</Text>
-                                </Pressable>
-                            ))}
+                            <View style={styles.stoppageOptionRow}>
+                                {(['KO', 'TKO', 'DQ', 'NC'] as const).map((option) => (
+                                    <Pressable
+                                        key={option}
+                                        style={[styles.stoppageOption, stoppageReason === option && styles.selectedStoppageOption]}
+                                        onPress={() => {
+                                            onMarkStoppage(roundNumber, option);
+                                            setSelectedStoppageWinner(undefined);
+                                        }}
+                                    >
+                                        <Text style={[styles.stoppageOptionText, stoppageReason === option && styles.selectedStoppageOptionText]}>{option}</Text>
+                                    </Pressable>
+                                ))}
+                            </View>
+                            {/* <View style={styles.stoppageOptionRow}>
+                                {(['DQ', 'NC'] as const).map((option) => (
+                                    <Pressable
+                                        key={option}
+                                        style={[styles.stoppageOption, stoppageReason === option && styles.selectedStoppageOption]}
+                                        onPress={() => {
+                                            onMarkStoppage(roundNumber, option);
+                                            setSelectedStoppageWinner(undefined);
+                                        }}
+                                    >
+                                        <Text style={[styles.stoppageOptionText, stoppageReason === option && styles.selectedStoppageOptionText]}>{option}</Text>
+                                    </Pressable>
+                                ))}
+                            </View> */}
                         </View>
-                        <Pressable style={[styles.modalButton, styles.cancelButton]} onPress={() => setStoppageModalVisible(false)}>
-                            <Text style={styles.cancelButtonText}>Cancel</Text>
-                        </Pressable>
+                        {(stoppageReason === 'KO' || stoppageReason === 'TKO' || stoppageReason === 'DQ') && (
+                            <>
+                                <Text style={[styles.stoppageModalText, { textAlign: 'center', marginTop: '10%' }]}>Who won the fight?</Text>
+                                <View style={styles.stoppageWinnerOptions}>
+                                    {[fighter1, fighter2].map((fighter) => (
+                                        <Pressable
+                                            key={fighter}
+                                            style={[styles.stoppageWinnerOption, selectedStoppageWinner === fighter && styles.selectedStoppageOption]}
+                                            onPress={() => setSelectedStoppageWinner(fighter)}
+                                        >
+                                            <Text style={[styles.stoppageWinnerText, selectedStoppageWinner === fighter && styles.selectedStoppageOptionText]}>{fighter}</Text>
+                                        </Pressable>
+                                    ))}
+                                </View>
+                            </>
+                        )}
+                        <View style={styles.stoppageModalActions}>
+                            <Pressable style={[styles.stoppageModalButton, styles.stoppageCancelButton]} onPress={() => setStoppageModalVisible(false)}>
+                                <Text style={styles.stoppageCancelButtonText}>Cancel</Text>
+                            </Pressable>
+                            <Pressable
+                                style={[styles.stoppageModalButton, styles.stoppageConfirmButton]}
+                                onPress={() => {
+                                    if (stoppageReason === 'NC') {
+                                        onConfirmStoppage(roundNumber, stoppageReason);
+                                        setStoppageModalVisible(false);
+                                    } else if (
+                                        selectedStoppageWinner &&
+                                        (stoppageReason === 'KO' || stoppageReason === 'TKO' || stoppageReason === 'DQ')
+                                    ) {
+                                        onConfirmStoppage(roundNumber, stoppageReason, selectedStoppageWinner);
+                                        setStoppageModalVisible(false);
+                                    }
+                                }}
+                            >
+                                <Text style={styles.stoppageConfirmButtonText}>Confirm</Text>
+                            </Pressable>
+                        </View>
                     </View>
                 </View>
             </Modal>
@@ -505,16 +561,62 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         textAlign: 'center',
     },
-    stoppageOptions: {
-        gap: 10,
-        marginTop: 8,
+    stoppageModalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.45)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 24,
     },
+    stoppageModalCard: {
+        width: '100%',
+        maxWidth: 480,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.25,
+        shadowRadius: 8,
+        elevation: 6,
+    },
+    stoppageModalTitle: {
+        color: '#333A3F',
+        fontSize: 20,
+        fontWeight: '700',
+        marginBottom: 8,
+        textAlign: 'center',
+    },
+    stoppageModalText: {
+        color: '#333A3F',
+        fontSize: 15,
+        lineHeight: 21,
+        marginBottom: 20,
+    },
+    stoppageOptions: { gap: 15, marginTop: 4, alignItems: 'center' },
+    stoppageOptionRow: { flexDirection: 'row', gap: 10 },
+    stoppageWinnerOptions: { flexDirection: 'row', gap: 15, justifyContent: 'center' },
     stoppageOption: {
         alignItems: 'center',
         backgroundColor: '#EEF1F3',
         borderRadius: 10,
         paddingHorizontal: 16,
-        paddingVertical: 12,
+        paddingVertical: 8,
+        borderWidth: 1,
+        width: '20%',
+        borderColor: 'rgba(200, 200, 200, 0.7)',
+        justifyContent: 'center',
+    },
+    stoppageWinnerOption: {
+        alignItems: 'center',
+        backgroundColor: '#EEF1F3',
+        borderRadius: 10,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderWidth: 1,
+        width: '41%',
+        borderColor: 'rgba(200, 200, 200, 0.7)',
+        justifyContent: 'center',
     },
     selectedStoppageOption: {
         backgroundColor: '#1976D2',
@@ -527,6 +629,35 @@ const styles = StyleSheet.create({
     selectedStoppageOptionText: {
         color: '#fff',
     },
+    stoppageWinnerText: {
+        color: '#333A3F',
+        fontSize: 16,
+        fontWeight: '700',
+        width: '100%',
+        textAlign: 'center',
+    },
+    stoppageModalActions: { flexDirection: 'row', justifyContent: 'space-around', marginTop: '10%', gap: 10 },
+    stoppageModalButton: { minWidth: 88, paddingVertical: 8, borderRadius: 8, alignItems: 'center' },
+    stoppageCancelButton: {
+        backgroundColor: '#d32f2f',
+        shadowColor: '#11334b',
+        shadowOffset: { width: 2, height: 2 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1,
+        borderWidth: 1,
+        borderColor: 'rgba(200, 200, 200, 0.7)',
+    },
+    stoppageConfirmButton: {
+        backgroundColor: '#fff',
+        shadowColor: '#11334b',
+        shadowOffset: { width: 2, height: 2 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1,
+        borderWidth: 1,
+        borderColor: 'rgba(200, 200, 200, 0.7)',
+    },
+    stoppageCancelButtonText: { color: '#fff', fontWeight: '700' },
+    stoppageConfirmButtonText: { color: '#1976D2', fontWeight: '700' },
     leftRoundScore: {
         color: '#D32F2F',
     },
@@ -542,7 +673,6 @@ const styles = StyleSheet.create({
     },
     rightTriangle: {
         position: 'absolute',
-        transform: [{ rotate: '180deg' }],
         left: '35.5%',
         top: '57%',
         height: 9,
