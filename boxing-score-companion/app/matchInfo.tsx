@@ -760,11 +760,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: '2%',
-        width: '85%',
+        width: '87%',
         marginLeft: 23,
     },
     totalEventsText: {
-        flex: 1.2,
+        flex: 1,
         color: '#333',
         fontSize: 9,
         fontWeight: '500',
