@@ -680,7 +680,7 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     headerRoundLabelSpacer: {
-        width: '9.25%',
+        width: '9%',
         height: '100%',
     },
     headerScoreCell: {
@@ -692,7 +692,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     headerActionSpacer: {
-        width: 42,
+        width: '11.5%'
     },
     leftHeader: {
         color: 'red',
