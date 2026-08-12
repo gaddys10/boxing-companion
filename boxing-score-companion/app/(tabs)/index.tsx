@@ -49,7 +49,7 @@ export default function HomeScreen() {
 
   const landscapeHeaderHeight = contentHeight * 0.23;
   const landscapeCardsTop = contentHeight * 0.45;
-  const landscapeSearchTop = 10
+  const landscapeSearchTop = 6
     + landscapeHeaderHeight
     + (landscapeCardsTop - 10 - landscapeHeaderHeight - searchBoxHeight) / 2;
 

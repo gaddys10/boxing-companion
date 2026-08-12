@@ -176,7 +176,7 @@ export default function RoundScoringScreen() {
 
     return (
         
-        <View style={[styles.container, { paddingLeft: insets.left, paddingRight: insets.right }]}>
+        <View style={[styles.container]}>
             <Stack.Screen options={{ headerShown: false }} />
 
             <Pressable 
