@@ -1,14 +1,13 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import LandscapeRoundRow from './components/landscapeRoundRow';
 import RoundRow from './components/roundRow';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 
 export default function MatchInfoScreen() {
     const router = useRouter();
-    const { width, height } = useWindowDimensions();
-    const insets = useSafeAreaInsets();
+    const { isLandscape, insets, sx, sy, horizontalGutter } = useResponsiveLayout();
     const { 
         id,
         fighter1,
@@ -23,6 +22,8 @@ export default function MatchInfoScreen() {
         savedRightDeductions,
         savedLeftKnockdowns,
         savedRightKnockdowns,
+        savedStoppageReason,
+        savedStoppageWinner,
         gender,
         weight
     } = useLocalSearchParams();
@@ -43,7 +44,6 @@ export default function MatchInfoScreen() {
     const [roundScores, setRoundScores] = useState<Record<number, RoundScore>>({});
 
 
-    const isLandscape = width > height;
     const scorecardId = id ? Number(String(id)) : undefined;
     const isEditingScorecard = scorecardId !== undefined && !Number.isNaN(scorecardId);
     const selectedRoundCount = Number(rounds || 3);
@@ -72,6 +72,20 @@ export default function MatchInfoScreen() {
                 rightKnockdowns: String(savedRightKnockdowns ?? 0),
                 scoringMethod: 'full',
             };
+        } else if (savedRound && savedStoppageReason) {
+            const roundNumber = Number(savedRound);
+
+            currentScores[roundNumber] = {
+                left: '',
+                right: '',
+                plusMinus: '',
+                leftDeductions: '0',
+                rightDeductions: '0',
+                leftKnockdowns: '0',
+                rightKnockdowns: '0',
+                stoppageReason: String(savedStoppageReason) as RoundScore['stoppageReason'],
+                stoppageWinner: String(savedStoppageWinner),
+            };
         }
 
         setRoundScores(currentScores);
@@ -85,6 +99,8 @@ export default function MatchInfoScreen() {
         savedRightDeductions,
         savedLeftKnockdowns,
         savedRightKnockdowns,
+        savedStoppageReason,
+        savedStoppageWinner,
     ]);
 
     const isRoundScored = (roundNumber: number) => {
@@ -289,8 +305,12 @@ export default function MatchInfoScreen() {
         <>
             <View style={[
                 isLandscape ? styles.landscapeContainer : styles.container,
-                isLandscape && {
                 
+                !isLandscape && {paddingTop: insets.top + 2,},
+
+                isLandscape && {
+                    paddingLeft: Math.max(insets.left, sx),
+                    paddingRight: Math.max(insets.right, 3 * sx),
                     paddingBottom: Math.max(insets.bottom, 8),
                 },
             ]}>
@@ -298,7 +318,7 @@ export default function MatchInfoScreen() {
 
                 {/* fighter name, point, and event container  */}
                 { !isLandscape ?
-                    <View style={styles.summaryCard}>
+                    <View style={[styles.summaryCard, { minHeight: 112 * sy, paddingHorizontal: Math.max(0, horizontalGutter - 15) }]}>
                         {/* Fighter 1 vs fighter 2 */}
                         <View style={styles.topDescription}>
                             <Text style={[styles.fighterText, styles.fighter1Name]}>{fighter1}</Text>
@@ -319,7 +339,6 @@ export default function MatchInfoScreen() {
                             <Text
                                 style={[styles.totalEventsText, styles.fighter1TotalEvents]}
                                 numberOfLines={1}
-                                
                             >
                                 {getTotalEventsText(scorecardTotals.fighter1KD, scorecardTotals.fighter1Pen)}
                             </Text>
@@ -333,7 +352,7 @@ export default function MatchInfoScreen() {
                         </View>
                     </View>
                 :
-                    <View style={styles.landscapeSummaryCard}>
+                    <View style={[styles.landscapeSummaryCard, { width: 155 * sx }]}>
                         {/* Fighter 1 vs fighter 2 */}
                         <View style={styles.landscapeTopDescription}>
                             
@@ -351,7 +370,7 @@ export default function MatchInfoScreen() {
                                 {isLandscape ? formatLandScapeName(String(fighter2)) : fighter2}
                             </Text>
                             <Text style={[styles.fighter2PointHeader, isLatestRoundNoContest && styles.noContestPointHeader]}>{fighter2LatestTotal}</Text>
-                            <Text style={[styles.totalEventsText, styles.fighter2TotalEvents]}>
+                            <Text style={[styles.totalEventsText, styles.landscapeFighter2TotalEvents]}>
                                 {getTotalEventsText(scorecardTotals.fighter2KD, scorecardTotals.fighter2Pen)}
                             </Text>
                         </View>
@@ -359,14 +378,14 @@ export default function MatchInfoScreen() {
                 }
 
                 {isLandscape && (
-                    <View style={styles.landscapeButtonContainer}>
-                        <Pressable style={styles.landscapeCardDetailsButton} onPress={handleCardDetails}>
+                    <View style={[styles.landscapeButtonContainer, { right: Math.max(insets.right, 8 * sx), gap: 15 * sx }]}>
+                        <Pressable style={[styles.landscapeCardDetailsButton, { width: 140 * sx, minHeight: Math.max(44, 36 * sy) }]} onPress={handleCardDetails}>
                             <Text onPress={handleCardDetails} style={styles.landscapecardDetailsButtonText}>Card Details</Text>
                         </Pressable>
-                        <Pressable style={styles.landscapeShareButton} onPress={handleSaveScorecard}>
+                        <Pressable style={[styles.landscapeShareButton, { width: 140 * sx, minHeight: Math.max(44, 36 * sy) }]} onPress={handleSaveScorecard}>
                             <Text style={styles.landscapeShareButtonText}>Share</Text>
                         </Pressable>
-                        <Pressable style={styles.landscapeButton} onPress={handleSaveScorecard}>
+                        <Pressable style={[styles.landscapeButton, { width: 140 * sx, minHeight: Math.max(44, 36 * sy) }]} onPress={handleSaveScorecard}>
                             <Text style={styles.landscapeButtonText}>Save & Exit</Text>
                         </Pressable>
                     </View>
@@ -382,7 +401,7 @@ export default function MatchInfoScreen() {
                         <Text style={[styles.landscapeHeaderText, styles.landscapeRightHeader]}>Total</Text>
                     </View>
                 ) : (
-                    <View style={styles.headerRow}>
+                    <View style={[styles.headerRow, { paddingHorizontal: Math.max(0, horizontalGutter - 15) }]}>
                         <View style={styles.headerRoundLabelSpacer} />
                         <View style={styles.headerScoreCell}><Text style={styles.headerText}>Total</Text></View>
                         <View style={styles.headerScoreCell}><Text style={styles.headerText}>Round</Text></View>
@@ -395,7 +414,7 @@ export default function MatchInfoScreen() {
 
                 {/* Portrait row container  */}
                 {!isLandscape ?
-                    <ScrollView style={styles.rowContainer}>
+                    <ScrollView style={[styles.rowContainer, { paddingHorizontal: horizontalGutter * 0.62, marginHorizontal: -horizontalGutter }]}>
                         {Array.from({ length: parseInt(rounds as string) }).map((_, index) => {
                             const roundNumber = index + 1;
                             return (
@@ -606,12 +625,18 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         zIndex: 1
     },
+    // container: {
+    //     flex: 1,
+    //     backgroundColor: '#f2f2f2',
+    //     padding: 15,
+    //     paddingRight: 10,
+    //     paddingTop: '13%'
+    // },
     container: {
         flex: 1,
         backgroundColor: '#f2f2f2',
         padding: 15,
         paddingRight: 10,
-        paddingTop: 60
     },
     fighter1Name: {
         color: '#D32F2F',
@@ -666,7 +691,7 @@ const styles = StyleSheet.create({
         top: 5,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        gap: 15
+        gap: 40
     },
     buttonContainer: {
         flexDirection: 'row',
@@ -711,11 +736,16 @@ const styles = StyleSheet.create({
     },
     fighter1TotalEvents: {
         color: '#D32F2F',
+        flex: 1.2,
     },
     landscapeFighter1TotalEvents: {
         color: '#D32F2F',
     },
     fighter2TotalEvents: {
+        color: '#1976D2',
+        flex: 1.2,
+    },
+    landscapeFighter2TotalEvents: {
         color: '#1976D2',
     },
     rightHeader: {
@@ -734,7 +764,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
         paddingTop: 10,
-        height: '15.5%',
+        height: '15%',
         marginBottom: 18,
         marginRight: '1%',
         width: '100%',
@@ -903,7 +933,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
         height: '100%',
-        marginLeft: '5.25%',
+        marginLeft: '1%',
         width: '18%',
         minWidth: 126,
         maxWidth: 170,
