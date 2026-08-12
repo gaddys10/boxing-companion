@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
 import * as Haptics from 'expo-haptics';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 
 export default function RoundScoringScreen() {
     const router = useRouter();
@@ -32,6 +32,9 @@ export default function RoundScoringScreen() {
     const [leftScore, setLeftScore] = useState(Number(savedRound?.left ?? 10));
     const [rightScore, setRightScore] = useState(Number(savedRound?.right ?? 10));
     const [tenEightModalVisible, setTenEightModalVisible] = useState(false);
+    const [stoppageModalVisible, setStoppageModalVisible] = useState(false);
+    const [stoppageReason, setStoppageReason] = useState<'KO' | 'TKO' | 'DQ' | 'NC' | undefined>(savedRound?.stoppageReason);
+    const [selectedStoppageWinner, setSelectedStoppageWinner] = useState<string | undefined>(savedRound?.stoppageWinner === 'NC' ? undefined : savedRound?.stoppageWinner);
 
     const leftPulseAnim = useRef<Animated.Value>(new Animated.Value(1)).current;
     const rightPulseAnim = useRef<Animated.Value>(new Animated.Value(1)).current;
@@ -45,9 +48,10 @@ export default function RoundScoringScreen() {
     const rightKdProgress = useRef<Animated.Value>(new Animated.Value(0)).current;
     const rightDeductProgress = useRef<Animated.Value>(new Animated.Value(0)).current;
     const exitProgress = useRef<Animated.Value>(new Animated.Value(0)).current;
+    const stoppageProgress = useRef<Animated.Value>(new Animated.Value(0)).current;
 
     const { height } = useWindowDimensions();
-    const insets = useSafeAreaInsets();
+    const { insets, sx, scale } = useResponsiveLayout();
     const usableHeight = height - insets.top - insets.bottom;
     const toolbarHeight = Math.max(44, Math.min(50, usableHeight * 0.14));
     const undoHeight = Math.max(38, Math.min(44, usableHeight * 0.13));
@@ -151,6 +155,25 @@ export default function RoundScoringScreen() {
         });
     };
 
+    const saveStoppageAndExit = () => {
+        if (!stoppageReason || (stoppageReason !== 'NC' && !selectedStoppageWinner)) return;
+
+        setStoppageModalVisible(false);
+        router.replace({
+            pathname: '/matchInfo',
+            params: {
+                fighter1: params.fighter1,
+                fighter2: params.fighter2,
+                rounds: params.rounds,
+                id: params.id,
+                savedScores: params.savedScores,
+                savedRound: String(round),
+                savedStoppageReason: stoppageReason,
+                savedStoppageWinner: stoppageReason === 'NC' ? 'NC' : selectedStoppageWinner,
+            },
+        });
+    };
+
     return (
         
         <View style={[styles.container]}>
@@ -230,11 +253,11 @@ export default function RoundScoringScreen() {
                         
 
                 { score > 0 &&
-                    <Text style={[styles.leftScore, { bottom: scoreBottom }]}>{score}&nbsp;<Ionicons name="caret-back" size={48} color="white" /></Text>
+                    <Text style={[styles.leftScore, { bottom: scoreBottom, fontSize: 63 * scale }]}>{score}&nbsp;<Ionicons name="caret-back" size={48 * scale} color="white" /></Text>
                 }
                 <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.62} style={[styles.leftName, compact && styles.compactName]}>{fighter1}</Text>
 
-                <Animated.Text style={[styles.plusSign, { transform: [{ scale: leftPulseAnim }] }]} >+</Animated.Text>
+                <Animated.Text style={[styles.plusSign, { fontSize: 96 * scale, transform: [{ scale: leftPulseAnim }] }]} >+</Animated.Text>
 
                 {/* Left PEN */}
                 <Pressable
@@ -332,7 +355,7 @@ export default function RoundScoringScreen() {
                 </Pressable>
 
                 { score < 0 &&
-                    <Text style={[styles.rightScore, { bottom: scoreBottom }]}><Ionicons name="caret-forward" size={48} color="white" />&nbsp;{absScore}</Text>
+                    <Text style={[styles.rightScore, { bottom: scoreBottom, fontSize: 63 * scale }]}><Ionicons name="caret-forward" size={48 * scale} color="white" />&nbsp;{absScore}</Text>
                 }
 
                 {/* Undo right deductions */}
@@ -364,7 +387,7 @@ export default function RoundScoringScreen() {
                 </Pressable>
 
                 <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.62} style={[styles.rightName, compact && styles.compactName]}>{fighter2}</Text>
-                <Animated.Text style={[styles.plusSign, { transform: [{ scale: rightPulseAnim }] }]} >+</Animated.Text>
+                <Animated.Text style={[styles.plusSign, { fontSize: 96 * scale, transform: [{ scale: rightPulseAnim }] }]} >+</Animated.Text>
 
                 {/* Right Knockdown */}
                 <Pressable
@@ -424,7 +447,7 @@ export default function RoundScoringScreen() {
 
             {/* Exit  */}
             <Pressable
-                style={[styles.exitButton]}
+                style={[styles.exitButton, { width: 230 * sx, transform: [{ translateX: -115 * sx }] }]}
                 onPressIn={() => startLongPressFill(exitProgress, 1000)}
                 onPressOut={() => resetLongPressFill(exitProgress)}
                 onLongPress={() => {
@@ -451,21 +474,15 @@ export default function RoundScoringScreen() {
 
             {/* Mark Stoppage  */}
             <Pressable
-                style={[styles.stoppageButton]}
-                onPressIn={() => startLongPressFill(exitProgress, 1000)}
-                onPressOut={() => resetLongPressFill(exitProgress)}
+                style={[styles.stoppageButton, { width: 230 * sx, transform: [{ translateX: -115 * sx }] }]}
+                onPressIn={() => startLongPressFill(stoppageProgress, 1000)}
+                onPressOut={() => resetLongPressFill(stoppageProgress)}
                 onLongPress={() => {
                     void tripleHaptic(Haptics.ImpactFeedbackStyle.Medium);
-                    resetLongPressFill(exitProgress);
-
-                    // open stoppage modal
-                    
-                    // if (qualifiesForTenEightPrompt) {
-                    //     setTenEightModalVisible(true);
-                    //     return;
-                    // }
-
-                    saveRoundAndExit(false);
+                    resetLongPressFill(stoppageProgress);
+                    setStoppageReason(savedRound?.stoppageReason);
+                    setSelectedStoppageWinner(savedRound?.stoppageWinner === 'NC' ? undefined : savedRound?.stoppageWinner);
+                    setStoppageModalVisible(true);
                 }}
                 delayLongPress={1000}
             >
@@ -475,9 +492,64 @@ export default function RoundScoringScreen() {
                     end={{ x: 1, y: 1 }}
                     style={StyleSheet.absoluteFillObject}
                 />
-                <Animated.View style={[styles.fillOverlay, { width: exitProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
+                <Animated.View style={[styles.fillOverlay, { width: stoppageProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                 <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={styles.stoppageButtonText}>Hold to Mark Stoppage</Text>
             </Pressable>
+
+            <Modal
+                animationType="fade"
+                transparent
+                visible={stoppageModalVisible}
+                supportedOrientations={['landscape', 'landscape-left', 'landscape-right']}
+                onRequestClose={() => setStoppageModalVisible(false)}
+            >
+                <View style={styles.stoppageModalOverlay}>
+                    <View style={[styles.stoppageModalCard, { padding: 20 * scale }]}>
+                        <Text style={styles.stoppageModalTitle}>Mark Stoppage</Text>
+                        <Text style={[styles.stoppageModalText, { textAlign: 'center' }]}>Select why the fight was stopped.</Text>
+                        <View style={styles.stoppageOptions}>
+                            <View style={styles.stoppageOptionRow}>
+                                {(['KO', 'TKO', 'DQ', 'NC'] as const).map((option) => (
+                                    <Pressable
+                                        key={option}
+                                        style={[styles.stoppageOption, stoppageReason === option && styles.selectedStoppageOption]}
+                                        onPress={() => {
+                                            setStoppageReason(option);
+                                            setSelectedStoppageWinner(undefined);
+                                        }}
+                                    >
+                                        <Text style={[styles.stoppageOptionText, stoppageReason === option && styles.selectedStoppageOptionText]}>{option}</Text>
+                                    </Pressable>
+                                ))}
+                            </View>
+                        </View>
+                        {(stoppageReason === 'KO' || stoppageReason === 'TKO' || stoppageReason === 'DQ') && (
+                            <>
+                                <Text style={[styles.stoppageModalText, { textAlign: 'center', marginTop: '10%' }]}>Who won the fight?</Text>
+                                <View style={styles.stoppageWinnerOptions}>
+                                    {[String(fighter1), String(fighter2)].map((fighter) => (
+                                        <Pressable
+                                            key={fighter}
+                                            style={[styles.stoppageWinnerOption, selectedStoppageWinner === fighter && styles.selectedStoppageOption]}
+                                            onPress={() => setSelectedStoppageWinner(fighter)}
+                                        >
+                                            <Text style={[styles.stoppageWinnerText, selectedStoppageWinner === fighter && styles.selectedStoppageOptionText]}>{fighter}</Text>
+                                        </Pressable>
+                                    ))}
+                                </View>
+                            </>
+                        )}
+                        <View style={styles.stoppageModalActions}>
+                            <Pressable style={[styles.stoppageModalButton, styles.stoppageCancelButton]} onPress={() => setStoppageModalVisible(false)}>
+                                <Text style={styles.stoppageCancelButtonText}>Cancel</Text>
+                            </Pressable>
+                            <Pressable style={[styles.stoppageModalButton, styles.stoppageConfirmButton]} onPress={saveStoppageAndExit}>
+                                <Text style={styles.stoppageConfirmButtonText}>Confirm</Text>
+                            </Pressable>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
 
             <Modal
                 animationType="fade"
@@ -487,7 +559,7 @@ export default function RoundScoringScreen() {
                 onRequestClose={() => setTenEightModalVisible(false)}
             >
                 <View style={styles.modalOverlay}>
-                    <View style={styles.tenEightModal}>
+                    <View style={[styles.tenEightModal, { padding: 22 * scale }]}>
                         <Text style={styles.modalTitle}>Make this a 10–8 round?</Text>
                         <Text style={styles.modalText}>
                             This round reached {absScore} momentum points. Would you like the losing fighter to receive 8 points?
@@ -737,6 +809,54 @@ const styles = StyleSheet.create({
     stoppageButtonText: {
 
     },
+    stoppageModalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.45)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 24,
+    },
+    stoppageModalCard: {
+        width: '100%',
+        maxWidth: 480,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.25,
+        shadowRadius: 8,
+        elevation: 6,
+    },
+    stoppageModalTitle: { color: '#333A3F', fontSize: 20, fontWeight: '700', marginBottom: 8, textAlign: 'center' },
+    stoppageModalText: { color: '#333A3F', fontSize: 15, lineHeight: 21, marginBottom: 20 },
+    stoppageOptions: { gap: 15, marginTop: 4, alignItems: 'center' },
+    stoppageOptionRow: { flexDirection: 'row', gap: 10 },
+    stoppageWinnerOptions: { flexDirection: 'row', gap: 15, justifyContent: 'center' },
+    stoppageOption: {
+        alignItems: 'center', backgroundColor: '#EEF1F3', borderRadius: 10, paddingHorizontal: 16,
+        paddingVertical: 8, borderWidth: 1, width: '20%', borderColor: 'rgba(200, 200, 200, 0.7)', justifyContent: 'center',
+    },
+    stoppageWinnerOption: {
+        alignItems: 'center', backgroundColor: '#EEF1F3', borderRadius: 10, paddingHorizontal: 16,
+        paddingVertical: 8, borderWidth: 1, width: '41%', borderColor: 'rgba(200, 200, 200, 0.7)', justifyContent: 'center',
+    },
+    selectedStoppageOption: { backgroundColor: '#1976D2' },
+    stoppageOptionText: { color: '#333A3F', fontSize: 16, fontWeight: '700' },
+    selectedStoppageOptionText: { color: '#fff' },
+    stoppageWinnerText: { color: '#333A3F', fontSize: 16, fontWeight: '700', width: '100%', textAlign: 'center' },
+    stoppageModalActions: { flexDirection: 'row', justifyContent: 'space-around', marginTop: '10%', gap: 10 },
+    stoppageModalButton: { minWidth: 88, paddingVertical: 8, borderRadius: 8, alignItems: 'center' },
+    stoppageCancelButton: {
+        backgroundColor: '#d32f2f', shadowColor: '#11334b', shadowOffset: { width: 2, height: 2 },
+        shadowOpacity: 0.4, shadowRadius: 1, borderWidth: 1, borderColor: 'rgba(200, 200, 200, 0.7)',
+    },
+    stoppageConfirmButton: {
+        backgroundColor: '#fff', shadowColor: '#11334b', shadowOffset: { width: 2, height: 2 },
+        shadowOpacity: 0.4, shadowRadius: 1, borderWidth: 1, borderColor: 'rgba(200, 200, 200, 0.7)',
+    },
+    stoppageCancelButtonText: { color: '#fff', fontWeight: '700' },
+    stoppageConfirmButtonText: { color: '#1976D2', fontWeight: '700' },
     rightkd: {
         bottom: 0,
         left: '50%',

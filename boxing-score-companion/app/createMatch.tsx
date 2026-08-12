@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import React, { useRef, useState } from 'react';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 const tIcon = require('../assets/images/flatwhitet.png');
 
 
@@ -56,12 +56,15 @@ export default function CreateMatch() {
 
 
     const buttonText = String(params.buttonText || "Create Scorecard");
-    const rounds = [4, 5, 6, 8, 10, 12, 15];
-    const { width, height } = useWindowDimensions();
-    const insets = useSafeAreaInsets();
+    const rounds = [4, 5, 6, 8, 10, 12];
+    const { height, isLandscape, insets, sx, sy, scale, horizontalGutter } = useResponsiveLayout();
+    const landscapeHeightRef = useRef(0);
+    if (isLandscape && height > landscapeHeightRef.current) {
+        landscapeHeightRef.current = height;
+    }
+    const stableLandscapeHeight = landscapeHeightRef.current || height;
     const id = params.id ? String(params.id) : undefined;
-    const landscapeInputHeight = Math.max(36, Math.min(56, height * 0.05));
-    let isLandscape = width > height;
+    const landscapeInputHeight = Math.max(36, Math.min(56, stableLandscapeHeight * 0.05));
 
 
     const handleStartFight = () => {
@@ -242,15 +245,25 @@ export default function CreateMatch() {
     );
 
     return (
-        <View style={styles.screen}>
+        <KeyboardAvoidingView
+            style={styles.screen}
+            behavior={!isLandscape && Platform.OS === 'ios' ? 'padding' : undefined}
+        >
             <Stack.Screen options={{ headerShown: false }} />
             <ScrollView
                 style={styles.formScroll}
                 contentContainerStyle={[
                     isLandscape ? styles.landscapeContainer : styles.container,
+                    !isLandscape && {
+                        paddingTop: insets.top,
+                        paddingBottom: Math.max(insets.bottom, 12),
+                        paddingHorizontal: horizontalGutter,
+                    },
                     isLandscape && {
-                        paddingLeft: Math.max(insets.left, 16),
-                        paddingRight: Math.max(insets.right, 16),
+                        paddingLeft: Math.max(insets.left, 16 * sx),
+                        paddingRight: Math.max(insets.right, 16 * sx),
+                        paddingBottom: Math.max(insets.bottom, 8 * sy),
+                        minHeight: stableLandscapeHeight,
                     },
                 ]}
                 keyboardShouldPersistTaps="handled"
@@ -273,7 +286,7 @@ export default function CreateMatch() {
                         value={fighter1Name}
                         placeholderTextColor="#D32f2f"
                         onChangeText={setFighter1Name}
-                        style={isLandscape ? [styles.landscapeFighter1Input, { height: landscapeInputHeight }] : styles.fighter1input}
+                        style={isLandscape ? [styles.landscapeFighter1Input, { height: landscapeInputHeight }] : [styles.fighter1input, { minHeight: Math.max(44, 48 * scale) }]}
                     />
                 </View>
 
@@ -285,7 +298,7 @@ export default function CreateMatch() {
                         placeholderTextColor="#307Fb6"
                         value={fighter2Name}
                         onChangeText={setFighter2Name}
-                        style={isLandscape ? [styles.landscapeFighter2Input, { height: landscapeInputHeight }] : styles.fighter2Input}
+                        style={isLandscape ? [styles.landscapeFighter2Input, { height: landscapeInputHeight }] : [styles.fighter2Input, { minHeight: Math.max(44, 48 * scale) }]}
                     />
                 </View>
             </View>
@@ -301,21 +314,9 @@ export default function CreateMatch() {
                 </>
             )}
 
-
-
-
             <Text style={isLandscape ? styles.landscapeWeightLabel : styles.blackNameLabel}>
                 Select weight class: <Text style={styles.optionalLabel}>(optional)</Text>
             </Text>
-
-            {/* <Pressable
-                key={round}
-                style={[
-                    styles.roundButton,
-                    selectedRounds === round && styles.roundButtonSelected,
-                ]}
-                onPress={() => setSelectedRounds(round)}
-            ></Pressable> */}
 
             {!isLandscape ?
                 <View style={[styles.weightClassContainer]}>
@@ -540,7 +541,7 @@ export default function CreateMatch() {
             }
             {/* <Image source={tIcon} style={styles.icon} resizeMode="contain" /> */}
             </ScrollView>
-        </View>
+        </KeyboardAvoidingView>
     );
 }
 
@@ -665,6 +666,9 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         // width: '400',
         height: '80%',
+        flex: 1,
+        maxWidth: 200,
+        minWidth: 0,
         borderWidth: 1,
         borderColor: '#B6C6D1',
         justifyContent: 'center',
@@ -677,6 +681,7 @@ const styles = StyleSheet.create({
         height: '100%',
         borderWidth: 1,
         width: '31%',
+        minWidth: 0,
         borderColor: '#B6C6D1',
         justifyContent: 'center',
         boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
@@ -698,7 +703,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         paddingHorizontal: '1%',
         borderRadius: 12,
-        width: 200,
+        flex: 1,
+        maxWidth: 200,
+        minWidth: 0,
         height: '100%',
         alignItems: 'center',
         justifyContent: 'center',
@@ -711,7 +718,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         paddingHorizontal: 24,
         borderRadius: 12,
-        width: 200,
+        flex: 1,
+        maxWidth: 200,
+        minWidth: 0,
         height: '80%',
         borderWidth: 1,
         borderColor: '#B6C6D1',
@@ -722,7 +731,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         paddingHorizontal: 24,
         borderRadius: 12,
-        width: 200,
+        flex: 1,
+        maxWidth: 200,
+        minWidth: 0,
         height: '100%',
         borderWidth: 1,
         borderColor: '#B6C6D1',
@@ -1023,11 +1034,12 @@ const styles = StyleSheet.create({
     },
     titleContainer: {
         backgroundColor: '#307fb6',
-        height: '12%',
+        height: '10%',
         width: '115%',
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: 15,
+        borderBottomLeftRadius: 15,
+        borderBottomRightRadius: 15,
         marginBottom: '7%',
     },
 

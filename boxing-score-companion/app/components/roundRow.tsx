@@ -246,7 +246,7 @@ export default function RoundRow({
                 onRequestClose={closeScoringModal}
             >
                 <View style={styles.modalOverlay}>
-                    <View style={styles.deleteModal}>
+                    <View style={styles.selectScoringModal}>
                         {!quickScoringVisible ? (
                             <>
                                 <Text style={styles.modalTitle}>Select Scoring Method</Text>
@@ -571,7 +571,7 @@ const styles = StyleSheet.create({
     },
     quickScoring: {
         width: '100%',
-        backgroundColor: '#1976D2',
+        backgroundColor: '#fff',
         height: '15%',
         borderRadius: 15,
         justifyContent: 'center',
@@ -587,7 +587,8 @@ const styles = StyleSheet.create({
     },
     quickScoringText: {
         fontSize: 24,
-        color: '#fff',
+        fontWeight: 700,
+        color: '#1976D2'
     },
     quickCornerRow: {
         flexDirection: 'row',
@@ -674,24 +675,21 @@ const styles = StyleSheet.create({
     fullScoring: {
         width: '100%',
         height: '15%',
-        backgroundColor: '#1976d2',
+        backgroundColor: '#fff',
         borderRadius: 15,
         justifyContent: 'center',
         alignItems: 'center',
         boxShadow: '4',
         shadowColor: '#11334b',
         shadowOffset: { width: 2, height: 2 },
+        borderWidth: 1,
+        borderColor: 'rgba(200, 200, 200, 0.7)',
         shadowOpacity: 0.4,
         shadowRadius: 1,
         marginBottom: '5%',
-
-
     },
     cancelButton: {
         backgroundColor: '#d32f2f',
-        // width: '85%',
-        // marginLeft: 0,
-        // top: '50%',
         boxShadow: '4',
         shadowColor: '#11334b',
         shadowOffset: { width: 2, height: 2 },
@@ -727,6 +725,19 @@ const styles = StyleSheet.create({
     deleteModal: {
         width: '100%',
         height: '66%',
+        maxWidth: 340,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.25,
+        shadowRadius: 8,
+        elevation: 6,
+    },
+    selectScoringModal: {
+        width: '100%',
+        height: '51%',
         maxWidth: 340,
         backgroundColor: '#fff',
         borderRadius: 12,

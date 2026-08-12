@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, TextInput, Image, useWindowDimensions, ScrollView } from 'react-native';
+import { View, Text, Pressable, StyleSheet, TextInput, Image, ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -7,7 +7,7 @@ import SavedCard from '../components/savedCard';
 import LandscapeSavedCard from '../components/landscapeSavedCard';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useResponsiveLayout } from '../../hooks/use-responsive-layout';
 const tIcon = require('../../assets/images/flatwhitet.png');
 
 const SAVED_CARDS_KEY = 'savedScorecards';
@@ -37,15 +37,26 @@ export default function HomeScreen() {
   const [hasLoadedSavedCards, setHasLoadedSavedCards] = useState(false);
   const [scrollY, setScrollY] = useState(0);
   const [scrollViewportHeight, setScrollViewportHeight] = useState(0);
-  const { width, height } = useWindowDimensions();
-  const isLandscape = width > height;
-  const insets = useSafeAreaInsets();
+  const { isLandscape, insets, contentHeight, sy, scale } = useResponsiveLayout();
+
+  const portraitTitleTop = 51 * sy;
+  const portraitTitleHeight = 111 * sy;
+  const portraitCardsTop = 224 * sy;
+  const searchBoxHeight = Math.max(44, 50 * scale);
+  const portraitSearchTop = portraitTitleTop
+    + portraitTitleHeight
+    + (portraitCardsTop - portraitTitleTop - portraitTitleHeight - searchBoxHeight) / 2;
+
+  const landscapeHeaderHeight = contentHeight * 0.23;
+  const landscapeCardsTop = contentHeight * 0.45;
+  const landscapeSearchTop = 6
+    + landscapeHeaderHeight
+    + (landscapeCardsTop - 10 - landscapeHeaderHeight - searchBoxHeight) / 2;
 
   useEffect(() => {
     const loadSavedCards = async () => {
       try {
         const storedCards = await AsyncStorage.getItem(SAVED_CARDS_KEY);
-
         if (storedCards) {
           setSavedCards(JSON.parse(storedCards) as Scorecard[]);
         }
@@ -53,15 +64,12 @@ export default function HomeScreen() {
         setHasLoadedSavedCards(true);
       }
     };
-
     void loadSavedCards();
   }, []);
 
   useEffect(() => {
     if (!hasLoadedSavedCards) return;
-
     const scorecardParam = Array.isArray(savedScorecard) ? savedScorecard[0] : savedScorecard;
-
     if (!scorecardParam || scorecardParam === lastSavedScorecard.current) return;
 
     try {
@@ -102,7 +110,6 @@ export default function HomeScreen() {
 
   const filteredCards = useMemo(() => {
     const searchTerm = searchInput.trim().toLocaleLowerCase();
-
     if (!searchTerm) return savedCards;
 
     return savedCards.filter(
@@ -112,20 +119,22 @@ export default function HomeScreen() {
     );
   }, [savedCards, searchInput]);
 
-  const borderFadeColor = isLandscape ? '#307FB6' : '#F1F5F8';
-
   return (
     <>
       <StatusBar style="dark" />
       <View style={[
         isLandscape ? styles.landscapeContainer : styles.container,
+        !isLandscape && {
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+        },
         isLandscape && {
           paddingLeft: Math.max(insets.left, 8),
           paddingRight: Math.max(insets.right, 8),
         },
       ]}>
         {isLandscape ? (
-          <View style={styles.landscapeHeader}>
+          <View style={[styles.landscapeHeader, { height: landscapeHeaderHeight }]}>
             <View style={styles.landscapeTitleBigContainer}>
               <View style={styles.landscapeTitleRight}>
                 <Text style={styles.landscapeTitle}>Boxing</Text>
@@ -134,7 +143,7 @@ export default function HomeScreen() {
               </View>
               <Image source={tIcon} style={styles.landscapeIcon} resizeMode="contain" />
             </View>
-            <View style={styles.landscapeSearchBox}>
+            <View style={[styles.landscapeSearchBox, { top: landscapeSearchTop, height: searchBoxHeight }]}>
               <View style={styles.searchInputBox}>
                 <Ionicons name="search" style={styles.searchIcon} />
                 <TextInput
@@ -155,7 +164,7 @@ export default function HomeScreen() {
           </View>
         ) : (
           <>
-            <View style={styles.titleBigContainer}>
+            <View style={[styles.titleBigContainer, { top: portraitTitleTop, height: portraitTitleHeight }]}>
               <View style={styles.titleRight}>
                 <Text style={styles.title}>Boxing</Text>
                 <View style={styles.title2Container}><Text style={styles.title2}>Score</Text></View>
@@ -163,7 +172,10 @@ export default function HomeScreen() {
               </View>
               <Image source={tIcon} style={styles.icon} resizeMode="contain" />
             </View>
-            <View style={styles.searchBox}>
+            <View style={[styles.searchBox, {
+              top: portraitSearchTop,
+              height: searchBoxHeight,
+            }]}>
               <View style={styles.searchInputBox}>
                 <Ionicons name="search" style={styles.searchIcon} />
                 <TextInput style={styles.searchInput} placeholderTextColor="rgba(0, 0, 0, 0.5)" placeholder="Search Scorecards" value={searchInput} onChangeText={setSearchInput} autoCapitalize="none" autoCorrect={false} clearButtonMode="while-editing" />
@@ -173,7 +185,7 @@ export default function HomeScreen() {
         )}
         {isLandscape && 
           <ScrollView
-            style={styles.landscapeSavedCardContainer}
+            style={[styles.landscapeSavedCardContainer, { top: landscapeCardsTop, left: Math.max(insets.left, 8) }]}
             contentContainerStyle={styles.landscapeSavedCardContent}
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -201,7 +213,7 @@ export default function HomeScreen() {
         }
         {!isLandscape &&
           <ScrollView
-            style={styles.savedCardContainer}
+            style={[styles.savedCardContainer, { top: portraitCardsTop, bottom: Math.max(90 * sy, insets.bottom + 56) }]}
             contentContainerStyle={styles.savedCardContent}
             showsVerticalScrollIndicator={true}
             onScroll={(event) => setScrollY(event.nativeEvent.contentOffset.y)}
@@ -234,7 +246,7 @@ export default function HomeScreen() {
         }
 
         {!isLandscape && (
-          <Pressable style={styles.button} onPress={handleStartFight}>
+          <Pressable style={[styles.button, { bottom: Math.max(34 * sy, insets.bottom), minHeight: 44 }]} onPress={handleStartFight}>
             <Text style={styles.buttonText}>+ New Scorecard</Text>
           </Pressable>
         )}
@@ -250,11 +262,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 4,
     paddingVertical: 5,
-  },
-  landscapeNeonPageBorder: {
-    padding: 6,
-    paddingVertical: 6,
-    borderRadius: 10
   },
   button: {
     backgroundColor: '#fff',
@@ -276,7 +283,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f1f5f8',
     alignItems: 'center',
-    borderRadius: 40
   },
   buttonText: {
     color: '#111',
@@ -309,11 +315,10 @@ const styles = StyleSheet.create({
     left: -5
   },
   searchBox: {
+    position: 'absolute',
     width: '45%',
-    height: 50,
-    top: '20.5%',
-    alignSelf: 'flex-start',
-    marginLeft: '5.5%',
+    left: '5.5%',
+    justifyContent: 'center',
   },
   searchIcon: {
     color: "#000",
@@ -427,7 +432,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: '45%',
     bottom: 0,
-    left: '8%',
     width: '100%',
     height: '55%',
     backgroundColor: '#f1f5f8',
@@ -445,14 +449,12 @@ const styles = StyleSheet.create({
   },
   landscapeSearchBox: {
     position: 'absolute',
-    top: '128%',
     left: '.25%',
     width: '33%',
-    height: '25%',
+    justifyContent: 'center',
   },
   landscapeHeader: {
     width: '100%',
-    height: '23%',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,

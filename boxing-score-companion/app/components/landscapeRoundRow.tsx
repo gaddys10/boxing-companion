@@ -878,15 +878,15 @@ const styles = StyleSheet.create({
         gap:0,
         height: '99%',
         marginBottom: 4.5,
-        marginHorizontal: '.5%',
-        marginRight: '0.5%',
+        // marginHorizontal: '.5%',
+        // marginRight: '0.5%',
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
         borderRadius: 15,
         // paddingVertical: 2,
         overflow: 'hidden',
         boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
-        width: 39.5,
+        width: '94%',
         paddingBottom: 5
     },
     rowContainer: {
