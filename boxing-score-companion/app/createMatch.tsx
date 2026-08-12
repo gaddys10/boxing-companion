@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 const tIcon = require('../assets/images/flatwhitet.png');
@@ -56,10 +56,15 @@ export default function CreateMatch() {
 
 
     const buttonText = String(params.buttonText || "Create Scorecard");
-    const rounds = [4, 5, 6, 8, 10, 12, 15];
+    const rounds = [4, 5, 6, 8, 10, 12];
     const { height, isLandscape, insets, sx, sy, scale, horizontalGutter } = useResponsiveLayout();
+    const landscapeHeightRef = useRef(0);
+    if (isLandscape && height > landscapeHeightRef.current) {
+        landscapeHeightRef.current = height;
+    }
+    const stableLandscapeHeight = landscapeHeightRef.current || height;
     const id = params.id ? String(params.id) : undefined;
-    const landscapeInputHeight = Math.max(36, Math.min(56, height * 0.05));
+    const landscapeInputHeight = Math.max(36, Math.min(56, stableLandscapeHeight * 0.05));
 
 
     const handleStartFight = () => {
@@ -240,7 +245,10 @@ export default function CreateMatch() {
     );
 
     return (
-        <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <KeyboardAvoidingView
+            style={styles.screen}
+            behavior={!isLandscape && Platform.OS === 'ios' ? 'padding' : undefined}
+        >
             <Stack.Screen options={{ headerShown: false }} />
             <ScrollView
                 style={styles.formScroll}
@@ -255,6 +263,7 @@ export default function CreateMatch() {
                         paddingLeft: Math.max(insets.left, 16 * sx),
                         paddingRight: Math.max(insets.right, 16 * sx),
                         paddingBottom: Math.max(insets.bottom, 8 * sy),
+                        minHeight: stableLandscapeHeight,
                     },
                 ]}
                 keyboardShouldPersistTaps="handled"
