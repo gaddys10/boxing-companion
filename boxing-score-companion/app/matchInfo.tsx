@@ -27,6 +27,22 @@ export default function MatchInfoScreen() {
         gender,
         weight
     } = useLocalSearchParams();
+
+    const genderParam = Array.isArray(gender) ? gender[0] : gender;
+
+    const normalizedGender: "idk" | "mens" | "womens" =
+        genderParam === "mens" || genderParam === "womens"
+            ? genderParam
+            : "idk";
+
+    const weightParam = Array.isArray(weight) ? weight[0] : weight;
+
+    const normalizedWeight: number | "200+" = (() => {
+        if (weightParam === "200+") return "200+";
+
+        const parsedWeight = Number(weightParam);
+        return Number.isFinite(parsedWeight) ? parsedWeight : 0;
+    })();
     
     type RoundScore = {
         left: string;
@@ -212,7 +228,7 @@ export default function MatchInfoScreen() {
     const handleSaveScorecard = () => {
         const savedRoundScores = getSavedScores();
 
-        router.push({
+        router.dismissTo({
             pathname: '/',
             params: {
                 savedScorecard: JSON.stringify({
@@ -221,8 +237,8 @@ export default function MatchInfoScreen() {
                     fighter2: String(fighter2 || 'Fighter 2'),
                     rounds: Number(rounds || 3),
                     savedScores: JSON.stringify(savedRoundScores),
-                    weight: Number(weight || null),
-                    gender: String(gender || null),
+                    weight: normalizedWeight,
+                    gender: normalizedGender,
                     ...scorecardTotals,
                     fighter1Score: fighter1LatestTotal,
                     fighter2Score: fighter2LatestTotal,
@@ -232,7 +248,7 @@ export default function MatchInfoScreen() {
     };
 
     const handleCardDetails = () => {
-        router.push({
+        router.replace({
             pathname: '/createMatch',
             params: {
                 id: id ? String(id) : undefined,
@@ -244,8 +260,8 @@ export default function MatchInfoScreen() {
                 fighter2: String(fighter2 || 'Fighter 2'),
                 rounds: Number(rounds || 3),
                 savedScores: JSON.stringify(getSavedScores()),
-                gender: String(gender || null),
-                weight: Number(weight || null),
+                gender: normalizedGender,
+                weight: normalizedWeight,
             },
         });
     };
@@ -303,6 +319,8 @@ export default function MatchInfoScreen() {
             [roundNumber]: {
                 ...(currentScores[roundNumber] ?? {}),
                 ...score,
+                stoppageReason: undefined,
+                stoppageWinner: undefined,
             },
         }));
     };
@@ -441,6 +459,7 @@ export default function MatchInfoScreen() {
                                 <RoundRow
                                     key={roundNumber}
                                     roundNumber={roundNumber}
+                                        
                                     leftScore={roundScores[roundNumber]?.left}
                                     rightScore={roundScores[roundNumber]?.right}
                                     leftTotal={roundScores[roundNumber]?.stoppageWinner === 'NC'
@@ -474,6 +493,8 @@ export default function MatchInfoScreen() {
                                     rounds={String(rounds)}
                                     id={id ? String(id) : undefined}
                                     savedScores={JSON.stringify(roundScores)}
+                                    gender={normalizedGender}
+                                    weight={normalizedWeight}   
                                     onClearRound={handleClearRound}
                                     onSaveRound={handleSaveRound}
                                     onMarkStoppage={handleMarkStoppage}
@@ -528,6 +549,8 @@ export default function MatchInfoScreen() {
                                         rounds={String(rounds)}
                                         id={id ? String(id) : undefined}
                                         savedScores={JSON.stringify(roundScores)}
+                                        gender={normalizedGender}
+                                        weight={normalizedWeight}  
                                         onClearRound={handleClearRound}
                                         onSaveRound={handleSaveRound}
                                         onMarkStoppage={handleMarkStoppage}
@@ -678,13 +701,6 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         zIndex: 1
     },
-    // container: {
-    //     flex: 1,
-    //     backgroundColor: '#f2f2f2',
-    //     padding: 15,
-    //     paddingRight: 10,
-    //     paddingTop: '13%'
-    // },
     container: {
         flex: 1,
         backgroundColor: 'transparent',

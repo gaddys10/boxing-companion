@@ -23,8 +23,8 @@ type Scorecard = {
   fighter1Pen: number;
   fighter2Pen: number;
   rounds: number;
-  gender?: string;
-  weight?: string;
+  gender?: "idk" | "mens" | "womens";
+  weight?: number | "200+";
   savedScores?: string;
 };
 
@@ -80,7 +80,11 @@ export default function HomeScreen() {
 
         if (existingCardIndex !== -1) {
           const nextCards = [...currentCards];
-          nextCards[existingCardIndex] = scorecard;
+          // nextCards[existingCardIndex] = scorecard;
+          nextCards[existingCardIndex] = {
+            ...currentCards[existingCardIndex],
+            ...scorecard,
+          };
           void AsyncStorage.setItem(SAVED_CARDS_KEY, JSON.stringify(nextCards));
           return nextCards;
         }
@@ -278,6 +282,8 @@ const styles = StyleSheet.create({
     shadowRadius: 1,
     borderWidth: 1,
     borderColor: '#B6C6D1',
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   container: {
     flex: 1,

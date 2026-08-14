@@ -22,6 +22,8 @@ type RoundRowProps = {
     rounds: string;
     id?: string;
     savedScores: string;
+    gender?: "idk" | "mens" | "womens";
+    weight: number | "200+";
     stoppageReason?: 'KO' | 'TKO' | 'DQ' | 'NC';
     stoppageWinner?: string;
     onClearRound: (roundNumber: number) => void;
@@ -56,6 +58,8 @@ export default function RoundRow({
     rounds,
     id,
     savedScores,
+    gender,
+    weight,
     stoppageReason,
     stoppageWinner,
     onClearRound,
@@ -134,13 +138,17 @@ export default function RoundRow({
                     : [styles.plusMinusContainer, styles.neutralPlusMinusContainer];
 
     const roundLabelColor =
-        plusMinusNumber === null
-            ? '#b0b0b0'
-            : plusMinusNumber > 0
-                ? '#D32F2F'
-                : plusMinusNumber < 0
-                    ? '#1976D2'
-                    : '#b0b0b0';
+        stoppageWinner === fighter1
+            ? '#D32F2F'
+            : stoppageWinner === fighter2
+                ? '#1976D2'
+                : plusMinusNumber === null
+                    ? '#b0b0b0'
+                    : plusMinusNumber > 0
+                        ? '#D32F2F'
+                        : plusMinusNumber < 0
+                            ? '#1976D2'
+                            : '#b0b0b0';
 
     const renderRightActions = () => (
         <View style={styles.swipeContainer}>
@@ -267,6 +275,8 @@ export default function RoundRow({
                                                 rounds,
                                                 id,
                                                 savedScores,
+                                                gender,
+                                                weight
                                             },
                                         });
                                     }}
@@ -274,7 +284,7 @@ export default function RoundRow({
                                     <Text style={styles.quickScoringText}>Full Scoring</Text>
                                 </Pressable>
                                 <Text style={[styles.modalText, {textAlign: 'center'}]}>
-                                    The full, interactive live scoring experience with round momentum tracking
+                                    Use the full, interactive live scoring experience with round momentum tracking.
                                 </Text>
                                 <View style={styles.modalActions}>
                                     <Pressable style={[styles.modalButton, styles.cancelButton]} onPress={closeScoringModal}>
@@ -570,7 +580,8 @@ const styles = StyleSheet.create({
         color: '#fff',
     },
     quickScoring: {
-        width: '100%',
+        width: '75%',
+        alignSelf: 'center',
         backgroundColor: '#fff',
         height: '15%',
         borderRadius: 15,
@@ -586,7 +597,7 @@ const styles = StyleSheet.create({
         borderColor: 'rgba(200, 200, 200, 0.7)',
     },
     quickScoringText: {
-        fontSize: 24,
+        fontSize: 18,
         fontWeight: 700,
         color: '#1976D2'
     },
@@ -682,7 +693,8 @@ const styles = StyleSheet.create({
     },
 
     fullScoring: {
-        width: '100%',
+        width: '75%',
+        alignSelf: 'center',
         height: '15%',
         backgroundColor: '#fff',
         borderRadius: 15,
@@ -761,7 +773,7 @@ const styles = StyleSheet.create({
         color: '#333A3F',
         fontSize: 20,
         fontWeight: '700',
-        marginBottom: '15%',
+        marginBottom: '11%',
         textAlign: 'center'
     },
     modalText: {

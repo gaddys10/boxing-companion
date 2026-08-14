@@ -28,6 +28,8 @@ type RoundRowProps = {
     rounds: string;
     id?: string;
     savedScores: string;
+    gender?: "idk" | "mens" | "womens";
+    weight: number | "200+";
     stoppageReason?: 'KO' | 'TKO' | 'DQ' | 'NC';
     stoppageWinner?: string;
     onClearRound: (roundNumber: number) => void;
@@ -62,6 +64,8 @@ export default function LandscapeRoundRow({
     rounds,
     id,
     savedScores,
+    gender,
+    weight,
     stoppageReason,
     stoppageWinner,
     onClearRound,
@@ -131,13 +135,17 @@ export default function LandscapeRoundRow({
                     : [styles.plusMinusPill, styles.neutralPlusMinusPill];
 
     const roundLabelColor =
-        plusMinusNumber === null
-            ? '#b0b0b0'
-            : plusMinusNumber > 0
-                ? '#D32F2F'
-                : plusMinusNumber < 0
-                    ? '#1976D2'
-                    : '#b0b0b0';
+        stoppageWinner === fighter1
+            ? '#D32F2F'
+            : stoppageWinner === fighter2
+                ? '#1976D2'
+                : plusMinusNumber === null
+                    ? '#b0b0b0'
+                    : plusMinusNumber > 0
+                        ? '#D32F2F'
+                        : plusMinusNumber < 0
+                            ? '#1976D2'
+                            : '#b0b0b0';
 
     const closeSwipeActions = () => {
         swipeOffset.value = withTiming(0);
@@ -296,6 +304,8 @@ export default function LandscapeRoundRow({
                                                         rounds,
                                                         id,
                                                         savedScores,
+                                                        gender,
+                                                        weight
                                                     },
                                                 });
                                             }}
@@ -858,26 +868,26 @@ const styles = StyleSheet.create({
     },
     roundEvents: {
         position: 'absolute',
-        left: '3%',
+        left: '2.5%',
         right: 0,
-        top: '26%',
-        height: '6.5%',
+        top: '26.5%',
+        height: '6.25%',
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#D32F2F',
-        width: '85.5%',
+        width: '88.5%',
         paddingHorizontal: 6,
     },
     roundEvents2: {
         position: 'absolute',
-        left: '3%',
+        left: '2.5%',
         right: 0,
         top: '68%',
-        height: '6.5%',
+        height: '6.25%',
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#1976D2',
-        width: '87%',
+        width: '88.5%',
         paddingHorizontal: 6,
     },
     roundEventsText: {
