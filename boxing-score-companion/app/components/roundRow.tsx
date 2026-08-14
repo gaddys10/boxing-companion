@@ -284,7 +284,7 @@ export default function RoundRow({
                                     <Text style={styles.quickScoringText}>Full Scoring</Text>
                                 </Pressable>
                                 <Text style={[styles.modalText, {textAlign: 'center'}]}>
-                                    The full, interactive live scoring experience with round momentum tracking
+                                    Use the full, interactive live scoring experience with round momentum tracking.
                                 </Text>
                                 <View style={styles.modalActions}>
                                     <Pressable style={[styles.modalButton, styles.cancelButton]} onPress={closeScoringModal}>
@@ -580,7 +580,8 @@ const styles = StyleSheet.create({
         color: '#fff',
     },
     quickScoring: {
-        width: '100%',
+        width: '75%',
+        alignSelf: 'center',
         backgroundColor: '#fff',
         height: '15%',
         borderRadius: 15,
@@ -596,7 +597,7 @@ const styles = StyleSheet.create({
         borderColor: 'rgba(200, 200, 200, 0.7)',
     },
     quickScoringText: {
-        fontSize: 24,
+        fontSize: 18,
         fontWeight: 700,
         color: '#1976D2'
     },
@@ -692,7 +693,8 @@ const styles = StyleSheet.create({
     },
 
     fullScoring: {
-        width: '100%',
+        width: '75%',
+        alignSelf: 'center',
         height: '15%',
         backgroundColor: '#fff',
         borderRadius: 15,
@@ -771,7 +773,7 @@ const styles = StyleSheet.create({
         color: '#333A3F',
         fontSize: 20,
         fontWeight: '700',
-        marginBottom: '15%',
+        marginBottom: '11%',
         textAlign: 'center'
     },
     modalText: {

@@ -228,7 +228,7 @@ export default function MatchInfoScreen() {
     const handleSaveScorecard = () => {
         const savedRoundScores = getSavedScores();
 
-        router.replace({
+        router.dismissTo({
             pathname: '/',
             params: {
                 savedScorecard: JSON.stringify({

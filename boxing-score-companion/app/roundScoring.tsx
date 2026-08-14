@@ -51,7 +51,7 @@ export default function RoundScoringScreen() {
     const stoppageProgress = useRef<Animated.Value>(new Animated.Value(0)).current;
 
     const { height } = useWindowDimensions();
-    const { insets, sx, scale } = useResponsiveLayout();
+    const { isLandscape, insets, sx, scale } = useResponsiveLayout();
     const usableHeight = height - insets.top - insets.bottom;
     const toolbarHeight = Math.max(44, Math.min(50, usableHeight * 0.14));
     const undoHeight = Math.max(38, Math.min(44, usableHeight * 0.13));
@@ -135,7 +135,7 @@ export default function RoundScoringScreen() {
         const savedRightScore = makeTenEight ? (score < 0 ? 10 : 8) : rightScore;
 
         setTenEightModalVisible(false);
-        router.replace({
+        router.dismissTo({
             pathname: '/matchInfo',
             params: {
                 fighter1: params.fighter1,
@@ -161,7 +161,7 @@ export default function RoundScoringScreen() {
         if (!stoppageReason || (stoppageReason !== 'NC' && !selectedStoppageWinner)) return;
 
         setStoppageModalVisible(false);
-        router.replace({
+        router.dismissTo({
             pathname: '/matchInfo',
             params: {
                 fighter1: params.fighter1,
@@ -177,6 +177,10 @@ export default function RoundScoringScreen() {
             },
         });
     };
+
+    if (!isLandscape) {
+        return <View style={styles.orientationGate} />;
+    }
 
     return (
         
@@ -584,6 +588,10 @@ export default function RoundScoringScreen() {
 }
 
 const styles = StyleSheet.create({
+    orientationGate: {
+        flex: 1,
+        backgroundColor: '#000',
+    },
     buttonText: {
         color: '#000',
         zIndex: 1,

@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 const tIcon = require('../assets/images/flatwhitet.png');
 
@@ -266,12 +267,19 @@ export default function CreateMatch() {
             behavior={!isLandscape && Platform.OS === 'ios' ? 'padding' : undefined}
         >
             <Stack.Screen options={{ headerShown: false }} />
+            <StatusBar style="light" />
+            <View
+                style={{
+                    height: insets.top,
+                    backgroundColor: '#307fb6',
+                }}
+            />
             <ScrollView
                 style={styles.formScroll}
                 contentContainerStyle={[
                     isLandscape ? styles.landscapeContainer : styles.container,
                     !isLandscape && {
-                        paddingTop: insets.top,
+                        paddingTop: 0,
                         paddingBottom: Math.max(insets.bottom, 12) + 60,
                         paddingHorizontal: horizontalGutter,
                     },
@@ -740,7 +748,7 @@ const styles = StyleSheet.create({
         width: '80%',
         gap: 12,
         paddingBottom: 12,
-        height: '14%'
+        height: '15%'
     },
 
     buttonText: {
@@ -1193,7 +1201,7 @@ const styles = StyleSheet.create({
         width: '100%',
         gap: 12,
         paddingBottom: 12,
-        height: '10.5%'
+        height: '12.5%'
     },
     landscapeContainer: {
         flexGrow: 1,
@@ -1222,7 +1230,10 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         borderRadius: 8,
         marginBottom: 8,
-        textAlign: 'center'
+        textAlign: 'center',
+        fontWeight: 600,
+        borderWidth: 1,
+        borderColor: '#B6C6D1',
     },
     landscapeFighter2Input: {
         backgroundColor: '#fff',
@@ -1232,8 +1243,10 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         borderRadius: 8,
         marginBottom: 8,
-        textAlign: 'center'
-
+        textAlign: 'center',
+        fontWeight: 600,
+        borderWidth: 1,
+        borderColor: '#B6C6D1',
     },
     landscapeNameLabel: {
         color: '#333A3F',

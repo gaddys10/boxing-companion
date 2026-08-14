@@ -282,6 +282,8 @@ const styles = StyleSheet.create({
     shadowRadius: 1,
     borderWidth: 1,
     borderColor: '#B6C6D1',
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   container: {
     flex: 1,
