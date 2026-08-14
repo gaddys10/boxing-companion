@@ -228,7 +228,7 @@ export default function MatchInfoScreen() {
     const handleSaveScorecard = () => {
         const savedRoundScores = getSavedScores();
 
-        router.push({
+        router.replace({
             pathname: '/',
             params: {
                 savedScorecard: JSON.stringify({
@@ -248,7 +248,7 @@ export default function MatchInfoScreen() {
     };
 
     const handleCardDetails = () => {
-        router.push({
+        router.replace({
             pathname: '/createMatch',
             params: {
                 id: id ? String(id) : undefined,
@@ -319,6 +319,8 @@ export default function MatchInfoScreen() {
             [roundNumber]: {
                 ...(currentScores[roundNumber] ?? {}),
                 ...score,
+                stoppageReason: undefined,
+                stoppageWinner: undefined,
             },
         }));
     };

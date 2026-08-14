@@ -33,6 +33,8 @@ export default function RootLayout() {
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack screenOptions={{ gestureEnabled: false, fullScreenGestureEnabled: false }}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="createMatch" options={{ animationTypeForReplace: 'pop' }} />
+          <Stack.Screen name="matchInfo" options={{ animationTypeForReplace: 'push' }} />
           <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
         </Stack>
         {/* <StatusBar style="auto" /> */}

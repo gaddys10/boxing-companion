@@ -69,7 +69,7 @@ export default function CreateMatch() {
 
 
     const handleStartFight = () => {
-        router.dismissTo({
+        router.replace({
             pathname: '/matchInfo',
             params: {
                 id,
