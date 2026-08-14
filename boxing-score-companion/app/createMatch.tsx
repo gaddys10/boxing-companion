@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 const tIcon = require('../assets/images/flatwhitet.png');
 
@@ -30,6 +30,7 @@ export default function CreateMatch() {
     const [fighter1Name, setFighter1Name] = useState(fighter1);
     const [fighter2Name, setFighter2Name] = useState(fighter2);
     const [selectedRounds, setSelectedRounds] = useState(roundAmount);
+    const [discardModalVisible, setDiscardModalVisible] = useState(false);
 
 
     // const [selectedGender, setSelectedGender] = useState("");
@@ -80,6 +81,11 @@ export default function CreateMatch() {
                 weight: selectedWeight
             },
         });
+    };
+
+    const handleDiscardScorecard = () => {
+        setDiscardModalVisible(false);
+        router.dismissTo('/');
     };
 
     const getSavedScoresForRoundCount = () => {
@@ -216,7 +222,7 @@ export default function CreateMatch() {
                     {selectedGender === "mens" ?
                         <Ionicons name={'male-outline'} size={18} color="#fff"/>
                     :
-                        <Ionicons name={'male-outline'} size={18} color="#b6c6d1"/>
+                        <Ionicons name={'male-outline'} size={18} color="#000"/>
                     }
                     <Text style={[
                         styles.maleText,
@@ -233,7 +239,7 @@ export default function CreateMatch() {
                     {selectedGender === "womens" ?
                         <Ionicons name={'female-outline'} size={18} color="#fff"/>
                     :
-                        <Ionicons name={'female-outline'} size={18} color="#b6c6d1"/>
+                        <Ionicons name={'female-outline'} size={18} color="#000"/>
                     }
                     <Text style={[
                         styles.femaleText,
@@ -256,7 +262,7 @@ export default function CreateMatch() {
                     isLandscape ? styles.landscapeContainer : styles.container,
                     !isLandscape && {
                         paddingTop: insets.top,
-                        paddingBottom: Math.max(insets.bottom, 12),
+                        paddingBottom: Math.max(insets.bottom, 12) + 60,
                         paddingHorizontal: horizontalGutter,
                     },
                     isLandscape && {
@@ -286,7 +292,7 @@ export default function CreateMatch() {
                         value={fighter1Name}
                         placeholderTextColor="#D32f2f"
                         onChangeText={setFighter1Name}
-                        style={isLandscape ? [styles.landscapeFighter1Input, { height: landscapeInputHeight }] : [styles.fighter1input, { minHeight: Math.max(44, 48 * scale) }]}
+                        style={isLandscape ? [styles.landscapeFighter1Input, { height: landscapeInputHeight }] : [styles.fighter1input, { minHeight: Math.max(40, 40 * scale) }]}
                     />
                 </View>
 
@@ -298,7 +304,7 @@ export default function CreateMatch() {
                         placeholderTextColor="#307Fb6"
                         value={fighter2Name}
                         onChangeText={setFighter2Name}
-                        style={isLandscape ? [styles.landscapeFighter2Input, { height: landscapeInputHeight }] : [styles.fighter2Input, { minHeight: Math.max(44, 48 * scale) }]}
+                        style={isLandscape ? [styles.landscapeFighter2Input, { height: landscapeInputHeight }] : [styles.fighter2Input, { minHeight: Math.max(40, 40 * scale) }]}
                     />
                 </View>
             </View>
@@ -473,35 +479,7 @@ export default function CreateMatch() {
             }
 
 
-            {!isLandscape ? 
-                <View style={styles.buttonContainer}>
-                
-                    {/* Cancel button  */}
-                    <Pressable
-                        style={isLandscape ? styles.landscapeCancelButton : styles.cancelButton}
-                        onPress={() => router.dismissTo('/')}
-                    >
-                        <Text style={styles.cancelButtonText}>Cancel</Text>
-                    </Pressable>
-
-                    {/* save and exit button  */}
-                    {isEditing && 
-                        <Pressable
-                            style={[isLandscape ? styles.landscapeEditSaveButton : styles.editButton, styles.editingActionButton]}
-                            onPress={handleSaveChangesAndExit}
-                        >
-                            <Text style={[styles.buttonText, styles.editingButtonText]}>Save & Exit</Text>
-                        </Pressable>
-                    }
-                    {/* Enter scorecard button  */}
-                    <Pressable
-                        style={[isLandscape ? styles.landscapeButton : styles.button, isEditing && styles.editingActionButton]}
-                        onPress={handleStartFight}
-                    >
-                        <Text style={[styles.buttonText, isEditing && styles.editingButtonText]} onPress={handleStartFight}>{buttonText}</Text>
-                    </Pressable>
-                </View>
-            :
+            {isLandscape &&
                 <View style={isEditing ? styles.landscapeEditButtonContainer: styles.landscapeButtonContainer}>
 
                     {/* Cancel button  */}
@@ -509,7 +487,7 @@ export default function CreateMatch() {
                         style={[
                             isEditing ? styles.landscapeEditCancelButton : styles.landscapeCancelButton,
                         ]}
-                        onPress={() => router.dismissTo('/')}
+                        onPress={() => setDiscardModalVisible(true)}
                     >
                         <Text style={styles.cancelButtonText}>Cancel</Text>
                     </Pressable>
@@ -541,6 +519,56 @@ export default function CreateMatch() {
             }
             {/* <Image source={tIcon} style={styles.icon} resizeMode="contain" /> */}
             </ScrollView>
+            {!isLandscape && (
+                <View style={[styles.buttonContainer, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+                    <Pressable style={styles.cancelButton} onPress={() => setDiscardModalVisible(true)}>
+                        <Text style={styles.cancelButtonText}>Cancel</Text>
+                    </Pressable>
+                    {isEditing && (
+                        <Pressable
+                            style={[styles.editButton, styles.editingActionButton]}
+                            onPress={handleSaveChangesAndExit}
+                        >
+                            <Text style={[styles.buttonText, styles.editingButtonText]}>Save & Exit</Text>
+                        </Pressable>
+                    )}
+                    <Pressable
+                        style={[styles.button, isEditing && styles.editingActionButton]}
+                        onPress={handleStartFight}
+                    >
+                        <Text style={[styles.buttonText, isEditing && styles.editingButtonText]}>{buttonText}</Text>
+                    </Pressable>
+                </View>
+            )}
+            <Modal
+                animationType="fade"
+                transparent
+                visible={discardModalVisible}
+                supportedOrientations={['portrait', 'landscape', 'landscape-left', 'landscape-right']}
+                onRequestClose={() => setDiscardModalVisible(false)}
+            >
+                <View style={styles.discardModalOverlay}>
+                    <View style={styles.discardModalCard}>
+                        <Text style={styles.discardModalTitle}>
+                            {isEditing ? 'Discard changes?' : 'Discard scorecard?'}
+                        </Text>
+                        <Text style={styles.discardModalText}>
+                            {isEditing
+                                ? 'Are you sure you want to discard your changes?'
+                                : 'Are you sure you want to discard this scorecard?'}
+                        </Text>
+                        <View style={styles.discardModalActions}>
+                            <Pressable style={[styles.discardModalButton, styles.discardButton]} onPress={handleDiscardScorecard}>
+                                <Text style={styles.discardButtonText}>Discard</Text>
+                            </Pressable>
+                            <Pressable style={[styles.discardModalButton, styles.keepEditingButton]} onPress={() => setDiscardModalVisible(false)}>
+                                <Text style={styles.keepEditingButtonText}>Keep Editing</Text>
+                            </Pressable>
+                            
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </KeyboardAvoidingView>
     );
 }
@@ -549,6 +577,72 @@ const landscape = StyleSheet.create({
 });
 
 const styles = StyleSheet.create({
+    discardModalOverlay: {
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.45)',
+        flex: 1,
+        justifyContent: 'center',
+        padding: 24,
+    },
+    discardModalCard: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        elevation: 6,
+        maxWidth: 360,
+        padding: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 2, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 8,
+        width: '100%',
+    },
+    discardModalTitle: {
+        color: '#333A3F',
+        fontSize: 20,
+        fontWeight: '700',
+        marginBottom: 10,
+        textAlign: 'center',
+    },
+    discardModalText: {
+        color: '#333A3F',
+        fontSize: 15,
+        lineHeight: 21,
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    discardModalActions: {
+        flexDirection: 'row',
+        gap: 10,
+    },
+    discardModalButton: {
+        alignItems: 'center',
+        borderColor: 'rgba(200, 200, 200, 0.7)',
+        borderRadius: 10,
+        borderWidth: 1,
+        elevation: 2,
+        flex: 1,
+        justifyContent: 'center',
+        minHeight: 44,
+        paddingHorizontal: 12,
+        shadowColor: '#11334b',
+        shadowOffset: { width: 2, height: 2 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1,
+    },
+    keepEditingButton: {
+        backgroundColor: '#fff',
+    },
+    keepEditingButtonText: {
+        color: '#307Fb6',
+        fontWeight: '700',
+    },
+    discardButton: {
+        backgroundColor: '#D32F2F',
+    },
+    discardButtonText: {
+        color: '#fff',
+        fontWeight: '700',
+    },
     landscapeRoundGenderRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -585,12 +679,11 @@ const styles = StyleSheet.create({
     },
     button: {
         backgroundColor: '#fff',
-        paddingHorizontal: '1%',
-        paddingVertical: '2%',
+        paddingHorizontal: '6%',
+        paddingVertical: '2.5%',
         borderRadius: 12,
         // marginTop: 25,
-        width: '48%',
-        height: '18%',
+        minWidth: '29%',
         alignItems: 'center',
         justifyContent: 'center',
         boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
@@ -599,17 +692,16 @@ const styles = StyleSheet.create({
     },
     editButton: {
         backgroundColor: '#fff',
-        paddingHorizontal: '1%',
-        paddingVertical: '2%',
+                minWidth: '25%',
         borderRadius: 12,
         // marginTop: 25,
-        width: '24%',
-        height: '18%',
         alignItems: 'center',
         justifyContent: 'center',
         boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
         borderWidth: 1,
-        borderColor: '#B6C6D1'
+        borderColor: '#B6C6D1',
+        paddingHorizontal: '6%',
+        paddingVertical: '2.5%',
     },
 
     
@@ -619,11 +711,18 @@ const styles = StyleSheet.create({
     },
     
     buttonContainer: {
+        backgroundColor: '#f1f5f8',
+        bottom: '0%',
         flexDirection: 'row',
-        top: '2.5%',
-        height: '25%',
+        gap: 10,
         justifyContent: 'space-between',
-        width: '100%'
+        left: 0,
+        paddingHorizontal: '7%',
+        paddingTop: 8,
+        position: 'absolute',
+        right: 0,
+        width: '100%',
+        zIndex: 10,
     },
     landscapeButtonContainer: {
         flexDirection: 'row',
@@ -633,9 +732,10 @@ const styles = StyleSheet.create({
         paddingBottom: 12,
         height: '14%'
     },
+
     buttonText: {
         color: '#307Fb6',
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: '700',
         textAlign: 'center'
     },
@@ -643,6 +743,8 @@ const styles = StyleSheet.create({
     editingCancelButton: {
         width: '31%',
         paddingHorizontal: '1%',
+                minWidth: '25%',
+
     },
     editingButtonText: {
         fontSize: 14,
@@ -650,12 +752,13 @@ const styles = StyleSheet.create({
     },
     cancelButton: {
         backgroundColor: '#de2f2f',
-        paddingHorizontal: 24,
-        // paddingVertical: '2%',
+        // paddingHorizontal: 24,
         borderRadius: 12,
-        // marginTop: 25,
-        width: '31%',
-        height: '18%',
+        paddingHorizontal: '6%',
+        paddingVertical: '2.5%',
+        bottom: 0,
+                minWidth: '25%',
+
         alignItems: 'center',
         justifyContent: 'center',
         boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
@@ -664,7 +767,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#de2f2f',
         paddingHorizontal: 24,
         borderRadius: 12,
-        // width: '400',
         height: '80%',
         flex: 1,
         maxWidth: 200,
@@ -761,32 +863,27 @@ const styles = StyleSheet.create({
         flexDirection: 'row'
     },
     weightColumnLeft: {
-        // backgroundColor: 'pink',
         height: '100%',
         width: '33%',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 5.5,
-                // gap: 1,
+        gap: '5%',
 
     },
     weightColumnCenter: {
-        // backgroundColor: 'orange',
         height: '100%',
         width: '33%',
         flexDirection: 'column',
         alignItems: 'center',
-        // gap: 1,
-        gap: 5.5,
+        gap: '5%',
 
     },
     weightColumnRight: {
-        // backgroundColor: 'orange',
         height: '100%',
         width: '33%',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 5.5,
+        gap: '5%',
     },
     landscapeWeightPill: {
         height: '27%',
@@ -888,7 +985,7 @@ const styles = StyleSheet.create({
         color: '#000',
         fontSize: 14,
         fontWeight: '700',
-        marginBottom: '2%',
+        marginBottom: '3%',
         marginLeft: 0,
         alignSelf: 'flex-start'
     },
@@ -899,7 +996,7 @@ const styles = StyleSheet.create({
         color: '#307Fb6',
         fontSize: 14,
         fontWeight: '700',
-        marginBottom: 10,
+        marginBottom: '3%',
         marginLeft: 0,
         alignSelf: 'flex-start'
     },
@@ -907,7 +1004,7 @@ const styles = StyleSheet.create({
         color: '#D32f2f',
         fontSize: 14,
         fontWeight: '700',
-        marginBottom: 10,
+        marginBottom: '3%',
         marginLeft: 0,
         alignSelf: 'flex-start'
     },
@@ -961,7 +1058,7 @@ const styles = StyleSheet.create({
             borderRadius: 25
         },
         maleText: {
-            color: '#B6C6D1',
+            color: '#000',
             marginLeft: 5
         },
         maleTextSelected: {
@@ -970,7 +1067,7 @@ const styles = StyleSheet.create({
 
         },
         femaleText: {
-            color: '#B6C6D1',
+            color: '#000',
             marginLeft: 5
         },
         femaleTextSelected: {
@@ -991,8 +1088,9 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#B6C6D1',
         // paddingHorizontal: '4.25%',
-        width: '10%',
-        paddingVertical: 7,
+        width: '8%',
+
+        paddingVertical: '1.25%',
         borderRadius: 8,
         marginRight: '2.5%',
         justifyContent: 'center',
@@ -1014,27 +1112,26 @@ const styles = StyleSheet.create({
         borderColor: "#fff"
     },
     roundButtonText: {
-        color: '#b6c6d1',
-        fontSize: 14,
-        fontWeight: '500',
+        color: '#000',
+        fontSize: 12,
     },
     roundButtonTextSelected: {
         color: '#fff',
     },
     roundsContainer: {
         flexDirection: 'row',
-        marginBottom: '9%',
+        marginBottom: '8%',
         alignSelf: 'center',
     },
     title: {
         color: '#fff',
         fontSize: 18,
         fontWeight: '700',
-        marginTop: '12%'
+        // marginTop: '12%'
     },
     titleContainer: {
         backgroundColor: '#307fb6',
-        height: '10%',
+        height: '7%',
         width: '115%',
         justifyContent: 'center',
         alignItems: 'center',

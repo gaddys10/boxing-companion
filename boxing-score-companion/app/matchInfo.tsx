@@ -1,6 +1,6 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import LandscapeRoundRow from './components/landscapeRoundRow';
 import RoundRow from './components/roundRow';
 import { useResponsiveLayout } from '../hooks/use-responsive-layout';
@@ -42,6 +42,21 @@ export default function MatchInfoScreen() {
     };
 
     const [roundScores, setRoundScores] = useState<Record<number, RoundScore>>({});
+
+    const shareDescriptions = ['bloody', 'boring', 'chess match', 'competitive', 'one sided',
+        'exciting', 'headbutts', 'ugly', 'replayable', 'low blows', 'slugfest', 'brutal', 'showcase', 'war',
+        'robbery', 'debut', 'upset', 'high level', 'shut out', 'holding', 'brawl', 'clean', 'competitive early',
+        'height difference', 'reach difference', 'home fight', 'adjustments', 'jabs', 'hooks', 'uppercuts',
+        'overhands', 'crosses', 'high volume', 'low volume', 'counterpunches', 'crowd engagement', 'showboating',
+        'walkouts', 'bad ref', 'good ref', 'bad commentary', 'good commentary', 'small ring', 'big ring', 
+        'inside fighting', 'injury', 'quitter', 'towel', 'ref stoppage', 'close fight', 'out cold', 'rematch needed',
+        'bad coaching', 'good coaching', 'funny moment', 'street fight', 'sparring', 'slow start', 'fast start', 
+        'technical', 'tactical', 'high paced', 'slow paced', 'methodical', 'scrappy', 'rough', 'dirty fight', 'clinic',
+        'masterclass', 'mismatch', 'body work', 'combinations', 'power punching', 'pressure', 'volume punching', 'jab heavy',
+        'defensive', 'cuts', 'swelling', 'flash knockdown', 'controversial', 'gassed', 'power difference', 'speed differene',
+        'short notice', 'hostile crowd', 'dead crowd', 'loud crowd', 'experience difference', 'gassed', 'chin', 'distance management',
+        'switch hitting', 'feints', 'late rally', 'back and forth', 'favorite', "Sweet Carolina", "There's only one! ", 
+    ]
 
 
     const scorecardId = id ? Number(String(id)) : undefined;
@@ -302,7 +317,12 @@ export default function MatchInfoScreen() {
     };
 
     return (
-        <>
+        <View style={styles.backgroundRoot}>
+            <Image
+                source={require('../assets/images/bgfbsc.png')}
+                resizeMode="stretch"
+                style={styles.backgroundImage}
+            />
             <View style={[
                 isLandscape ? styles.landscapeContainer : styles.container,
                 
@@ -321,9 +341,9 @@ export default function MatchInfoScreen() {
                     <View style={[styles.summaryCard, { minHeight: 112 * sy, paddingHorizontal: Math.max(0, horizontalGutter - 15) }]}>
                         {/* Fighter 1 vs fighter 2 */}
                         <View style={styles.topDescription}>
-                            <Text style={[styles.fighterText, styles.fighter1Name]}>{fighter1}</Text>
+                            <Text numberOfLines={2} style={[styles.fighterText, styles.fighter1Name]}>{fighter1}</Text>
                             <Text style={[styles.fighterText, styles.vsText]}>vs</Text>
-                            <Text style={[styles.fighterText, styles.fighter2Name]}>{fighter2}</Text>
+                            <Text numberOfLines={2} style={[styles.fighterText, styles.fighter2Name]}>{fighter2}</Text>
                         </View>
 
                         {/* Score 1 .. score 2  */}
@@ -378,15 +398,15 @@ export default function MatchInfoScreen() {
                 }
 
                 {isLandscape && (
-                    <View style={[styles.landscapeButtonContainer, { right: Math.max(insets.right, 8 * sx), gap: 15 * sx }]}>
-                        <Pressable style={[styles.landscapeCardDetailsButton, { width: 140 * sx, minHeight: Math.max(44, 36 * sy) }]} onPress={handleCardDetails}>
+                    <View style={[styles.landscapeButtonContainer, {  gap: 10 * sx }]}>
+                        <Pressable style={[styles.landscapeCardDetailsButton, { width: 112 * sx, height: 38 * sy }]} onPress={handleCardDetails}>
                             <Text onPress={handleCardDetails} style={styles.landscapecardDetailsButtonText}>Card Details</Text>
                         </Pressable>
-                        <Pressable style={[styles.landscapeShareButton, { width: 140 * sx, minHeight: Math.max(44, 36 * sy) }]} onPress={handleSaveScorecard}>
+                        <Pressable style={[styles.landscapeShareButton, { width: 112 * sx, height: 38 * sy }]} onPress={handleSaveScorecard}>
                             <Text style={styles.landscapeShareButtonText}>Share</Text>
                         </Pressable>
-                        <Pressable style={[styles.landscapeButton, { width: 140 * sx, minHeight: Math.max(44, 36 * sy) }]} onPress={handleSaveScorecard}>
-                            <Text style={styles.landscapeButtonText}>Save & Exit</Text>
+                        <Pressable style={[styles.landscapeButton, { width: 112 * sx, height: 38 * sy }]} onPress={handleSaveScorecard}>
+                            <Text style={styles.landscapeButtonText}>Save</Text>
                         </Pressable>
                     </View>
                 )}
@@ -521,17 +541,36 @@ export default function MatchInfoScreen() {
                 }
                 {!isLandscape &&
                     <View style={styles.buttonContainer}>
+
+{/* save button  */}
+                        <Pressable
+                            style={isLandscape ? styles.landscapeButton : styles.button}
+                            // onPress={() => router.push('/')}
+                            onPress={handleSaveScorecard}
+                        >
+                            <Text style={isLandscape ? styles.landscapeButtonText : styles.buttonText}>
+                                Save
+                            </Text>
+                        </Pressable>
+
                         {/* save button  */}
-                        <Pressable 
+                        <Pressable
                             style={isLandscape ? styles.landscapeButton : styles.cardDetailsButton}
                             onPress={handleCardDetails}
                         >
                             <Text style={isLandscape ? styles.landscapeButtonText : styles.cardDetailsButtonText}>
-                                Card Details
+                                Card Info
                             </Text>
                         </Pressable>
-
-                        <Pressable 
+                        <Pressable
+                            style={isLandscape ? styles.landscapeButton : styles.shareButton}
+                            onPress={handleCardDetails}
+                        >
+                            <Text style={isLandscape ? styles.landscapeButtonText : styles.shareButtonText}>
+                                Notes
+                            </Text>
+                        </Pressable>
+                        <Pressable
                             style={isLandscape ? styles.landscapeButton : styles.shareButton}
                             onPress={handleCardDetails}
                         >
@@ -540,24 +579,31 @@ export default function MatchInfoScreen() {
                             </Text>
                         </Pressable>
 
-                        {/* save button  */}
-                        <Pressable 
-                            style={isLandscape ? styles.landscapeButton : styles.button}
-                            // onPress={() => router.push('/')}
-                            onPress={handleSaveScorecard}
-                        >
-                            <Text style={isLandscape ? styles.landscapeButtonText : styles.buttonText}>
-                                Save & Exit
-                            </Text>
-                        </Pressable>
+                        
+
+                        
                     </View>
                 }
             </View>
-        </>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
+    backgroundRoot: {
+        flex: 1,
+        backgroundColor: '#f2f2f2',
+    },
+    backgroundImage: {
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        opacity: .4
+    },
     cancelButton: {
         backgroundColor: '#EEF1F3',
     },
@@ -574,7 +620,7 @@ const styles = StyleSheet.create({
     },
     shareButton: {
         backgroundColor: '#fff',
-        paddingHorizontal: '6%',
+        paddingHorizontal: '5%',
         paddingVertical: '2.5%',
         borderRadius: 12,
         overflow: 'hidden',
@@ -583,6 +629,7 @@ const styles = StyleSheet.create({
         bottom: '4%',
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
+        boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
     },
     shareButtonText: {
         color: '#1976D2',
@@ -592,7 +639,7 @@ const styles = StyleSheet.create({
     },
     cardDetailsButton: {
         backgroundColor: '#fff',
-        paddingHorizontal: '6%',
+        paddingHorizontal: '5%',
         paddingVertical: '2.5%',
         borderRadius: 12,
         overflow: 'hidden',
@@ -600,7 +647,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         bottom: '4%',
         borderWidth: 1,
-        borderColor: 'rgba(200, 200, 200, 0.7)',
+                // borderColor: 'rgba(200, 200, 200, 0.7)',
+        borderColor:'rgba(25, 118, 210, 0.4)',
+
+        boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
     },
     cardDetailsButtonText: {
         color: '#1976D2',
@@ -617,6 +667,9 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         alignSelf: 'center',
         alignItems: 'center',
+        boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
+        borderWidth: 1,
+        borderColor: 'rgba(200, 200, 200, 0.7)',
         bottom: '4%'
     },
     buttonText: {
@@ -634,22 +687,23 @@ const styles = StyleSheet.create({
     // },
     container: {
         flex: 1,
-        backgroundColor: '#f2f2f2',
+        backgroundColor: 'transparent',
         padding: 15,
         paddingRight: 10,
     },
     fighter1Name: {
         color: '#D32F2F',
         textAlign: 'center',
-        width: '50%'
     },
     fighterText: {
         fontSize: 16,
-        flex: 1,
+        flex: 1.35,
         fontWeight: '700',
+        lineHeight: 19,
+        minWidth: 0,
     },
     fighter1PointHeader: {
-        flex: 1.2,
+        flex: 1.35,
         color: '#D32F2F',
         fontSize: 24,
         fontWeight: '700',
@@ -660,7 +714,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     fighter2PointHeader: {
-        flex: 1.2,
+        flex: 1.35,
         color: '#1976D2',
         fontSize: 24,
         fontWeight: '700',
@@ -687,8 +741,8 @@ const styles = StyleSheet.create({
     },
     landscapeButtonContainer: {
         position: 'absolute',
-        right: '2%',
-        top: 5,
+        right: '8.5%',
+        top: '3%',
         flexDirection: 'row',
         justifyContent: 'space-between',
         gap: 40
@@ -731,19 +785,19 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         marginBottom: 8,
-        width: '86%',
-        marginLeft: 21,
+        width: '92%',
+        alignSelf: 'center',
     },
     fighter1TotalEvents: {
         color: '#D32F2F',
-        flex: 1.2,
+        flex: 1.35,
     },
     landscapeFighter1TotalEvents: {
         color: '#D32F2F',
     },
     fighter2TotalEvents: {
         color: '#1976D2',
-        flex: 1.2,
+        flex: 1.35,
     },
     landscapeFighter2TotalEvents: {
         color: '#1976D2',
@@ -763,13 +817,14 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
-        paddingTop: 10,
+        paddingVertical: 16,
         height: '15%',
         marginBottom: 18,
         marginRight: '1%',
         width: '100%',
         justifyContent: 'center',
         boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
+        opacity: .85
     },
     title: {
         color: '#000',
@@ -782,16 +837,15 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         marginBottom: 8,
-        width: '85%',
-        marginLeft: 23,
-        marginHorizontal: 0,
+        width: '92%',
+        alignSelf: 'center',
     },
     totalEvents: {
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: '2%',
-        width: '87%',
-        marginLeft: 23,
+        width: '92%',
+        alignSelf: 'center',
     },
     totalEventsText: {
         flex: 1,
@@ -801,27 +855,24 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     vsPointHeader: {
-        flex: .8,
+        flex: .3,
     },
     vsText: {
         color: '#000',
         textAlign: 'center',
-        flex: .8
+        flex: .3
     },
     vsTotalEvents: {
-        flex: .8,
+        flex: .3,
     },
 
     //LANDSCAPE STYLES
     landscapeButton: {
         backgroundColor: '#D32F2F',
-        paddingHorizontal: 25,
-        paddingVertical: 4,
-        borderRadius: 12,
+        paddingHorizontal: 12,
+        borderRadius: 10,
         width: 140,
         minHeight: 36,
-        top: 8,
-        right: '8%',
         zIndex: 2,
         justifyContent: 'center',
         alignItems: 'center',
@@ -830,13 +881,10 @@ const styles = StyleSheet.create({
     },
     landscapeCardDetailsButton: {
         backgroundColor: '#fff',
-        paddingHorizontal: 25,
-        paddingVertical: 4,
-        borderRadius: 12,
+        paddingHorizontal: 12,
+        borderRadius: 10,
         width: 140,
         minHeight: 36,
-        top: 8,
-        right: '8%',
         zIndex: 2,
         justifyContent: 'center',
         alignItems: 'center',
@@ -846,13 +894,10 @@ const styles = StyleSheet.create({
 
     landscapeShareButton: {
         backgroundColor: '#fff',
-        paddingHorizontal: 25,
-        paddingVertical: 4,
-        borderRadius: 12,
+        paddingHorizontal: 12,
+        borderRadius: 10,
         width: 140,
         minHeight: 36,
-        top: 8,
-        right: '8%',
         zIndex: 2,
         justifyContent: 'center',
         alignItems: 'center',
@@ -861,21 +906,23 @@ const styles = StyleSheet.create({
     },
     landscapecardDetailsButtonText: {
         color: '#1976D2',
-        fontWeight: 700
+        fontSize: 14,
+        fontWeight: '700',
     },
     landscapeShareButtonText: {
         color: '#1976D2',
-        fontWeight: 700
+        fontSize: 14,
+        fontWeight: '700',
     },
     landscapeButtonText: {
         color: '#fff',
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: '700',
         zIndex: 1
     },
     landscapeContainer: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: 'transparent',
         paddingTop: 58,
         paddingHorizontal: 8,
         flexDirection: 'row'

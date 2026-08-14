@@ -246,7 +246,7 @@ export default function RoundRow({
                 onRequestClose={closeScoringModal}
             >
                 <View style={styles.modalOverlay}>
-                    <View style={styles.selectScoringModal}>
+                    <View style={quickScoringVisible ? styles.portraitQuickModal : styles.selectScoringModal}>
                         {!quickScoringVisible ? (
                             <>
                                 <Text style={styles.modalTitle}>Select Scoring Method</Text>
@@ -284,23 +284,23 @@ export default function RoundRow({
                             </>
                         ) : (
                             <>
-                                <Text style={styles.modalTitle}>Quick Score Round {roundNumber}</Text>
-                                <View style={[styles.quickCornerRow, styles.quickCornerRowNames]}>
-                                    <Text numberOfLines={1} style={[styles.quickCornerName, styles.quickLeftName]}>{fighter1}</Text>
-                                    <Text numberOfLines={1} style={[styles.quickCornerName, styles.quickRightName]}>{fighter2}</Text>
+                                <Text style={styles.portraitQuickTitle}>Quick Score Round {roundNumber}</Text>
+                                <View style={styles.portraitQuickNameRow}>
+                                    <Text numberOfLines={2} style={[styles.portraitQuickName, styles.portraitQuickLeft]}>{fighter1}</Text>
+                                    <Text numberOfLines={2} style={[styles.portraitQuickName, styles.portraitQuickRight]}>{fighter2}</Text>
                                 </View>
-                                <View style={styles.quickEventSection}>
-                                    <Text style={styles.quickEventLabel}>Round score</Text>
-                                    <View style={styles.quickCornerRow}>
-                                        <View style={styles.stepper}>
-                                            <Pressable style={styles.stepperButton} onPress={() => setQuickLeftScore((score) => Math.max(0, score - 1))}><Text style={styles.stepperButtonText}>−</Text></Pressable>
-                                            <Text style={[styles.stepperValue, styles.leftStepperValue]}>{quickLeftScore}</Text>
-                                            <Pressable style={styles.stepperButton} onPress={() => setQuickLeftScore((score) => Math.min(10, score + 1))}><Text style={styles.stepperButtonText}>+</Text></Pressable>
+                                <View style={styles.portraitQuickEventSection}>
+                                    <Text style={styles.portraitQuickEventLabel}>Round score</Text>
+                                    <View style={styles.portraitQuickCornerRow}>
+                                        <View style={styles.portraitQuickStepper}>
+                                            <Pressable style={styles.portraitQuickStepperButton} onPress={() => setQuickLeftScore((score) => Math.max(0, score - 1))}><Text style={styles.portraitQuickStepperButtonText}>−</Text></Pressable>
+                                            <Text style={[styles.portraitQuickStepperValue, styles.portraitQuickLeft]}>{quickLeftScore}</Text>
+                                            <Pressable style={styles.portraitQuickStepperButton} onPress={() => setQuickLeftScore((score) => Math.min(10, score + 1))}><Text style={styles.portraitQuickStepperButtonText}>+</Text></Pressable>
                                         </View>
-                                        <View style={styles.stepper}>
-                                            <Pressable style={styles.stepperButton} onPress={() => setQuickRightScore((score) => Math.max(0, score - 1))}><Text style={styles.stepperButtonText}>−</Text></Pressable>
-                                            <Text style={[styles.stepperValue, styles.rightStepperValue]}>{quickRightScore}</Text>
-                                            <Pressable style={styles.stepperButton} onPress={() => setQuickRightScore((score) => Math.min(10, score + 1))}><Text style={styles.stepperButtonText}>+</Text></Pressable>
+                                        <View style={styles.portraitQuickStepper}>
+                                            <Pressable style={styles.portraitQuickStepperButton} onPress={() => setQuickRightScore((score) => Math.max(0, score - 1))}><Text style={styles.portraitQuickStepperButtonText}>−</Text></Pressable>
+                                            <Text style={[styles.portraitQuickStepperValue, styles.portraitQuickRight]}>{quickRightScore}</Text>
+                                            <Pressable style={styles.portraitQuickStepperButton} onPress={() => setQuickRightScore((score) => Math.min(10, score + 1))}><Text style={styles.portraitQuickStepperButtonText}>+</Text></Pressable>
                                         </View>
                                     </View>
                                 </View>
@@ -309,27 +309,27 @@ export default function RoundRow({
                                     { label: 'Knockdowns', left: quickLeftKds, right: quickRightKds, setLeft: setQuickLeftKds, setRight: setQuickRightKds },
                                     { label: 'Point deductions', left: quickLeftPen, right: quickRightPen, setLeft: setQuickLeftPen, setRight: setQuickRightPen },
                                 ].map((event) => (
-                                    <View key={event.label} style={styles.quickEventSection}>
-                                        <Text style={styles.quickEventLabel}>{event.label}</Text>
-                                        <View style={styles.quickCornerRow}>
-                                            <View style={styles.stepper}>
-                                                <Pressable style={styles.stepperButton} onPress={() => event.setLeft(Math.max(0, event.left - 1))}><Text style={styles.stepperButtonText}>−</Text></Pressable>
-                                                <Text style={styles.stepperValue}>{event.left}</Text>
-                                                <Pressable style={styles.stepperButton} onPress={() => event.setLeft(event.left + 1)}><Text style={styles.stepperButtonText}>+</Text></Pressable>
+                                    <View key={event.label} style={styles.portraitQuickEventSection}>
+                                        <Text style={styles.portraitQuickEventLabel}>{event.label}</Text>
+                                        <View style={styles.portraitQuickCornerRow}>
+                                            <View style={styles.portraitQuickStepper}>
+                                                <Pressable style={styles.portraitQuickStepperButton} onPress={() => event.setLeft(Math.max(0, event.left - 1))}><Text style={styles.portraitQuickStepperButtonText}>−</Text></Pressable>
+                                                <Text style={styles.portraitQuickStepperValue}>{event.left}</Text>
+                                                <Pressable style={styles.portraitQuickStepperButton} onPress={() => event.setLeft(event.left + 1)}><Text style={styles.portraitQuickStepperButtonText}>+</Text></Pressable>
                                             </View>
-                                            <View style={styles.stepper}>
-                                                <Pressable style={styles.stepperButton} onPress={() => event.setRight(Math.max(0, event.right - 1))}><Text style={styles.stepperButtonText}>−</Text></Pressable>
-                                                <Text style={styles.stepperValue}>{event.right}</Text>
-                                                <Pressable style={styles.stepperButton} onPress={() => event.setRight(event.right + 1)}><Text style={styles.stepperButtonText}>+</Text></Pressable>
+                                            <View style={styles.portraitQuickStepper}>
+                                                <Pressable style={styles.portraitQuickStepperButton} onPress={() => event.setRight(Math.max(0, event.right - 1))}><Text style={styles.portraitQuickStepperButtonText}>−</Text></Pressable>
+                                                <Text style={styles.portraitQuickStepperValue}>{event.right}</Text>
+                                                <Pressable style={styles.portraitQuickStepperButton} onPress={() => event.setRight(event.right + 1)}><Text style={styles.portraitQuickStepperButtonText}>+</Text></Pressable>
                                             </View>
                                         </View>
                                     </View>
                                 ))}
-                                <View style={styles.quickModalActions}>
-                                    <Pressable style={[styles.modalButton, styles.cancelButton, styles.quickActionButton]} onPress={() => setQuickScoringVisible(false)}>
+                                <View style={styles.portraitQuickActions}>
+                                    <Pressable style={[styles.modalButton, styles.cancelButton, styles.portraitQuickActionButton]} onPress={() => setQuickScoringVisible(false)}>
                                         <Text style={styles.cancelButtonText}>Back</Text>
                                     </Pressable>
-                                    <Pressable style={[styles.modalButton, styles.saveQuickButton, styles.quickActionButton]} onPress={saveQuickScore}>
+                                    <Pressable style={[styles.modalButton, styles.saveQuickButton, styles.portraitQuickActionButton]} onPress={saveQuickScore}>
                                         <Text style={styles.saveQuickButtonText}>Save Round</Text>
                                     </Pressable>
                                 </View>
@@ -590,44 +590,67 @@ const styles = StyleSheet.create({
         fontWeight: 700,
         color: '#1976D2'
     },
-    quickCornerRow: {
+    portraitQuickModal: {
+        width: '100%',
+        maxWidth: 360,
+        maxHeight: '90%',
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.25,
+        shadowRadius: 8,
+        elevation: 6,
+    },
+    portraitQuickTitle: {
+        color: '#333A3F',
+        fontSize: 20,
+        fontWeight: '700',
+        marginBottom: '10%',
+        textAlign: 'center',
+    },
+    portraitQuickCornerRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: '10%',
     },
-    quickCornerRowNames: {
-        gap: '10%'
+    portraitQuickNameRow: {
+        flexDirection: 'row',
+        gap: 12,
+        marginBottom: '4%'
     },
-    quickCornerName: {
+    portraitQuickName: {
         flex: 1,
         fontSize: 13,
         fontWeight: '700',
-        marginBottom: 8,
+        lineHeight: 17,
+        minHeight: 34,
         textAlign: 'center',
+        textAlignVertical: 'center',
     },
-    quickLeftName: {
+    portraitQuickLeft: {
         color: '#D32F2F',
     },
-    quickRightName: {
+    portraitQuickRight: {
         color: '#1976D2',
     },
-    quickEventSection: {
-        marginBottom: 12,
+    portraitQuickEventSection: {
+        marginBottom: 16,
     },
-    quickEventLabel: {
+    portraitQuickEventLabel: {
         color: '#333A3F',
         fontSize: 12,
         fontWeight: '600',
-        marginBottom: '5%',
+        marginBottom: 8,
         textAlign: 'center',
     },
-    stepper: {
+    portraitQuickStepper: {
         alignItems: 'center',
         flexDirection: 'row',
         justifyContent: 'center',
-        width: '46%',
+        width: '48%',
     },
-    stepperButton: {
+    portraitQuickStepperButton: {
         alignItems: 'center',
         backgroundColor: '#EEF1F3',
         borderRadius: 8,
@@ -635,38 +658,24 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         width: 34,
     },
-    stepperButtonText: {
+    portraitQuickStepperButtonText: {
         color: '#333A3F',
         fontSize: 20,
         fontWeight: '700',
     },
-    stepperValue: {
+    portraitQuickStepperValue: {
         color: '#333A3F',
-        fontSize: 17,
-        fontWeight: '700',
-        minWidth: 34,
-        textAlign: 'center',
-    },
-    leftStepperValue: {
-        color: '#D32F2F',
         fontSize: 20,
         fontWeight: '700',
         minWidth: 34,
         textAlign: 'center',
     },
-    rightStepperValue: {
-        color: '#1976D2',
-        fontSize: 20,
-        fontWeight: '700',
-        minWidth: 34,
-        textAlign: 'center',
-    },
-    quickModalActions: {
+    portraitQuickActions: {
         flexDirection: 'row',
         gap: 10,
-        marginTop: 4,
+        marginTop: '5%',
     },
-    quickActionButton: {
+    portraitQuickActionButton: {
         flex: 1,
         marginLeft: 0,
         width: 'auto',
@@ -951,6 +960,7 @@ const styles = StyleSheet.create({
         marginHorizontal: '.5%',
         marginRight: '2%',
         borderWidth: 1,
+        borderBottomWidth: 0,
         borderColor: 'rgba(200, 200, 200, 0.7)',
         borderRadius: 15,
         // paddingVertical: 2,

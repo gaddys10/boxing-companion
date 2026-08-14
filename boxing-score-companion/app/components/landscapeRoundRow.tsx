@@ -274,7 +274,7 @@ export default function LandscapeRoundRow({
                     <View style={styles.scoringModal}>
                         {!quickScoringVisible ? (
                             <>
-                                <Text style={styles.modalTitle}>Select Scoring Method</Text>
+                                <Text style={styles.landscapeQuickModalTitle}>Select Scoring Method</Text>
                                 <View style={styles.methodRow}>
                                     <View style={styles.methodOption}>
                                         <Pressable style={styles.scoringButton} onPress={openQuickScoring}>
@@ -311,12 +311,12 @@ export default function LandscapeRoundRow({
                             </>
                         ) : (
                             <>
-                                <Text style={styles.modalTitle}>Quick Score Round {roundNumber}</Text>
-                                <View style={styles.quickCornerRow}>
-                                    <Text numberOfLines={1} style={[styles.quickCornerName, styles.quickLeftName]}>{fighter1}</Text>
-                                    <Text numberOfLines={1} style={[styles.quickCornerName, styles.quickRightName]}>{fighter2}</Text>
-                                </View>
+                                <Text style={styles.quickModalTitle}>Quick Score Round {roundNumber}</Text>
                                 <View style={styles.quickFieldsRow}>
+                                    <View style={styles.quickCornerNameRow}>
+                                        <Text numberOfLines={2} style={[styles.quickCornerName, styles.quickLeftName]}>{fighter1}</Text>
+                                        <Text numberOfLines={2} style={[styles.quickCornerName, styles.quickRightName]}>{fighter2}</Text>
+                                    </View>
                                     <View key={"Round Score"} style={styles.quickField}>
                                         <Text style={styles.quickEventLabel}>Round Score</Text>
                                         <View style={styles.quickCornerRow}>
@@ -343,12 +343,12 @@ export default function LandscapeRoundRow({
                                                 <View style={styles.stepper}>
                                                     <Pressable style={styles.stepperButton} onPress={() => field.setLeft(Math.max(0, field.left - 1))}><Text style={styles.stepperButtonText}>−</Text></Pressable>
                                                     <Text style={[styles.stepperValue, field.label === 'Round score' && styles.quickLeftName]}>{field.left}</Text>
-                                                    <Pressable style={styles.stepperButton} onPress={() => field.setLeft(field.max ? Math.min(field.max, field.left + 1) : field.left + 1)}><Text style={styles.stepperButtonText}>+</Text></Pressable>
+                                                    <Pressable style={styles.stepperButton} onPress={() => field.setLeft(field.left + 1)}><Text style={styles.stepperButtonText}>+</Text></Pressable>
                                                 </View>
                                                 <View style={styles.stepper}>
                                                     <Pressable style={styles.stepperButton} onPress={() => field.setRight(Math.max(0, field.right - 1))}><Text style={styles.stepperButtonText}>−</Text></Pressable>
                                                     <Text style={[styles.stepperValue, field.label === 'Round score' && styles.quickRightName]}>{field.right}</Text>
-                                                    <Pressable style={styles.stepperButton} onPress={() => field.setRight(field.max ? Math.min(field.max, field.right + 1) : field.right + 1)}><Text style={styles.stepperButtonText}>+</Text></Pressable>
+                                                    <Pressable style={styles.stepperButton} onPress={() => field.setRight(field.right + 1)}><Text style={styles.stepperButtonText}>+</Text></Pressable>
                                                 </View>
                                             </View>
                                         </View>
@@ -511,6 +511,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#d32f2f',
         marginTop: 12,
         width: 180,
+        shadowColor: '#11334b',
+        shadowOffset: { width: 2, height: 2 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1,
     },
     cancelButtonText: {
         color: '#fff',
@@ -520,7 +524,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         flexDirection: 'column',
         height: SWIPE_ACTIONS_HEIGHT,
-        left: '1.5%',
+        left: '4%',
         position: 'absolute',
         width: '88%',
         bottom: SWIPE_ACTIONS_BOTTOM,
@@ -684,7 +688,7 @@ const styles = StyleSheet.create({
     methodOption: {
         alignItems: 'center',
         flex: 1,
-        marginBottom: '5%'
+        marginBottom: '5%',
     },
     methodRow: {
         flexDirection: 'row',
@@ -714,7 +718,21 @@ const styles = StyleSheet.create({
         color: '#333A3F',
         fontSize: 20,
         fontWeight: '700',
-        marginBottom: 16,
+        marginBottom: '7 %',
+        textAlign: 'center',
+    },
+    landscapeQuickModalTitle: {
+        color: '#333A3F',
+        fontSize: 20,
+        fontWeight: '700',
+        marginBottom: '6%',
+        textAlign: 'center',
+    },
+    quickModalTitle: {
+        color: '#333A3F',
+        fontSize: 20,
+        fontWeight: '700',
+        marginBottom: '2.5%',
         textAlign: 'center',
     },
     redPlusMinus: {
@@ -733,8 +751,14 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         justifyContent: 'center',
         minHeight: 50,
-        width: '100%',
-        marginBottom: '2.5%'
+        width: '75%',
+        marginBottom: '2.5%',
+        shadowColor: '#11334b',
+        shadowOffset: { width: 2, height: 2 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1,
+        borderWidth: 1,
+        borderColor: 'rgba(200, 200, 200, 0.7)',
     },
     scoringButtonText: {
         color: '#fff',
@@ -748,20 +772,30 @@ const styles = StyleSheet.create({
         padding: 18,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.25,
+        shadowOpacity: 0.5,
         shadowRadius: 8,
-        width: '88%',
+        width: '75%',
         maxHeight: '90%'
     },
     quickCornerName: {
-        flex: 1,
         fontSize: 13,
         fontWeight: '700',
-        textAlign: 'center',
+        height: 32,
+        lineHeight: 16,
+        textAlign: 'left',
+        textAlignVertical: 'center',
+    },
+    quickCornerNameRow: {
+        gap: 35,
+        justifyContent: 'flex-start',
+        paddingTop: 22,
+        width: 110,
     },
     quickCornerRow: {
-        flexDirection: 'row',
+        flexDirection: 'column',
         justifyContent: 'space-between',
+        gap: 35,
+        marginBottom: '10%'
     },
     quickEventLabel: {
         color: '#333A3F',
