@@ -22,6 +22,8 @@ type RoundRowProps = {
     rounds: string;
     id?: string;
     savedScores: string;
+    gender?: "idk" | "mens" | "womens";
+    weight: number | "200+";
     stoppageReason?: 'KO' | 'TKO' | 'DQ' | 'NC';
     stoppageWinner?: string;
     onClearRound: (roundNumber: number) => void;
@@ -56,6 +58,8 @@ export default function RoundRow({
     rounds,
     id,
     savedScores,
+    gender,
+    weight,
     stoppageReason,
     stoppageWinner,
     onClearRound,
@@ -134,13 +138,17 @@ export default function RoundRow({
                     : [styles.plusMinusContainer, styles.neutralPlusMinusContainer];
 
     const roundLabelColor =
-        plusMinusNumber === null
-            ? '#b0b0b0'
-            : plusMinusNumber > 0
-                ? '#D32F2F'
-                : plusMinusNumber < 0
-                    ? '#1976D2'
-                    : '#b0b0b0';
+        stoppageWinner === fighter1
+            ? '#D32F2F'
+            : stoppageWinner === fighter2
+                ? '#1976D2'
+                : plusMinusNumber === null
+                    ? '#b0b0b0'
+                    : plusMinusNumber > 0
+                        ? '#D32F2F'
+                        : plusMinusNumber < 0
+                            ? '#1976D2'
+                            : '#b0b0b0';
 
     const renderRightActions = () => (
         <View style={styles.swipeContainer}>
@@ -267,6 +275,8 @@ export default function RoundRow({
                                                 rounds,
                                                 id,
                                                 savedScores,
+                                                gender,
+                                                weight
                                             },
                                         });
                                     }}

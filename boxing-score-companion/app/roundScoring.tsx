@@ -143,6 +143,8 @@ export default function RoundScoringScreen() {
                 rounds: params.rounds,
                 id: params.id,
                 savedScores: params.savedScores,
+                gender: params.gender,
+                weight: params.weight,
                 savedRound: String(round),
                 savedLeftScore: String(savedLeftScore),
                 savedRightScore: String(savedRightScore),
@@ -164,6 +166,8 @@ export default function RoundScoringScreen() {
             params: {
                 fighter1: params.fighter1,
                 fighter2: params.fighter2,
+                gender: params.gender,
+                weight: params.weight,
                 rounds: params.rounds,
                 id: params.id,
                 savedScores: params.savedScores,

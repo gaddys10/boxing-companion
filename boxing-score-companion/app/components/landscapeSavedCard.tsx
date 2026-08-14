@@ -15,8 +15,8 @@ type SavedCardProps = {
     fighter1Pen: number;
     fighter2Pen: number;
     rounds: number;
-    gender?: string;
-    weight?: number | string;
+    gender?: "idk" | "mens" | "womens";
+    weight?: number | "200+";
     savedScores?: string;
     onDelete: (id: number) => void;
 }

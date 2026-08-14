@@ -19,8 +19,8 @@ type SavedCardProps = {
   onDelete: (id: number) => void;
   scrollY?: number;
   viewportHeight?: number;
-  weight?: number | string;
-  gender?: string;
+  weight?: number | '200+';
+  gender?: "idk" | "mens" | "womens";
 }
 
 export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, savedScores, weight, gender, onDelete, scrollY = 0, viewportHeight = 0}: SavedCardProps) {

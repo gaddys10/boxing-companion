@@ -152,10 +152,10 @@ export default function CreateMatch() {
 
         return {
             ...totals,
-            fighter1Score: latestResult.stoppageWinner === fighter1
+            fighter1Score: latestResult.stoppageWinner === fighter1Name
                 ? latestResult.stoppageReason ?? '-'
                 : '',
-            fighter2Score: latestResult.stoppageWinner === fighter2
+            fighter2Score: latestResult.stoppageWinner === fighter2Name
                 ? latestResult.stoppageReason ?? '-'
                 : '',
         };
@@ -163,6 +163,16 @@ export default function CreateMatch() {
 
     const handleSaveChangesAndExit = () => {
         const savedScores = getSavedScoresForRoundCount();
+
+        Object.values(savedScores).forEach((roundScore) => {
+            if (roundScore.stoppageWinner === fighter1) {
+                roundScore.stoppageWinner = fighter1Name || 'Fighter 1';
+            }
+
+            if (roundScore.stoppageWinner === fighter2) {
+                roundScore.stoppageWinner = fighter2Name || 'Fighter 2';
+            }
+        });
 
         router.dismissTo({
             pathname: '/',
