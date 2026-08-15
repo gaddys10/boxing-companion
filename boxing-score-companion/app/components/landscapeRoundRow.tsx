@@ -212,13 +212,13 @@ export default function LandscapeRoundRow({
                         <Text style={[styles.scoreText, styles.leftRoundScore]}>{leftScore ?? '-'}</Text> */}
 
                         <View style={styles.scorePair}>
-                            <View style={styles.scoreSlot}>
+                            <View style={[styles.scoreSlot, styles.outerTopScoreSlot]}>
                                 <Text style={[styles.pairedScoreText, styles.leftTotalScore]}>
                                     {leftTotal ?? '-'}
                                 </Text>
                             </View>
 
-                            <View style={styles.scoreSlot}>
+                            <View style={[styles.scoreSlot, styles.innerTopScoreSlot]}>
                                 <Text style={[styles.pairedScoreText, styles.leftRoundScore]}>
                                     {leftScore ?? '-'}
                                 </Text>
@@ -261,13 +261,13 @@ export default function LandscapeRoundRow({
                         {/* <Text style={[styles.scoreText, styles.rightRoundScore, ]}>{rightScore ?? '-'}</Text>
                         <Text style={[styles.scoreText, styles.rightTotalScore]}>{rightTotal ?? '-'}</Text> */}
                         <View style={styles.scorePair}>
-                            <View style={styles.scoreSlot}>
+                            <View style={[styles.scoreSlot, styles.innerBottomScoreSlot]}>
                                 <Text style={[styles.pairedScoreText, styles.rightRoundScore]}>
                                     {rightScore ?? '-'}
                                 </Text>
                             </View>
 
-                            <View style={styles.scoreSlot}>
+                            <View style={[styles.scoreSlot, styles.outerBottomScoreSlot]}>
                                 <Text style={[styles.pairedScoreText, styles.rightTotalScore]}>
                                     {rightTotal ?? '-'}
                                 </Text>
@@ -529,6 +529,9 @@ const styles = StyleSheet.create({
         flex: 2,
         width: '100%',
         position: 'relative',
+        // Visually align the scores and their event badges with the side headers
+        // without changing the flex layout or the momentum slot position.
+        bottom: '3.75%',
     },
 
     scoreSlot: {
@@ -536,6 +539,22 @@ const styles = StyleSheet.create({
         width: '100%',
         alignItems: 'center',
         justifyContent: 'center',
+    },
+
+    outerTopScoreSlot: {
+        transform: [{ translateY: -4 }],
+    },
+
+    innerTopScoreSlot: {
+        transform: [{ translateY: -2 }],
+    },
+
+    innerBottomScoreSlot: {
+        transform: [{ translateY: 2 }],
+    },
+
+    outerBottomScoreSlot: {
+        transform: [{ translateY: 4 }],
     },
 
     pairedScoreText: {
@@ -546,19 +565,9 @@ const styles = StyleSheet.create({
 
     roundEvents: {
         position: 'absolute',
-
-        // Exact midpoint between the two score slots.
-        top: '50%',
-        // marginTop: -11,
-        
-
-        // left: '3%',
-        // right: '3%',
-        // height: 20,
-        transform: [{ translateY: -10 }],
-
+        // A 22.5%-high box starts at 38.75% to center on the pair midpoint.
+        top: '38.75%',
         height: '22.5%',
-
         justifyContent: 'center',
         alignItems: 'center',
         width: '100%'
@@ -566,10 +575,14 @@ const styles = StyleSheet.create({
 
     redRoundEvents: {
         backgroundColor: '#D32F2F',
+        // The left pair's widened values have a midpoint 3px above center.
+        transform: [{ translateY: -3 }],
     },
 
     blueRoundEvents: {
         backgroundColor: '#1976D2',
+        // The right pair's widened values have a midpoint 3px below center.
+        transform: [{ translateY: 3 }],
     },
     plusMinusSlot: {
             flex: 1,
