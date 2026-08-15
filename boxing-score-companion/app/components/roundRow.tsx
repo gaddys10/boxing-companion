@@ -189,7 +189,7 @@ export default function RoundRow({
                     </View>
 
                     {plusMinusNumber !== null && plusMinusNumber > 0 && (
-                        <Ionicons name="caret-back" style={styles.leftTriangle} />
+                        <Ionicons name="caret-back" style={styles.leftTriangle} size={16} />
                     )}
                     <View style={plusMinusContainerStyle}>
                         <Text style={[styles.scoreText, plusMinusStyle]}>
@@ -198,7 +198,7 @@ export default function RoundRow({
                     </View>
 
                     {plusMinusNumber !== null && plusMinusNumber < 0 && (
-                        <Ionicons name="caret-forward" style={styles.rightTriangle} />
+                        <Ionicons name="caret-forward" style={styles.rightTriangle} size={16} />
                     )}
                     <View style={[styles.scoreCell, styles.rightRoundScoreCell]}>
                         <Text style={[styles.scoreText, styles.rightRoundScore]}>{rightScore ?? '-'}</Text>
@@ -857,15 +857,15 @@ const styles = StyleSheet.create({
     },
     leftTriangle: {
         position: 'absolute',
-        left: '42%',
-        height: 14,
-        top: 12,
+        left: '41.5%',
+        // height: 26,
+        top: '30.5%',
         color: "#d32f2f"
     },
     rightTriangle: {
         position: 'absolute',
-        left: '54.75%',
-        top: 12,
+        left: '54%',
+        top: '30.5%',
         height: 14,
         color: "#1976D2"
     },

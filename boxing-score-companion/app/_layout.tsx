@@ -1,6 +1,6 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack, usePathname } from 'expo-router';
-// import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as ScreenOrientation from 'expo-screen-orientation';
@@ -13,20 +13,22 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  // const pathname = usePathname();
-  // const orientationUpdate = useRef<Promise<void>>(Promise.resolve());
+  const pathname = usePathname();
+  const orientationUpdate = useRef<Promise<void>>(Promise.resolve());
 
-  // useEffect(() => {
-  //   const orientationLock = pathname === '/roundScoring'
-  //     ? ScreenOrientation.OrientationLock.LANDSCAPE
-  //     : ScreenOrientation.OrientationLock.DEFAULT;
+  useEffect(() => {
+    const orientationLock = pathname === '/roundScoring'
+      ? ScreenOrientation.OrientationLock.LANDSCAPE
+      : pathname === '/'
+        ? ScreenOrientation.OrientationLock.PORTRAIT_UP
+        : ScreenOrientation.OrientationLock.DEFAULT;
 
     // Native orientation changes are asynchronous. Queue them so a slower lock
     // from the previous route cannot finish after (and override) the current one.
-  //   orientationUpdate.current = orientationUpdate.current
-  //     .catch(() => undefined)
-  //     .then(() => ScreenOrientation.lockAsync(orientationLock));
-  // }, [pathname]);
+    orientationUpdate.current = orientationUpdate.current
+      .catch(() => undefined)
+      .then(() => ScreenOrientation.lockAsync(orientationLock));
+  }, [pathname]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

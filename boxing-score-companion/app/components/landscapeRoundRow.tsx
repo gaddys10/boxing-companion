@@ -210,7 +210,7 @@ export default function LandscapeRoundRow({
                         <Text style={[styles.scoreText, styles.leftRoundScore]}>{leftScore ?? '-'}</Text>
 
                         {plusMinusNumber !== null && plusMinusNumber > 0 && (
-                            <Ionicons name="caret-up" style={styles.leftTriangle} />
+                            <Ionicons name="caret-up" style={styles.leftTriangle} size={16}/>
                         )}
 
                         <View style={styles.plusMinusSlot}>
@@ -224,7 +224,7 @@ export default function LandscapeRoundRow({
                         </View>
 
                         {plusMinusNumber !== null && plusMinusNumber < 0 && (
-                            <Ionicons name="caret-down" style={styles.rightTriangle} />
+                            <Ionicons name="caret-down" style={styles.rightTriangle} size={16} />
                         )}
                         <Text style={[styles.scoreText, styles.rightRoundScore, ]}>{rightScore ?? '-'}</Text>
                         <Text style={[styles.scoreText, styles.rightTotalScore]}>{rightTotal ?? '-'}</Text>
@@ -680,16 +680,15 @@ const styles = StyleSheet.create({
     },
     leftTriangle: {
         position: 'absolute',
-        left: '35%',
-        height: 9,
+        left: '32%',
+        // height: 9,
         top: '44%',
         color: "#d32f2f"
     },
     rightTriangle: {
         position: 'absolute',
-        left: '35.5%',
-        top: '57%',
-        height: 9,
+        left: '32%',
+        top: '55%',
         color: "#1976D2"
     },
     plusMinus: {
