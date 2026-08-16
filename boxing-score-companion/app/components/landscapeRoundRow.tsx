@@ -206,8 +206,40 @@ export default function LandscapeRoundRow({
                         <View style={[styles.roundLabelContainer, { backgroundColor: roundLabelColor }]}>
                             <Text style={styles.roundLabel}>R{roundNumber}</Text>
                         </View>
-                        <Text style={[styles.scoreText, styles.leftTotalScore]}>{leftTotal ?? '-'}</Text>
-                        <Text style={[styles.scoreText, styles.leftRoundScore]}>{leftScore ?? '-'}</Text>
+                        
+                        
+                        {/* <Text style={[styles.scoreText, styles.leftTotalScore]}>{leftTotal ?? '-'}</Text>
+                        <Text style={[styles.scoreText, styles.leftRoundScore]}>{leftScore ?? '-'}</Text> */}
+
+                        <View style={styles.scorePair}>
+                            <View style={[styles.scoreSlot, styles.outerTopScoreSlot]}>
+                                <Text style={[styles.pairedScoreText, styles.leftTotalScore]}>
+                                    {leftTotal ?? '-'}
+                                </Text>
+                            </View>
+
+                            <View style={[styles.scoreSlot, styles.innerTopScoreSlot]}>
+                                <Text style={[styles.pairedScoreText, styles.leftRoundScore]}>
+                                    {leftScore ?? '-'}
+                                </Text>
+                            </View>
+
+                            {(Number(leftKds) > 0 || Number(leftPen) > 0) && (
+                                <View style={[styles.roundEvents, styles.redRoundEvents]}>
+                                    {Number(leftKds) > 0 && Number(leftPen) > 0 && (
+                                        <Text style={styles.roundEventsText}>
+                                            KD{leftKds}{"\n"}PD{leftPen}
+                                        </Text>
+                                    )}
+                                    {Number(leftKds) > 0 && Number(leftPen) === 0 && (
+                                        <Text style={styles.roundEventsText}>KD{leftKds}</Text>
+                                    )}
+                                    {Number(leftKds) === 0 && Number(leftPen) > 0 && (
+                                        <Text style={styles.roundEventsText}>PD{leftPen}</Text>
+                                    )}
+                                </View>
+                            )}
+                        </View>
 
                         {plusMinusNumber !== null && plusMinusNumber > 0 && (
                             <Ionicons name="caret-up" style={styles.leftTriangle} size={16}/>
@@ -226,8 +258,37 @@ export default function LandscapeRoundRow({
                         {plusMinusNumber !== null && plusMinusNumber < 0 && (
                             <Ionicons name="caret-down" style={styles.rightTriangle} size={16} />
                         )}
-                        <Text style={[styles.scoreText, styles.rightRoundScore, ]}>{rightScore ?? '-'}</Text>
-                        <Text style={[styles.scoreText, styles.rightTotalScore]}>{rightTotal ?? '-'}</Text>
+                        {/* <Text style={[styles.scoreText, styles.rightRoundScore, ]}>{rightScore ?? '-'}</Text>
+                        <Text style={[styles.scoreText, styles.rightTotalScore]}>{rightTotal ?? '-'}</Text> */}
+                        <View style={styles.scorePair}>
+                            <View style={[styles.scoreSlot, styles.innerBottomScoreSlot]}>
+                                <Text style={[styles.pairedScoreText, styles.rightRoundScore]}>
+                                    {rightScore ?? '-'}
+                                </Text>
+                            </View>
+
+                            <View style={[styles.scoreSlot, styles.outerBottomScoreSlot]}>
+                                <Text style={[styles.pairedScoreText, styles.rightTotalScore]}>
+                                    {rightTotal ?? '-'}
+                                </Text>
+                            </View>
+
+                            {(Number(rightKds) > 0 || Number(rightPen) > 0) && (
+                                <View style={[styles.roundEvents, styles.blueRoundEvents]}>
+                                    {Number(rightKds) > 0 && Number(rightPen) > 0 && (
+                                        <Text style={styles.roundEventsText}>
+                                            KD{rightKds}{"\n"}PD{rightPen}
+                                        </Text>
+                                    )}
+                                    {Number(rightKds) > 0 && Number(rightPen) === 0 && (
+                                        <Text style={styles.roundEventsText}>KD{rightKds}</Text>
+                                    )}
+                                    {Number(rightKds) === 0 && Number(rightPen) > 0 && (
+                                        <Text style={styles.roundEventsText}>PD{rightPen}</Text>
+                                    )}
+                                </View>
+                            )}
+                        </View>
                         <Pressable
                             style={styles.button}
                             onPress={() => setScoringModalVisible(true)}
@@ -238,7 +299,7 @@ export default function LandscapeRoundRow({
                             />
                         </Pressable>
                     </View>
-                    {
+                    {/* {
                         (Number(leftKds) > 0 || Number(leftPen) > 0) && (
                             <View style={styles.roundEvents}>
                                 {Number(leftKds) > 0 && Number(leftPen) > 0 && (
@@ -267,7 +328,7 @@ export default function LandscapeRoundRow({
                                 )}
                             </View>
                         )
-                    }
+                    } */}
                     </Animated.View>
                 </View>
             </GestureDetector>
@@ -464,6 +525,65 @@ export default function LandscapeRoundRow({
 }
 
 const styles = StyleSheet.create({
+    scorePair: {
+        flex: 2,
+        width: '100%',
+        position: 'relative',
+        // Visually align the scores and their event badges with the side headers
+        // without changing the flex layout or the momentum slot position.
+        bottom: '3.75%',
+    },
+
+    scoreSlot: {
+        flex: 1,
+        width: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+
+    outerTopScoreSlot: {
+        transform: [{ translateY: -4 }],
+    },
+
+    innerTopScoreSlot: {
+        transform: [{ translateY: -2 }],
+    },
+
+    innerBottomScoreSlot: {
+        transform: [{ translateY: 2 }],
+    },
+
+    outerBottomScoreSlot: {
+        transform: [{ translateY: 4 }],
+    },
+
+    pairedScoreText: {
+        textAlign: 'center',
+        fontSize: 16,
+        fontWeight: '700',
+    },
+
+    roundEvents: {
+        position: 'absolute',
+        // A 22.5%-high box starts at 38.75% to center on the pair midpoint.
+        top: '38.75%',
+        height: '22.5%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%'
+    },
+
+    redRoundEvents: {
+        backgroundColor: '#D32F2F',
+        // The left pair's widened values have a midpoint 3px above center.
+        transform: [{ translateY: -3 }],
+    },
+
+    blueRoundEvents: {
+        backgroundColor: '#1976D2',
+        // The right pair's widened values have a midpoint 3px below center.
+        transform: [{ translateY: 3 }],
+    },
     plusMinusSlot: {
             flex: 1,
             width: '100%',
@@ -865,18 +985,18 @@ const styles = StyleSheet.create({
     rightRoundScore: {
         color: '#1976D2',
     },
-    roundEvents: {
-        position: 'absolute',
-        left: '2.5%',
-        right: 0,
-        top: '26.5%',
-        height: '6.25%',
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#D32F2F',
-        width: '88.5%',
-        paddingHorizontal: 6,
-    },
+    // roundEvents: {
+    //     position: 'absolute',
+    //     left: '2.5%',
+    //     right: 0,
+    //     top: '26.5%',
+    //     height: '6.25%',
+    //     justifyContent: 'center',
+    //     alignItems: 'center',
+    //     backgroundColor: '#D32F2F',
+    //     width: '88.5%',
+    //     paddingHorizontal: 6,
+    // },
     roundEvents2: {
         position: 'absolute',
         left: '2.5%',
@@ -917,16 +1037,13 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         flexDirection: 'column',
         alignItems: 'center',
-        // justifyContent: 'space-between',
         gap:0,
         height: '99%',
         marginBottom: 4.5,
-        // marginHorizontal: '.5%',
-        // marginRight: '0.5%',
         borderWidth: 1,
+        borderRightWidth: 0,
         borderColor: 'rgba(200, 200, 200, 0.7)',
         borderRadius: 15,
-        // paddingVertical: 2,
         overflow: 'hidden',
         boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
         width: '94%',

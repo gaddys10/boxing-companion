@@ -432,11 +432,11 @@ export default function MatchInfoScreen() {
                 {/* Total, round, +/- header  */}
                 {isLandscape ? (
                     <View style={styles.landscapeHeaderRow}>
-                        <Text numberOfLines={1} style={[styles.landscapeHeaderText, styles.landscapeLeftHeader]}>Total</Text>
-                        <Text style={[styles.landscapeHeaderText, styles.landscapeLeftHeader]}>Round</Text>
+                        <Text numberOfLines={1} style={[styles.landscapeHeaderText, styles.landscapeLeftHeader, styles.landscapeHeaderOuterTop]}>Total</Text>
+                        <Text style={[styles.landscapeHeaderText, styles.landscapeLeftHeader, styles.landscapeHeaderInnerTop]}>Round</Text>
                         <Text style={styles.landscapeHeaderText}>+/-</Text>
-                        <Text style={[styles.landscapeHeaderText, styles.landscapeRightHeader]}>Round</Text>
-                        <Text style={[styles.landscapeHeaderText, styles.landscapeRightHeader]}>Total</Text>
+                        <Text style={[styles.landscapeHeaderText, styles.landscapeRightHeader, styles.landscapeHeaderInnerBottom]}>Round</Text>
+                        <Text style={[styles.landscapeHeaderText, styles.landscapeRightHeader, styles.landscapeHeaderOuterBottom]}>Total</Text>
                     </View>
                 ) : (
                     <View style={[styles.headerRow, { paddingHorizontal: Math.max(0, horizontalGutter - 15) }]}>
@@ -974,6 +974,18 @@ const styles = StyleSheet.create({
         color: '#333',
         fontSize: 12,
         fontWeight: '600',
+    },
+    landscapeHeaderOuterTop: {
+        transform: [{ translateY: -4 }],
+    },
+    landscapeHeaderInnerTop: {
+        transform: [{ translateY: -2 }],
+    },
+    landscapeHeaderInnerBottom: {
+        transform: [{ translateY: 2 }],
+    },
+    landscapeHeaderOuterBottom: {
+        transform: [{ translateY: 4 }],
     },
     landscapeLeftHeader: {
         color: '#D32F2F',

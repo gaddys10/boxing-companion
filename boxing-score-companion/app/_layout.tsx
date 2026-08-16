@@ -19,9 +19,7 @@ export default function RootLayout() {
   useEffect(() => {
     const orientationLock = pathname === '/roundScoring'
       ? ScreenOrientation.OrientationLock.LANDSCAPE
-      : pathname === '/'
-        ? ScreenOrientation.OrientationLock.PORTRAIT_UP
-        : ScreenOrientation.OrientationLock.DEFAULT;
+      : ScreenOrientation.OrientationLock.DEFAULT;
 
     // Native orientation changes are asynchronous. Queue them so a slower lock
     // from the previous route cannot finish after (and override) the current one.
