@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 const tIcon = require('../assets/images/flatwhitet.png');
@@ -262,10 +262,7 @@ export default function CreateMatch() {
     );
 
     return (
-        <KeyboardAvoidingView
-            style={styles.screen}
-            behavior={!isLandscape && Platform.OS === 'ios' ? 'padding' : undefined}
-        >
+        <View style={styles.screen}>
             <Stack.Screen options={{ headerShown: false }} />
             <StatusBar style="light" />
             <View
@@ -587,7 +584,7 @@ export default function CreateMatch() {
                     </View>
                 </View>
             </Modal>
-        </KeyboardAvoidingView>
+        </View>
     );
 }
 
