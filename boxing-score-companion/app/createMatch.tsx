@@ -358,7 +358,7 @@ export default function CreateMatch() {
                         ))}
                     </View>
                     <View style={styles.weightColumnCenter}>
-                        {[105, 115, 127, 140, 160, 200].map((weight) => (
+                        {[105, 115, 126, 140, 160, 200].map((weight) => (
                             <Pressable
                                 key={weight}
                                 style={[
