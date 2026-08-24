@@ -15,6 +15,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
+          orientation: 'default',
         }}
       />
       <Stack.Screen

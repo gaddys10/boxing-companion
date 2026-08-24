@@ -90,6 +90,24 @@ export default function RoundRow({
         setQuickScoringVisible(true);
     };
 
+    const openFullScoring = async () => {
+        closeScoringModal();
+
+        router.push({
+            pathname: '/roundScoring',
+            params: {
+                roundNumber: String(roundNumber),
+                fighter1,
+                fighter2,
+                rounds,
+                id,
+                savedScores,
+                gender,
+                weight
+            },
+        });
+    };
+
     const closeScoringModal = () => {
         setScoringModalVisible(false);
         setQuickScoringVisible(false);
@@ -251,6 +269,12 @@ export default function RoundRow({
                 animationType="fade"
                 transparent
                 visible={scoringModalVisible}
+                supportedOrientations={[
+                    'portrait',
+                    'landscape',
+                    'landscape-left',
+                    'landscape-right',
+                ]}
                 onRequestClose={closeScoringModal}
             >
                 <View style={styles.modalOverlay}>
@@ -264,22 +288,23 @@ export default function RoundRow({
                                 <Text style={[styles.modalText, {textAlign: 'center'}]}>Score the round in just a few taps!</Text>
                                 <Pressable 
                                     style={styles.fullScoring}
-                                    onPress={() => {
-                                        closeScoringModal();
-                                        router.push({
-                                            pathname: '/roundScoring',
-                                            params: {
-                                                roundNumber: String(roundNumber),
-                                                fighter1,
-                                                fighter2,
-                                                rounds,
-                                                id,
-                                                savedScores,
-                                                gender,
-                                                weight
-                                            },
-                                        });
-                                    }}
+                                    // onPress={() => {
+                                    //     closeScoringModal();
+                                    //     router.push({
+                                    //         pathname: '/roundScoring',
+                                    //         params: {
+                                    //             roundNumber: String(roundNumber),
+                                    //             fighter1,
+                                    //             fighter2,
+                                    //             rounds,
+                                    //             id,
+                                    //             savedScores,
+                                    //             gender,
+                                    //             weight
+                                    //         },
+                                    //     });
+                                    // }}
+                                    onPress={openFullScoring}
                                 >
                                     <Text style={styles.quickScoringText}>Full Scoring</Text>
                                 </Pressable>
