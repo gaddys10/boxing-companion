@@ -1,8 +1,10 @@
- import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useRouter } from 'expo-router';
+import type { MatchDescription, MatchRating } from '../../types/matchNotes';
+import { serializeMatchDescription } from '../../types/matchNotes';
 
 type SavedCardProps = {
   id: number;
@@ -16,6 +18,8 @@ type SavedCardProps = {
   fighter2Pen: number;
   rounds: number;
   savedScores?: string;
+  rating?: MatchRating;
+  description?: MatchDescription;
   onDelete: (id: number) => void;
   scrollY?: number;
   viewportHeight?: number;
@@ -23,7 +27,7 @@ type SavedCardProps = {
   gender?: "idk" | "mens" | "womens";
 }
 
-export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, savedScores, weight, gender, onDelete, scrollY = 0, viewportHeight = 0}: SavedCardProps) {
+export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, savedScores, rating, description, weight, gender, onDelete, scrollY = 0, viewportHeight = 0}: SavedCardProps) {
   const router = useRouter();
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [cardLayout, setCardLayout] = useState<{ y: number; height: number } | null>(null);
@@ -50,6 +54,8 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
           fighter2Pen,
           rounds,
           savedScores,
+          rating,
+          description: serializeMatchDescription(description ?? []),
           gender,
           weight
       }
@@ -179,23 +185,28 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
           </View>
 
           <View style={styles.actionsBox}>
-            <Pressable style={styles.actionButtonTop} onPress={handleEditCard}>
-              {/* <Ionicons name="pencil" size={16} color="#333A3F" style={styles.editButtonIcon} /> */}
-              {/* <MaterialCommunityIcons name="pencil" size={16} color="#333A3F" style={styles.editButtonIcon}/> */}
-              <View style={styles.eventTextBoxTop}>
-                <Text style={styles.actionButtonText}>Edit</Text>
-              </View>
+
+            <Pressable
+              style={styles.actionButtonTop}
+              onPress={handleEditCard}
+              accessibilityRole="button"
+              accessibilityLabel="Edit scorecard"
+            >
+              <Ionicons name="pencil-outline" size={20} color="#333A3F" />
             </Pressable>
-            <Pressable style={styles.actionButton} onPress={() => setDeleteModalVisible(true)}>
-              {/* <Ionicons name="close" size={20} color="#d32f2f" /> */}
-              <View style={styles.eventTextBox}>
-                <Text style={[styles.actionButtonText, styles.deleteActionText]}>Delete</Text>
-              </View>
+
+            <Pressable
+              style={styles.actionButton}
+              onPress={() => setDeleteModalVisible(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Delete scorecard"
+            >
+              <Ionicons name="trash-outline" size={20} color="#d32f2f" />
             </Pressable>
+
           </View>
       </Pressable>
       </Animated.View>
-
       <Modal
         animationType="fade"
         transparent
@@ -299,7 +310,7 @@ const styles = StyleSheet.create({
   //   flexDirection:
   // },
   savedCardInfoRows: {
-    width: '66%',
+    width: '71%',
     height: '100%',
   },
 
@@ -315,7 +326,7 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 0,
+    paddingTop: '1%',
     borderBottomColor: '#8c8c8c',
     borderBottomWidth: .5,
   },
@@ -325,7 +336,7 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 0,
+    paddingTop: '1%',
   },
 
   eventBox1: {
@@ -337,6 +348,8 @@ const styles = StyleSheet.create({
   eventBox2: {
     height: '100%',
     width: '18%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   knockdowns1: {
     color: '#D32f2f',
@@ -350,7 +363,6 @@ const styles = StyleSheet.create({
     color: '#d32f2f',
     position: 'absolute',
         fontSize: 12,
-
     left: 3,
     top: 24,
   },
@@ -421,7 +433,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: -7,
+    // marginLeft: -7,
     marginRight: 0,
   },
   roundBox: {

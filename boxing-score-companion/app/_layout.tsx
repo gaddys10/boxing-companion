@@ -1,4 +1,4 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router/react-navigation';
 import { Stack, usePathname } from 'expo-router';
 import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -31,7 +31,8 @@ export default function RootLayout() {
         <Stack screenOptions={{ gestureEnabled: false, fullScreenGestureEnabled: false }}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="createMatch" options={{ animationTypeForReplace: 'pop', orientation: 'default', }} />
-          <Stack.Screen name="matchInfo" options={{ animationTypeForReplace: 'push', orientation: 'default', }} />
+          <Stack.Screen name="matchInfo" options={{ animationTypeForReplace: 'pop', orientation: 'default', }} />
+          <Stack.Screen name="matchNotes" options={{ animationTypeForReplace: 'push', orientation: 'default', }} />
           <Stack.Screen name="modal" options={{ presentation: 'modal',  title: 'Modal' }} />
           <Stack.Screen name="roundScoring" options={{headerShown: false, orientation: 'default', animation: 'fade', animationDuration: 200}}/>
         </Stack>

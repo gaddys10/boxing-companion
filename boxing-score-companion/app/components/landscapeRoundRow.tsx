@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, Modal } from 'react-native';
 import { router } from 'expo-router';
+import * as ScreenOrientation from 'expo-screen-orientation';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Ionicons, MaterialCommunityIcons} from '@expo/vector-icons';
@@ -30,6 +31,8 @@ type RoundRowProps = {
     savedScores: string;
     gender?: "idk" | "mens" | "womens";
     weight: number | "200+";
+    rating: number;
+    description: string;
     stoppageReason?: 'KO' | 'TKO' | 'DQ' | 'NC';
     stoppageWinner?: string;
     onClearRound: (roundNumber: number) => void;
@@ -66,6 +69,8 @@ export default function LandscapeRoundRow({
     savedScores,
     gender,
     weight,
+    rating,
+    description,
     stoppageReason,
     stoppageWinner,
     onClearRound,
@@ -78,6 +83,7 @@ export default function LandscapeRoundRow({
     const plusMinusNumber = plusMinus && plusMinus !== '-' ? Number(plusMinus) : null;
     const [scoringModalVisible, setScoringModalVisible] = useState(false);
     const [quickScoringVisible, setQuickScoringVisible] = useState(false);
+    const [orientationChoiceVisible, setOrientationChoiceVisible] = useState(false);
     const [stoppageModalVisible, setStoppageModalVisible] = useState(false);
     const [selectedStoppageWinner, setSelectedStoppageWinner] = useState<string | undefined>(stoppageWinner);
     const [quickLeftScore, setQuickLeftScore] = useState(10);
@@ -100,6 +106,33 @@ export default function LandscapeRoundRow({
     const closeScoringModal = () => {
         setScoringModalVisible(false);
         setQuickScoringVisible(false);
+        setOrientationChoiceVisible(false);
+    };
+
+    const startFullScoring = async (orientationLock: ScreenOrientation.OrientationLock) => {
+        closeScoringModal();
+
+        try {
+            await ScreenOrientation.lockAsync(orientationLock);
+        } catch {
+            // Orientation locking may be unavailable on some devices; scoring can still continue.
+        }
+
+        router.push({
+            pathname: '/roundScoring',
+            params: {
+                roundNumber: String(roundNumber),
+                fighter1,
+                fighter2,
+                rounds,
+                id,
+                savedScores,
+                gender,
+                weight,
+                rating,
+                description,
+            },
+        });
     };
 
     const saveQuickScore = () => {
@@ -341,7 +374,38 @@ export default function LandscapeRoundRow({
             >
                 <View style={styles.modalOverlay}>
                     <View style={styles.scoringModal}>
-                        {!quickScoringVisible ? (
+                        {orientationChoiceVisible ? (
+                            <>
+                                <Text style={styles.landscapeQuickModalTitle}>Choose Orientation</Text>
+                                <Text style={styles.orientationPrompt}>How would you like to score this round?</Text>
+                                <View style={styles.methodRow}>
+                                    <Pressable
+                                        accessibilityRole="button"
+                                        accessibilityLabel="Score in portrait mode"
+                                        style={styles.orientationButton}
+                                        onPress={() => startFullScoring(ScreenOrientation.OrientationLock.PORTRAIT_UP)}
+                                    >
+                                        <Text style={styles.orientationButtonText}>Portrait</Text>
+                                    </Pressable>
+                                    <Pressable
+                                        accessibilityRole="button"
+                                        accessibilityLabel="Score in landscape mode"
+                                        style={styles.orientationButton}
+                                        onPress={() => startFullScoring(ScreenOrientation.OrientationLock.LANDSCAPE)}
+                                    >
+                                        <Text style={styles.orientationButtonText}>Landscape</Text>
+                                    </Pressable>
+                                </View>
+                                <Pressable
+                                    accessibilityRole="button"
+                                    accessibilityLabel="Back to scoring method selection"
+                                    style={[styles.modalButton, styles.cancelButton]}
+                                    onPress={() => setOrientationChoiceVisible(false)}
+                                >
+                                    <Text style={styles.cancelButtonText}>Back</Text>
+                                </Pressable>
+                            </>
+                        ) : !quickScoringVisible ? (
                             <>
                                 <Text style={styles.landscapeQuickModalTitle}>Select Scoring Method</Text>
                                 <View style={styles.methodRow}>
@@ -354,22 +418,7 @@ export default function LandscapeRoundRow({
                                     <View style={styles.methodOption}>
                                         <Pressable
                                             style={styles.scoringButton}
-                                            onPress={() => {
-                                                closeScoringModal();
-                                                router.push({
-                                                    pathname: '/roundScoring',
-                                                    params: {
-                                                        roundNumber: String(roundNumber),
-                                                        fighter1,
-                                                        fighter2,
-                                                        rounds,
-                                                        id,
-                                                        savedScores,
-                                                        gender,
-                                                        weight
-                                                    },
-                                                });
-                                            }}
+                                            onPress={() => setOrientationChoiceVisible(true)}
                                         >
                                             <Text style={styles.scoringButtonText}>Full Scoring</Text>
                                         </Pressable>
@@ -842,6 +891,31 @@ const styles = StyleSheet.create({
         fontSize: 12,
         marginTop: 8,
         textAlign: 'center',
+    },
+    orientationPrompt: {
+        color: '#333A3F',
+        fontSize: 15,
+        marginBottom: 18,
+        textAlign: 'center',
+    },
+    orientationButton: {
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        borderColor: 'rgba(200, 200, 200, 0.7)',
+        borderRadius: 12,
+        borderWidth: 1,
+        flex: 1,
+        justifyContent: 'center',
+        minHeight: 54,
+        shadowColor: '#11334b',
+        shadowOffset: { width: 2, height: 2 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1,
+    },
+    orientationButtonText: {
+        color: '#1976D2',
+        fontSize: 18,
+        fontWeight: '700',
     },
     modalTitle: {
         color: '#333A3F',
