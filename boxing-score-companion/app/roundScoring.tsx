@@ -286,11 +286,11 @@ export default function RoundScoringScreen() {
                         colors={['#f7e7a8', '#d7b55d', '#b78c35']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
-                        style={StyleSheet.absoluteFillObject}
+                        pointerEvents="none"
+                        style={StyleSheet.absoluteFill}
                     />
-                    <Animated.View style={[styles.fillOverlayTopLeft, { width: leftDeductUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
+                    <Animated.View pointerEvents="none" style={[styles.fillOverlayTopLeft, { width: leftDeductUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                     <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.78} style={isLandscape ? styles.leftEvents : styles.portraitUndoEvent}>Deductions: {leftDeductions}</Text>
-                    <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={isLandscape ? styles.leftDedUndo : styles.portraitUndoInstruction}>Hold to Undo</Text>
                 </Pressable>
 
                 {/* undo left knockdowns  */}
@@ -301,30 +301,29 @@ export default function RoundScoringScreen() {
                         handleScorePress('left');
                     }}
                     onPressIn={() => startLongPressFill(leftKDUndoProgress, 1000)}
-                    onPressOut={() => resetLongPressFill(leftKDUndoProgress)}
                     onLongPress={() => {
                         void confirmHaptic();
                         setScore((currentScore) => currentScore <= -70 ? currentScore = -99 : currentScore - 30);
                         setLeftKnockdowns((current) => current > 0 ? current - 1 : 0);
-                        {/* setScore((currentScore) => currentScore + 30);
-                        setRightKnockdowns((current) => current > 0 ? current - 1 : 0); */}
                         resetLongPressFill(leftKDUndoProgress);
                     }}
                     style={[
                         isLandscape ? styles.undoKDLeft : styles.portraitUndoRibbonLeft,
                         {
-                            top: isLandscape ? topControlTop : portraitKnockdownTop,
                             height: isLandscape ? undoHeight : portraitRibbonHeight,
+                            top: isLandscape ? topControlTop : portraitKnockdownTop,
                         },
                     ]}
-                    delayLongPress={950}>
+                    delayLongPress={950}
+                >
                         <LinearGradient
                             colors={['#f7e7a8', '#d7b55d', '#b78c35']}
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 1 }}
-                            style={StyleSheet.absoluteFillObject}
+                            pointerEvents="none"
+                            style={StyleSheet.absoluteFill}
                         />
-                        <Animated.View style={[styles.fillOverlayTopLeft, { width: leftKDUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
+                        <Animated.View pointerEvents="none" style={[styles.fillOverlayTopLeft, { width: leftKDUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                         <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72} style={isLandscape ? styles.leftEvents2 : styles.portraitUndoEvent}>Knockdowns: {leftKnockdowns}</Text>
                         <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={isLandscape ? styles.leftKdUndo : styles.portraitUndoInstruction}>Hold to Undo</Text>
                 </Pressable>
@@ -377,9 +376,10 @@ export default function RoundScoringScreen() {
                         colors={['#f7e7a8', '#d7b55d', '#b78c35']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
-                        style={StyleSheet.absoluteFillObject}
+                        pointerEvents="none"
+                        style={StyleSheet.absoluteFill}
                     />
-                    <Animated.View style={[styles.fillOverlayLeft, { width: leftDeductProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
+                    <Animated.View pointerEvents="none" style={[styles.fillOverlayLeft, { width: leftDeductProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                     {isLandscape ? (
                         <Text
                             numberOfLines={1}
@@ -421,9 +421,10 @@ export default function RoundScoringScreen() {
                         colors={['#f7e7a8', '#d7b55d', '#b78c35']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
-                        style={StyleSheet.absoluteFillObject}
+                        pointerEvents="none"
+                        style={StyleSheet.absoluteFill}
                     />
-                    <Animated.View style={[styles.fillOverlay, { width: leftKdProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
+                    <Animated.View pointerEvents="none" style={[styles.fillOverlay, { width: leftKdProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                     <Text
                         numberOfLines={isLandscape ? 1 : 2}
                         adjustsFontSizeToFit={isLandscape}
@@ -442,7 +443,7 @@ export default function RoundScoringScreen() {
             }}>
                 <Image
                     source={require('../assets/images/bg2.png')}
-                    style={[StyleSheet.absoluteFillObject, styles.rightAreaImage, { opacity: 0.8 }]}
+                    style={[StyleSheet.absoluteFill, styles.rightAreaImage, { opacity: 0.8 }]}
                     resizeMode="cover"
                 />
 
@@ -473,9 +474,10 @@ export default function RoundScoringScreen() {
                             colors={['#f7e7a8', '#d7b55d', '#b78c35']}
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 1 }}
-                            style={StyleSheet.absoluteFillObject}
+                            pointerEvents="none"
+                            style={StyleSheet.absoluteFill}
                         />
-                        <Animated.View style={[styles.fillOverlayTopLeft, { width: rightKDUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
+                        <Animated.View pointerEvents="none" style={[styles.fillOverlayTopLeft, { width: rightKDUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                         <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72} style={isLandscape ? styles.rightEvents2 : styles.portraitUndoEvent}>Knockdowns: {rightKnockdowns}</Text>
                         <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={isLandscape ? styles.rightKdUndo : styles.portraitUndoInstruction}>Hold to Undo</Text>
                 </Pressable>
@@ -511,9 +513,10 @@ export default function RoundScoringScreen() {
                         colors={['#f7e7a8', '#d7b55d', '#b78c35']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
-                        style={StyleSheet.absoluteFillObject}
+                        pointerEvents="none"
+                        style={StyleSheet.absoluteFill}
                     />
-                    <Animated.View style={[styles.fillOverlayTopLeft, { width: rightDeductUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '150%'] }) }]} />
+                    <Animated.View pointerEvents="none" style={[styles.fillOverlayTopLeft, { width: rightDeductUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '150%'] }) }]} />
                     <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.78} style={isLandscape ? styles.rightDedEvents : styles.portraitUndoEvent}>Deductions: {rightDeductions}</Text>
                     <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={isLandscape ? styles.leftDedUndo : styles.portraitUndoInstruction}>Hold to Undo</Text>
                 </Pressable>
@@ -562,9 +565,10 @@ export default function RoundScoringScreen() {
                         colors={['#f7e7a8', '#d7b55d', '#b78c35']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
-                        style={StyleSheet.absoluteFillObject}
+                        pointerEvents="none"
+                        style={StyleSheet.absoluteFill}
                     />
-                    <Animated.View style={[styles.fillOverlay, { width: rightKdProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
+                    <Animated.View pointerEvents="none" style={[styles.fillOverlay, { width: rightKdProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                     <Text
                         numberOfLines={isLandscape ? 1 : 2}
                         adjustsFontSizeToFit={isLandscape}
@@ -598,9 +602,10 @@ export default function RoundScoringScreen() {
                         colors={['#f7e7a8', '#d7b55d', '#b78c35']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
-                        style={StyleSheet.absoluteFillObject}
+                        pointerEvents="none"
+                        style={StyleSheet.absoluteFill}
                     />
-                    <Animated.View style={[styles.fillOverlay, { width: rightDeductProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '105%'] }) }]} />
+                    <Animated.View pointerEvents="none" style={[styles.fillOverlay, { width: rightDeductProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '105%'] }) }]} />
                     {isLandscape ? (
                         <Text
                             numberOfLines={1}
@@ -649,6 +654,7 @@ export default function RoundScoringScreen() {
                 colors={['#f7e7a8', '#d7b55d', '#b78c35']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
+                pointerEvents="none"
                 style={{
                     flex: 1,
                     width: '100%',
@@ -657,6 +663,7 @@ export default function RoundScoringScreen() {
                 }}
             >
             <Animated.View
+                pointerEvents="none"
                 style={{
                     position: 'absolute',
                     left: 0,
@@ -711,9 +718,10 @@ export default function RoundScoringScreen() {
                     colors={['#f7e7a8', '#d7b55d', '#b78c35']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
-                    style={StyleSheet.absoluteFillObject}
+                    pointerEvents="none"
+                    style={StyleSheet.absoluteFill}
                 />
-                <Animated.View style={[styles.fillOverlay, { width: stoppageProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
+                <Animated.View pointerEvents="none" style={[styles.fillOverlay, { width: stoppageProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                 {isLandscape ? 
                     <Text
                         numberOfLines={1}
@@ -757,6 +765,13 @@ export default function RoundScoringScreen() {
                                             setSelectedStoppageWinner(undefined);
                                         }}
                                     >
+                                        <LinearGradient
+                                            colors={stoppageReason === option ? ['#5aa7df', '#1976D2'] : ['#f7e7a8', '#d7b55d', '#b78c35']}
+                                            start={{ x: 0, y: 0 }}
+                                            end={{ x: 1, y: 1 }}
+                                            pointerEvents="none"
+                                            style={StyleSheet.absoluteFill}
+                                        />
                                         <Text style={[styles.stoppageOptionText, stoppageReason === option && styles.selectedStoppageOptionText]}>{option}</Text>
                                     </Pressable>
                                 ))}
@@ -772,6 +787,13 @@ export default function RoundScoringScreen() {
                                             style={[styles.stoppageWinnerOption, selectedStoppageWinner === fighter && styles.selectedStoppageOption]}
                                             onPress={() => setSelectedStoppageWinner(fighter)}
                                         >
+                                            <LinearGradient
+                                                colors={selectedStoppageWinner === fighter ? ['#5aa7df', '#1976D2'] : ['#f7e7a8', '#d7b55d', '#b78c35']}
+                                                start={{ x: 0, y: 0 }}
+                                                end={{ x: 1, y: 1 }}
+                                                pointerEvents="none"
+                                                style={StyleSheet.absoluteFill}
+                                            />
                                             <Text style={[styles.stoppageWinnerText, selectedStoppageWinner === fighter && styles.selectedStoppageOptionText]}>{fighter}</Text>
                                         </Pressable>
                                     ))}
@@ -780,9 +802,23 @@ export default function RoundScoringScreen() {
                         )}
                         <View style={styles.stoppageModalActions}>
                             <Pressable style={[styles.stoppageModalButton, styles.stoppageCancelButton]} onPress={() => setStoppageModalVisible(false)}>
+                                <LinearGradient
+                                    colors={['#ef6b6b', '#d32f2f']}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 1 }}
+                                    pointerEvents="none"
+                                    style={styles.modalButtonGradient}
+                                />
                                 <Text style={styles.stoppageCancelButtonText}>Cancel</Text>
                             </Pressable>
                             <Pressable style={[styles.stoppageModalButton, styles.stoppageConfirmButton]} onPress={saveStoppageAndExit}>
+                                <LinearGradient
+                                    colors={['#f7e7a8', '#d7b55d', '#b78c35']}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 1 }}
+                                    pointerEvents="none"
+                                    style={styles.modalButtonGradient}
+                                />
                                 <Text style={styles.stoppageConfirmButtonText}>Confirm</Text>
                             </Pressable>
                         </View>
@@ -805,9 +841,23 @@ export default function RoundScoringScreen() {
                         </Text>
                         <View style={styles.modalActions}>
                             <Pressable style={[styles.modalButton, styles.keepTenNineButton]} onPress={() => saveRoundAndExit(false)}>
+                                <LinearGradient
+                                    colors={['#f7e7a8', '#d7b55d', '#b78c35']}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 1 }}
+                                    pointerEvents="none"
+                                    style={styles.modalButtonGradient}
+                                />
                                 <Text style={styles.keepTenNineButtonText}>No, keep 10–9</Text>
                             </Pressable>
                             <Pressable style={[styles.modalButton, styles.makeTenEightButton]} onPress={() => saveRoundAndExit(true)}>
+                                <LinearGradient
+                                    colors={['#ef6b6b', '#d32f2f']}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 1 }}
+                                    pointerEvents="none"
+                                    style={styles.modalButtonGradient}
+                                />
                                 <Text style={styles.makeTenEightButtonText}>Yes, make it 10–8</Text>
                             </Pressable>
                         </View>
@@ -868,6 +918,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         paddingHorizontal: 12,
+        overflow: 'hidden',
+    },
+    modalButtonGradient: {
+        ...StyleSheet.absoluteFill,
+        borderRadius: 10,
     },
     keepTenNineButton: {
         backgroundColor: '#EEF1F3',
@@ -1234,18 +1289,18 @@ const styles = StyleSheet.create({
     stoppageWinnerOptions: { flexDirection: 'row', gap: 15, justifyContent: 'center' },
     stoppageOption: {
         alignItems: 'center', backgroundColor: '#EEF1F3', borderRadius: 10, paddingHorizontal: 16,
-        paddingVertical: 8, borderWidth: 1, width: '20%', borderColor: 'rgba(200, 200, 200, 0.7)', justifyContent: 'center',
+        paddingVertical: 8, borderWidth: 1, width: '20%', borderColor: 'rgba(200, 200, 200, 0.7)', justifyContent: 'center', overflow: 'hidden',
     },
     stoppageWinnerOption: {
         alignItems: 'center', backgroundColor: '#EEF1F3', borderRadius: 10, paddingHorizontal: 16,
-        paddingVertical: 8, borderWidth: 1, width: '41%', borderColor: 'rgba(200, 200, 200, 0.7)', justifyContent: 'center',
+        paddingVertical: 8, borderWidth: 1, width: '41%', borderColor: 'rgba(200, 200, 200, 0.7)', justifyContent: 'center', overflow: 'hidden',
     },
     selectedStoppageOption: { backgroundColor: '#1976D2' },
     stoppageOptionText: { color: '#333A3F', fontSize: 16, fontWeight: '700' },
     selectedStoppageOptionText: { color: '#fff' },
     stoppageWinnerText: { color: '#333A3F', fontSize: 16, fontWeight: '700', width: '100%', textAlign: 'center' },
     stoppageModalActions: { flexDirection: 'row', justifyContent: 'space-around', marginTop: '10%', gap: 10 },
-    stoppageModalButton: { minWidth: 88, paddingVertical: 8, borderRadius: 8, alignItems: 'center' },
+    stoppageModalButton: { minWidth: 88, paddingVertical: 8, borderRadius: 8, alignItems: 'center', overflow: 'hidden' },
     stoppageCancelButton: {
         backgroundColor: '#d32f2f', shadowColor: '#11334b', shadowOffset: { width: 2, height: 2 },
         shadowOpacity: 0.4, shadowRadius: 1, borderWidth: 1, borderColor: 'rgba(200, 200, 200, 0.7)',
@@ -1417,13 +1472,13 @@ const styles = StyleSheet.create({
     },
 
     fillOverlay: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
         backgroundColor: 'black',
         opacity: 0.35,
         zIndex: 0
     },
     fillOverlayLeft: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
         backgroundColor: 'black',
         opacity: 0.35,
         borderTopRightRadius: 10,
@@ -1431,7 +1486,7 @@ const styles = StyleSheet.create({
 
     },
     fillOverlayTopLeft: {
-        ...StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFill,
         backgroundColor: 'black',
         opacity: 0.35,
         borderBottomLeftRadius: 15,
