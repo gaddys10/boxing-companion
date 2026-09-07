@@ -4,6 +4,7 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import LandscapeRoundRow from './components/landscapeRoundRow';
 import RoundRow from './components/roundRow';
 import { useResponsiveLayout } from '../hooks/use-responsive-layout';
+import { normalizeMatchRating, parseMatchDescription, serializeMatchDescription } from '../types/matchNotes';
 
 export default function MatchInfoScreen() {
     const router = useRouter();
@@ -25,8 +26,14 @@ export default function MatchInfoScreen() {
         savedStoppageReason,
         savedStoppageWinner,
         gender,
-        weight
+        weight,
+        rating,
+        description,
     } = useLocalSearchParams();
+
+    const matchRating = normalizeMatchRating(rating);
+    const matchDescription = parseMatchDescription(description);
+    const serializedDescription = serializeMatchDescription(matchDescription);
 
     const genderParam = Array.isArray(gender) ? gender[0] : gender;
 
@@ -242,6 +249,8 @@ export default function MatchInfoScreen() {
                     ...scorecardTotals,
                     fighter1Score: fighter1LatestTotal,
                     fighter2Score: fighter2LatestTotal,
+                    rating: matchRating,
+                    description: matchDescription,
                 }),
             },
         });
@@ -262,6 +271,29 @@ export default function MatchInfoScreen() {
                 savedScores: JSON.stringify(getSavedScores()),
                 gender: normalizedGender,
                 weight: normalizedWeight,
+                rating: matchRating,
+                description: serializedDescription,
+            },
+        });
+    };
+
+    const handleNotes = () => {
+        router.replace({
+            pathname: '/matchNotes',
+            params: {
+                id: id ? String(id) : undefined,
+                title: 'Edit Scorecard Details',
+                backText: 'Menu',
+                buttonText: 'Continue',
+                isEdit: 'true',
+                fighter1: String(fighter1 || 'Fighter 1'),
+                fighter2: String(fighter2 || 'Fighter 2'),
+                rounds: Number(rounds || 3),
+                savedScores: JSON.stringify(getSavedScores()),
+                gender: normalizedGender,
+                weight: normalizedWeight,
+                rating: matchRating,
+                description: serializedDescription,
             },
         });
     };
@@ -495,6 +527,8 @@ export default function MatchInfoScreen() {
                                     savedScores={JSON.stringify(roundScores)}
                                     gender={normalizedGender}
                                     weight={normalizedWeight}   
+                                    rating={matchRating}
+                                    description={serializedDescription}
                                     onClearRound={handleClearRound}
                                     onSaveRound={handleSaveRound}
                                     onMarkStoppage={handleMarkStoppage}
@@ -551,6 +585,8 @@ export default function MatchInfoScreen() {
                                         savedScores={JSON.stringify(roundScores)}
                                         gender={normalizedGender}
                                         weight={normalizedWeight}  
+                                        rating={matchRating}
+                                        description={serializedDescription}
                                         onClearRound={handleClearRound}
                                         onSaveRound={handleSaveRound}
                                         onMarkStoppage={handleMarkStoppage}
@@ -587,7 +623,7 @@ export default function MatchInfoScreen() {
                         </Pressable>
                         <Pressable
                             style={isLandscape ? styles.landscapeButton : styles.shareButton}
-                            onPress={handleCardDetails}
+                            onPress={handleNotes}
                         >
                             <Text style={isLandscape ? styles.landscapeButtonText : styles.shareButtonText}>
                                 Notes

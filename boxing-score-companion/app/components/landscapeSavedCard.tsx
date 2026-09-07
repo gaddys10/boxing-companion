@@ -2,6 +2,8 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Modal, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import type { MatchDescription, MatchRating } from '../../types/matchNotes';
+import { serializeMatchDescription } from '../../types/matchNotes';
 
 
 type SavedCardProps = {
@@ -18,10 +20,12 @@ type SavedCardProps = {
     gender?: "idk" | "mens" | "womens";
     weight?: number | "200+";
     savedScores?: string;
+    rating?: MatchRating;
+    description?: MatchDescription;
     onDelete: (id: number) => void;
 }
 
-export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, gender, weight, savedScores, onDelete}: SavedCardProps) {
+export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, gender, weight, savedScores, rating, description, onDelete}: SavedCardProps) {
     const router = useRouter();
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const displayedFighter1Score = fighter1Score === '' || fighter1Score === '-' || fighter1Score == null ? 0 : fighter1Score;
@@ -50,6 +54,8 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
             gender,
             weight,
             savedScores,
+            rating,
+            description: serializeMatchDescription(description ?? []),
         }
         });
     };
@@ -147,13 +153,21 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
 
                     {/* Action Row -- Row 5  */}
                     <View style={styles.savedCardActionRow}>
-                        <Pressable style={styles.actionButton} onPress={handleEditCard}>
-                            {/* <Ionicons name="pencil" size={17} color="#333A3F" /> */}
-                            <Text style={styles.actionButtonText}>Edit</Text>
+                        <Pressable
+                            style={styles.actionButton}
+                            onPress={handleEditCard}
+                            accessibilityRole="button"
+                            accessibilityLabel="Edit scorecard"
+                        >
+                            <Ionicons name="pencil-outline" size={17} color="#333A3F" />
                         </Pressable>
-                        <Pressable style={[styles.actionButton, styles.deleteActionButton]} onPress={() => setDeleteModalVisible(true)}>
-                            {/* <Ionicons name="close" size={20} color="#d32f2f" /> */}
-                            <Text style={[styles.actionButtonText, styles.deleteActionText]}>Delete</Text>
+                        <Pressable
+                            style={[styles.actionButton, styles.deleteActionButton]}
+                            onPress={() => setDeleteModalVisible(true)}
+                            accessibilityRole="button"
+                            accessibilityLabel="Delete scorecard"
+                        >
+                            <Ionicons name="trash-outline" size={17} color="#d32f2f" />
                         </Pressable>
                     </View>
                     </View>

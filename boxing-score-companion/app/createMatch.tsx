@@ -4,6 +4,7 @@ import React, { useRef, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useResponsiveLayout } from '../hooks/use-responsive-layout';
+import { normalizeMatchRating, parseMatchDescription, serializeMatchDescription } from '../types/matchNotes';
 const tIcon = require('../assets/images/flatwhitet.png');
 
 
@@ -79,7 +80,9 @@ export default function CreateMatch() {
                 rounds: selectedRounds,
                 savedScores: params.savedScores,
                 gender: selectedGender,
-                weight: selectedWeight
+                weight: selectedWeight,
+                rating: normalizeMatchRating(params.rating),
+                description: serializeMatchDescription(parseMatchDescription(params.description)),
             },
         });
     };
@@ -187,6 +190,8 @@ export default function CreateMatch() {
                     gender: selectedGender,
                     weight: selectedWeight,
                     ...getSavedCardTotals(savedScores),
+                    rating: normalizeMatchRating(params.rating),
+                    description: parseMatchDescription(params.description),
                 }),
             },
         });

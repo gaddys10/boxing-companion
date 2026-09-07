@@ -8,6 +8,7 @@ import LandscapeSavedCard from '../components/landscapeSavedCard';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useResponsiveLayout } from '../../hooks/use-responsive-layout';
+import type { MatchDescription, MatchRating } from '../../types/matchNotes';
 const tIcon = require('../../assets/images/flatwhitet.png');
 
 const SAVED_CARDS_KEY = 'savedScorecards';
@@ -26,6 +27,8 @@ type Scorecard = {
   gender?: "idk" | "mens" | "womens";
   weight?: number | "200+";
   savedScores?: string;
+  rating?: MatchRating;
+  description?: MatchDescription;
 };
 
 export default function HomeScreen() {
@@ -210,6 +213,8 @@ export default function HomeScreen() {
                 gender={card.gender}
                 weight={card.weight}
                 savedScores={card.savedScores}
+                rating={card.rating}
+                description={card.description}
                 onDelete={handleDeleteCard}
               />
             ))}
@@ -241,6 +246,8 @@ export default function HomeScreen() {
                 gender={card.gender}
                 weight={card.weight}
                 savedScores={card.savedScores}
+                rating={card.rating}
+                description={card.description}
                 onDelete={handleDeleteCard}
                 scrollY={scrollY}
                 viewportHeight={scrollViewportHeight}
