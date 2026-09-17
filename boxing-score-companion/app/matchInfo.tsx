@@ -298,6 +298,27 @@ export default function MatchInfoScreen() {
         });
     };
 
+    const handleShare = () => {
+        router.replace({
+            pathname: '/exportCard',
+            params: {
+                id: id ? String(id) : undefined,
+                title: 'Edit Scorecard Details',
+                backText: 'Menu',
+                buttonText: 'Continue',
+                isEdit: 'true',
+                fighter1: String(fighter1 || 'Fighter 1'),
+                fighter2: String(fighter2 || 'Fighter 2'),
+                rounds: Number(rounds || 3),
+                savedScores: JSON.stringify(getSavedScores()),
+                gender: normalizedGender,
+                weight: normalizedWeight,
+                rating: matchRating,
+                description: serializedDescription,
+            },
+        });
+    };
+
     const handleClearRound = (roundNumber: number) => {
         setRoundScores((currentScores) => {
             const nextScores = { ...currentScores };
@@ -631,7 +652,7 @@ export default function MatchInfoScreen() {
                         </Pressable>
                         <Pressable
                             style={isLandscape ? styles.landscapeButton : styles.shareButton}
-                            onPress={handleCardDetails}
+                            onPress={handleShare}
                         >
                             <Text style={isLandscape ? styles.landscapeButtonText : styles.shareButtonText}>
                                 Share
