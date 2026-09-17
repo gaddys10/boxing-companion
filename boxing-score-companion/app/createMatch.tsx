@@ -68,6 +68,9 @@ export default function CreateMatch() {
     const stableLandscapeHeight = landscapeHeightRef.current || height;
     const id = params.id ? String(params.id) : undefined;
     const landscapeInputHeight = Math.max(36, Math.min(56, stableLandscapeHeight * 0.05));
+    const roundButtonSize = Math.max(32, Math.min(40, 32 * sx));
+    const genderPillHeight = Math.max(36, Math.min(48, 36 * sy));
+    const weightPillHeight = Math.max(32, Math.min(40, 36 * sy));
 
 
     const handleStartFight = () => {
@@ -206,6 +209,9 @@ export default function CreateMatch() {
                         key={round}
                         style={[
                             isLandscape ? styles.landscapeRoundButton : styles.roundButton,
+                            isLandscape
+                                ? { minHeight: roundButtonSize, minWidth: roundButtonSize }
+                                : { height: roundButtonSize, width: roundButtonSize },
                             selectedRounds === round && styles.roundButtonSelected,
                         ]}
                         onPress={() => setSelectedRounds(round)}
@@ -227,10 +233,11 @@ export default function CreateMatch() {
             <Text style={isLandscape ? styles.landscapeRoundLabel : styles.blackNameLabel}>
                 Select gender: <Text style={styles.optionalLabel}>(optional)</Text>
             </Text>
-            <View style={[styles.genderPills, isLandscape && styles.landscapeGenderPills]}>
+            <View style={[styles.genderPills, isLandscape && styles.landscapeGenderPills, { minHeight: genderPillHeight }]}>
                 <Pressable
                     style={[
                         styles.malePill,
+                        { height: genderPillHeight },
                         selectedGender === "mens" && styles.malePillSelected
                     ]}
                     onPress={() => selectedGender === "mens" ? setSelectedGender("idk") : setSelectedGender('mens')}
@@ -248,6 +255,7 @@ export default function CreateMatch() {
 
                 <Pressable style={[
                     styles.femalePill,
+                    { height: genderPillHeight },
                     selectedGender === "womens" && styles.femalePillSelected
                     ]}
                     onPress={() => selectedGender=== "womens" ? setSelectedGender("idk") : setSelectedGender("womens")}
@@ -293,7 +301,8 @@ export default function CreateMatch() {
                     },
                 ]}
                 keyboardShouldPersistTaps="handled"
-                showsVerticalScrollIndicator={isLandscape}
+                scrollEnabled={false}
+                showsVerticalScrollIndicator={false}
             >
 
             {/* Page title -- Create Scorecard  */}
@@ -352,6 +361,7 @@ export default function CreateMatch() {
                                 key={weight}
                                 style={[
                                     styles.weightPill,
+                                    { height: weightPillHeight },
                                     selectedWeight === weight && styles.weightPillSelected,
                                 ]}
                                 onPress={() => setSelectedWeight(selectedWeight === weight ? 0 : weight)}
@@ -368,6 +378,7 @@ export default function CreateMatch() {
                                 key={weight}
                                 style={[
                                     styles.weightPill,
+                                    { height: weightPillHeight },
                                     selectedWeight === weight && styles.weightPillSelected
                                 ]}
                                 onPress={() => setSelectedWeight(selectedWeight === weight ? 0 : weight)}
@@ -384,6 +395,7 @@ export default function CreateMatch() {
                                 key={weight}
                                 style={[
                                     isLandscape ? styles.landscapeWeightPill : styles.weightPill,
+                                    { height: weightPillHeight },
                                     selectedWeight === weight && styles.weightPillSelected
                                 ]}
                                 onPress={() => setSelectedWeight(selectedWeight === weight ? 0 : weight)}
@@ -405,6 +417,7 @@ export default function CreateMatch() {
                                 key={weight}
                                 style={[
                                     styles.landscapeWeightPill,
+                                    { height: weightPillHeight },
                                     selectedWeight === weight && styles.landscapeWeightPillSelected
                                 ]}
                                 onPress={() => setSelectedWeight(selectedWeight === weight ? 0 : weight)}
@@ -421,6 +434,7 @@ export default function CreateMatch() {
                                 key={weight}
                                 style={[
                                     isLandscape ? styles.landscapeWeightPill : styles.weightPill,
+                                    { height: weightPillHeight },
                                     selectedWeight === weight && styles.landscapeWeightPillSelected
                                 ]}
                                 onPress={() => setSelectedWeight(selectedWeight === weight ? 0 : weight)}
@@ -437,6 +451,7 @@ export default function CreateMatch() {
                                 key={weight}
                                 style={[
                                     isLandscape ? styles.landscapeWeightPill : styles.weightPill,
+                                    { height: weightPillHeight },
                                     selectedWeight === weight && styles.landscapeWeightPillSelected
                                 ]}
                                 onPress={() => setSelectedWeight(selectedWeight === weight ? 0 : weight)}
@@ -453,6 +468,7 @@ export default function CreateMatch() {
                                 key={weight}
                                 style={[
                                     isLandscape ? styles.landscapeWeightPill : styles.weightPill,
+                                    { height: weightPillHeight },
                                     selectedWeight === weight && styles.landscapeWeightPillSelected
                                 ]}
                                 onPress={() => setSelectedWeight(selectedWeight === weight ? 0 : weight)}
@@ -469,6 +485,7 @@ export default function CreateMatch() {
                                 key={weight}
                                 style={[
                                     isLandscape ? styles.landscapeWeightPill : styles.weightPill,
+                                    { height: weightPillHeight },
                                     selectedWeight === weight && styles.landscapeWeightPillSelected
                                 ]}
                                 onPress={() => setSelectedWeight(selectedWeight === weight ? 0 : weight)}
@@ -887,7 +904,7 @@ const styles = StyleSheet.create({
         width: '33%',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '5%',
+        gap: '2%',
 
     },
     weightColumnCenter: {
@@ -895,7 +912,7 @@ const styles = StyleSheet.create({
         width: '33%',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '5%',
+        gap: '2%',
 
     },
     weightColumnRight: {
@@ -903,7 +920,7 @@ const styles = StyleSheet.create({
         width: '33%',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '5%',
+        gap: '2%',
     },
     landscapeWeightPill: {
         height: '27%',
@@ -915,9 +932,6 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     landscapeWeightPillSelected: {
-        height: '27%',
-        width: '60%',
-        // borderColor: '#fff',
         borderWidth: 0,
         borderRadius: 25,
         justifyContent: 'center',
@@ -934,9 +948,6 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     weightPillSelected: {
-        height: '14.5%',
-        width: '85%',
-        // borderColor: '#fff',
         borderWidth: 0,
         borderRadius: 25,
         justifyContent: 'center',
@@ -1047,7 +1058,7 @@ const styles = StyleSheet.create({
             justifyContent: 'center',
             alignItems: 'center',
             borderRadius: 25,
-            height: '80%'
+            height: '75%'
 
         },
         malePillSelected: {
@@ -1062,7 +1073,7 @@ const styles = StyleSheet.create({
             justifyContent: 'center',
             alignItems: 'center',
             color: '#B6c6d1',
-            height: '80%',
+            height: '75%',
             width: '40%',
             borderRadius: 25
 

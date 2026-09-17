@@ -33,12 +33,12 @@ const BORDER = '#B6C6D1';
 const FIGHT_DESCRIPTORS = [
     'Adjustments',
     'Awkward',
-    'Back and Forth',
-    'Bad Coaching',
+    'Back & Forth',
+    'Bad Coach',
     'Bad Ref',
     'Bloody',
     'Body Shot KO',
-    'Multiple Knockdowns',
+    'Multiple Downs',
     'Body Work',
     'Boring',
     'Both Hurt',
@@ -47,25 +47,23 @@ const FIGHT_DESCRIPTORS = [
     'Chess Match',
     'Chin',
     'Clinch Heavy',
-    'Close fight',
+    'Close',
     'Combinations',
     'Comeback',
     'Competitive',
     'Controversial',
-    'Counterpunching',
+    'Counterpunches',
     'Cuts',
     'Dead Crowd',
-    'Defensive ',
+    'Defensive',
     'Developmental',
-    'Dirty Fight',
-    'Distance Management',
+    'Dirty',
     'Durability',
-    'Entertaining',
     'Exciting',
     'Fast Start',
     "Fast-Paced",
     'Feints',
-    'Flash Knockdown',
+    'Flash Down',
     'Foul Heavy',
     'Gassed',
     'Good Coaching',
@@ -92,10 +90,9 @@ const FIGHT_DESCRIPTORS = [
     'One Sided',
     'Outboxing',
     'Out Cold',
-    'Power difference',
-    'Power punching',
+    'Power shots',
     'Pressure',
-    'Rematch Needed',
+    'Needs Rematch',
     'Replayable',
     'Robbery',
     'Rough',
@@ -104,13 +101,11 @@ const FIGHT_DESCRIPTORS = [
     'Showboating',
     'Showcase',
     'Shutout',
-    'Size Difference',
+    'Outsized',
     'Slow-Paced',
     'Slow Start',
     'Slugfest',
     'Smothering',
-    'Southpaw Battle',
-    'Speed Difference',
     "Stylish",
     'Swelling',
     'Swing Rounds',
@@ -157,6 +152,7 @@ export default function MatchNotesScreen() {
     const [descriptorContentHeight, setDescriptorContentHeight] = useState(0);
     const [descriptorViewportHeight, setDescriptorViewportHeight] = useState(0);
     const [descriptorScrollOffset, setDescriptorScrollOffset] = useState(0);
+    const [selectedDescriptorHeight, setSelectedDescriptorHeight] = useState(0);
 
     const sliderWidthRef = useRef(0);
     const lastHapticRatingRef = useRef(rating);
@@ -258,6 +254,11 @@ export default function MatchNotesScreen() {
     const descriptorScrollbarTop = descriptorContentHeight > descriptorViewportHeight
         ? (descriptorScrollOffset / (descriptorContentHeight - descriptorViewportHeight)) * descriptorScrollbarTrackHeight
         : 0;
+    const descriptorBaseMaxHeight = isLandscape ? 150 : 336;
+    const descriptorScrollMaxHeight = Math.max(
+        120,
+        descriptorBaseMaxHeight - selectedDescriptorHeight - (selectedDescriptorHeight > 0 ? 14 : 0),
+    );
     const handleDescriptorScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
         setDescriptorScrollOffset(event.nativeEvent.contentOffset.y);
     };
@@ -270,31 +271,10 @@ export default function MatchNotesScreen() {
             <View style={{ height: insets.top, backgroundColor: BLUE }} />
 
             <View style={[styles.titleContainer, isLandscape && styles.landscapeTitleContainer]}>
-                <Pressable
-                    onPress={goBack}
-                    style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
-                    hitSlop={10}
-                    accessibilityRole="button"
-                    accessibilityLabel="Back to scorecard"
-                >
-                    <Ionicons name="chevron-back" size={26} color="#fff" />
-                </Pressable>
                 <Text style={styles.title}>Match Notes</Text>
-                <View style={styles.headerSpacer} />
             </View>
 
-            <View
-                style={styles.scrollView}
-                // contentContainerStyle={[
-                //     styles.content,
-                //     { paddingHorizontal: Math.max(horizontalGutter, 18 * sx) },
-                //     isLandscape && styles.landscapeContent,
-                //     {
-                //         paddingBottom: Math.max(insets.bottom, 10) + (isLandscape ? 72 * sy : 94 * sy),
-                //     },
-                // ]}
-                // showsVerticalScrollIndicator={isLandscape}
-            >
+            <View style={styles.scrollView}>
                 <View style={[styles.card, styles.ratingCard, isLandscape && styles.landscapeRatingCard]}>
                     <Text style={styles.sectionTitle}>Rate this fight</Text>
                     <Text style={styles.sectionDescription}>
@@ -382,8 +362,34 @@ export default function MatchNotesScreen() {
                         </View>
                     </View>
 
+                    {selectedDescriptors.length > 0 && (
+                        <View
+                            style={styles.selectedDescriptors}
+                            onLayout={(event) => setSelectedDescriptorHeight(event.nativeEvent.layout.height)}
+                            accessibilityLabel="Selected fight descriptors"
+                        >
+                            {selectedDescriptors.map((descriptor) => (
+                                <View key={descriptor} style={styles.selectedDescriptorChip}>
+                                    <Text style={styles.selectedDescriptorText}>{descriptor}</Text>
+                                    <Pressable
+                                        onPress={() => toggleDescriptor(descriptor)}
+                                        hitSlop={6}
+                                        style={({ pressed }) => [
+                                            styles.selectedDescriptorRemove,
+                                            pressed && styles.pressed,
+                                        ]}
+                                        accessibilityRole="button"
+                                        accessibilityLabel={`Remove ${descriptor}`}
+                                    >
+                                        <Ionicons name="close" size={15} color={BLUE} />
+                                    </Pressable>
+                                </View>
+                            ))}
+                        </View>
+                    )}
+
                     <View
-                        style={styles.descriptorScrollWrapper}
+                        style={[styles.descriptorScrollWrapper, { maxHeight: descriptorScrollMaxHeight }]}
                         onLayout={(event) => setDescriptorViewportHeight(event.nativeEvent.layout.height)}
                     >
                         <ScrollView
@@ -497,10 +503,11 @@ const styles = StyleSheet.create({
     },
     titleContainer: {
         minHeight: 36,
+        paddingBottom: 8,
         backgroundColor: BLUE,
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         borderBottomLeftRadius: 15,
         borderBottomRightRadius: 15,
         shadowColor: '#11334B',
@@ -513,15 +520,6 @@ const styles = StyleSheet.create({
         minHeight: 52,
         borderBottomLeftRadius: 20,
         borderBottomRightRadius: 20,
-    },
-    backButton: {
-        width: 54,
-        height: 54,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    headerSpacer: {
-        width: 54,
     },
     title: {
         color: '#fff',
@@ -569,13 +567,11 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.22,
         shadowRadius: 3,
         elevation: 2,
+        width: '100%',
     },
     ratingCard: {
         width: '100%',
-        marginVertical: '4%'
-    },
-    descriptorCard: {
-        width: '100%',
+        marginVertical: '3.5%'
     },
     landscapeRatingCard: {
         width: '38%',
@@ -602,7 +598,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginTop: 24,
+        marginTop: 20,
         marginBottom: 14,
         width: '80%',
         marginHorizontal: 'auto'
@@ -701,8 +697,38 @@ const styles = StyleSheet.create({
     descriptorHeadingCopy: {
         flex: 1,
     },
+    selectedDescriptors: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+        marginBottom: 14,
+        paddingRight: '5%',
+    },
+    selectedDescriptorChip: {
+        maxWidth: '100%',
+        minHeight: 32,
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: BLUE,
+        backgroundColor: '#EAF3F9',
+        paddingLeft: 8,
+        paddingRight: 0,
+    },
+    selectedDescriptorText: {
+        color: TEXT,
+        fontSize: 10,
+        fontWeight: '600',
+    },
+    selectedDescriptorRemove: {
+        width: 24,
+        height: 28,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
     descriptorScrollWrapper: {
-        maxHeight: 305,
+        maxHeight: 336,
         position: 'relative',
     },
     counterBadge: {
@@ -736,7 +762,7 @@ const styles = StyleSheet.create({
         paddingBottom: 18,
     },
     descriptorScroll: {
-        maxHeight: 305,
+        height: '100%',
         paddingRight: '5%'
     },
     descriptorPillSpacer: {
@@ -744,7 +770,7 @@ const styles = StyleSheet.create({
         height: 50,
     },
     landscapeDescriptorScroll: {
-        maxHeight: 140,
+        maxHeight: 150,
     },
     descriptorScrollbarTrack: {
         position: 'absolute',
@@ -804,7 +830,6 @@ const styles = StyleSheet.create({
         paddingTop: 8,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        gap: 12,
     },
     cancelButton: {
         minHeight: 42,
@@ -817,7 +842,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.3,
         shadowRadius: 4,
         elevation: 4,
-                width: '45%'
+        width: '45%'
 
     },
     saveButton: {
