@@ -63,6 +63,58 @@ const numericValue = (value: unknown) => {
     return Number.isFinite(parsed) ? parsed : 0;
 };
 
+const cleanWeightValue = (value: string) => value.trim().toLowerCase();
+
+const getWeightClassAbbreviation = (value: string) => {
+    const cleaned = cleanWeightValue(value);
+
+    if (!cleaned || cleaned === '0' || cleaned === 'undefined' || cleaned === 'null') {
+        return null;
+    }
+
+    if (cleaned.includes('200+')) return 'HW';
+    if (cleaned.includes('heavy')) return 'HW';
+    if (cleaned.includes('cruiser')) return 'CW';
+    if (cleaned.includes('light heavyweight')) return 'LHW';
+    if (cleaned.includes('super middle')) return 'SMW';
+    if (cleaned.includes('middle')) return 'MW';
+    if (cleaned.includes('super welter')) return 'SWW';
+    if (cleaned.includes('welter')) return 'WW';
+    if (cleaned.includes('super light')) return 'SLW';
+    if (cleaned.includes('lightweight')) return 'LW';
+    if (cleaned.includes('super feather')) return 'SFW';
+    if (cleaned.includes('feather')) return 'FW';
+    if (cleaned.includes('super bantam')) return 'SBW';
+    if (cleaned.includes('bantam')) return 'BW';
+    if (cleaned.includes('super fly')) return 'SFW';
+    if (cleaned.includes('fly')) return 'FW';
+    if (cleaned.includes('light fly')) return 'LFW';
+    if (cleaned.includes('minimum')) return 'MIN';
+
+    const lbs = Number(cleaned.replace(/[^\d.]/g, ''));
+
+    if (!Number.isFinite(lbs)) return null;
+
+    if (cleaned.includes('+') || lbs > 200) return 'HW';
+    if (lbs >= 176) return 'CW';
+    if (lbs >= 169) return 'LHW';
+    if (lbs >= 161) return 'SMW';
+    if (lbs >= 155) return 'MW';
+    if (lbs >= 148) return 'SWW';
+    if (lbs >= 141) return 'WW';
+    if (lbs >= 136) return 'SLW';
+    if (lbs >= 131) return 'LW';
+    if (lbs >= 127) return 'SFW';
+    if (lbs >= 123) return 'FW';
+    if (lbs >= 119) return 'SBW';
+    if (lbs >= 116) return 'BW';
+    if (lbs >= 113) return 'SFlW';
+    if (lbs >= 109) return 'FlW';
+    if (lbs >= 106) return 'LFlW';
+    return 'MIN';
+};
+
+
 function RatingStar({ fill }: { fill: number }) {
     return (
         <View style={styles.star} accessible={false}>
@@ -106,51 +158,6 @@ function EventBadge({
     );
 }
 
-function MomentumCell({ value, isQuickScore }: { value?: string; isQuickScore?: boolean }) {
-    if (isQuickScore) {
-        return (
-            <View style={styles.momentumWrap}>
-                <View style={[styles.momentumPill, styles.momentumNeutral]}>
-                    <Text style={styles.momentumNeutralText}>-</Text>
-                </View>
-            </View>
-        );
-    }
-
-    const parsed = Number(value);
-    const valid = value !== undefined && value !== '' && value !== '-' && Number.isFinite(parsed);
-
-    if (!valid || parsed === 0) {
-        return (
-            <View style={styles.momentumWrap}>
-                <View style={[styles.momentumPill, styles.momentumNeutral]}>
-                    <Text style={styles.momentumNeutralText}>{valid ? '0' : '-'}</Text>
-                </View>
-            </View>
-        );
-    }
-
-    const leftFavored = parsed > 0;
-    const color = leftFavored ? RED : BLUE;
-
-    return (
-        <View style={styles.momentumWrap}>
-            {
-                leftFavored && 
-                    <Ionicons 
-                        name="caret-back" 
-                        size={16} 
-                        color={color} 
-                        style={{ position: 'absolute', left: 2 }} />
-            }
-            <View style={[styles.momentumPill, { backgroundColor: color }]}>
-                <Text style={styles.momentumText}>{Math.abs(parsed)}</Text>
-            </View>
-            {!leftFavored && <Ionicons name="caret-forward" size={16} color={color} style={{ position: 'absolute', right: 2 }} />}
-        </View>
-    );
-}
-
 function roundWinnerColor(score: RoundScore | undefined, fighter1: string, fighter2: string) {
     if (!score) return '#BDBDBD';
 
@@ -167,6 +174,53 @@ function roundWinnerColor(score: RoundScore | undefined, fighter1: string, fight
     if (left > right) return RED;
     if (right > left) return BLUE;
     return '#9E9E9E';
+}
+
+function QuickAwareMomentumCell({
+    value,
+    leftScore,
+    rightScore,
+    isQuickScore,
+}: {
+    value?: string;
+    leftScore?: string;
+    rightScore?: string;
+    isQuickScore?: boolean;
+}) {
+    const parsedValue = Number(value);
+    const validValue = value !== undefined && value !== '' && value !== '-' && Number.isFinite(parsedValue);
+    const parsedLeftScore = Number(leftScore);
+    const parsedRightScore = Number(rightScore);
+    const quickScoreDifference =
+        isQuickScore && Number.isFinite(parsedLeftScore) && Number.isFinite(parsedRightScore)
+            ? parsedLeftScore - parsedRightScore
+            : null;
+    const parsed = quickScoreDifference ?? (validValue ? parsedValue : null);
+
+    if (parsed === null || parsed === 0) {
+        return (
+            <View style={styles.momentumWrap}>
+                <View style={[styles.momentumPill, styles.momentumNeutral]}>
+                    <Text style={styles.momentumNeutralText}>
+                        {isQuickScore ? '\u00A0' : parsed === 0 ? '0' : '-'}
+                    </Text>
+                </View>
+            </View>
+        );
+    }
+
+    const leftFavored = parsed > 0;
+    const color = leftFavored ? RED : BLUE;
+
+    return (
+        <View style={styles.momentumWrap}>
+            {leftFavored && <Ionicons name="caret-back" size={16} color={color} style={{ position: 'absolute', left: 2 }} />}
+            <View style={[styles.momentumPill, { backgroundColor: color }]}>
+                <Text style={styles.momentumText}>{isQuickScore ? '\u00A0' : Math.abs(parsed)}</Text>
+            </View>
+            {!leftFavored && <Ionicons name="caret-forward" size={16} color={color} style={{ position: 'absolute', right: 2 }} />}
+        </View>
+    );
 }
 
 export default function ExportCardScreen() {
@@ -189,7 +243,11 @@ export default function ExportCardScreen() {
     const descriptors = parseMatchDescription(params.description).slice(0, MAX_DESCRIPTORS);
 
     const genderValue = String(firstParam(params.gender) || 'idk');
+    const genderLabel = genderValue === 'womens' ? "Women's" : "Men's";
     const weightValue = String(firstParam(params.weight) || '0');
+
+    const weightClassAbbrev = useMemo(() => getWeightClassAbbreviation(weightValue), [weightValue]);
+
 
     const roundScores = useMemo<Record<number, RoundScore>>(() => {
         const raw = firstParam(params.savedScores);
@@ -442,56 +500,74 @@ export default function ExportCardScreen() {
                     />
 
                     
-                    <Text style={[styles.metadata, compactLayout && styles.compactMetadata]}>{metadata}</Text> 
-                    <View style={[styles.matchupRow, compactLayout && styles.compactMatchupRow]}>
-                        <View style={styles.fighterBlock}>
-                            <Text
-                                // numberOfLines={2}
-                                adjustsFontSizeToFit
-                                minimumFontScale={0.7}
-                                style={[styles.fighterName, compactLayout && styles.compactFighterName, { color: RED }]}
-                            >
-                                {fighter1}
-                            </Text>
-                            <Text
-                                numberOfLines={1}
-                                // adjustsFontSizeToFit
-                                minimumFontScale={0.6}
-                                style={[styles.finalScore, compactLayout && styles.compactFinalScore, { color: RED }]}
-                            >
-                                {finalScores.left}
-                            </Text>
-                            <Text numberOfLines={1} style={[styles.eventSummary, { color: RED }]}>
-                                KD: {totals.fighter1KD} • Deductions: {totals.fighter1Pen}
-                            </Text>
+                    <View style={styles.matchupHeader}>
+                    <View style={styles.metadataRail}>
+                        <View style={styles.headerPill}>
+                            <Ionicons
+                                name={genderValue === 'womens' ? 'female' : 'male'}
+                                size={12}
+                                color={genderValue === 'womens' ? '#F000D4' : BLUE}
+                            />
                         </View>
+                        <Text style={styles.genderValue}>{genderLabel}</Text>
 
-                        <Text style={styles.vs}>vs</Text>
+                        {weightClassAbbrev && (
+                            <View style={[styles.headerPill, styles.weightClassPill]}>
+                                <Text style={styles.headerPillText}>{weightClassAbbrev}</Text>
+                            </View>
+                        )}
 
-                        <View style={styles.fighterBlock}>
-                            <Text
-                                // numberOfLines={2}
-                                adjustsFontSizeToFit
-                                minimumFontScale={0.7}
-                                style={[styles.fighterName, compactLayout && styles.compactFighterName, { color: BLUE }]}
-                            >
-                                {fighter2}
+                        {weightValue !== '0' && weightValue !== 'undefined' && weightValue !== 'null' && (
+                            <Text style={styles.metadataRailWeight}>
+                                {weightValue}
+                                {!String(weightValue).toLowerCase().includes('lb') ? ' lbs' : ''}
                             </Text>
-                            <Text
-                                numberOfLines={1}
-                                // adjustsFontSizeToFit
-                                minimumFontScale={0.6}
-                                style={[styles.finalScore, compactLayout && styles.compactFinalScore, { color: BLUE }]}
-                            >
-                                {finalScores.right}
-                            </Text>
-                            <Text numberOfLines={1} style={[styles.eventSummary, { color: BLUE }]}>
-                                KD: {totals.fighter2KD} • Deductions: {totals.fighter2Pen}
-                            </Text>
-                        </View>
+                        )}
                     </View>
 
-                    <View style={[styles.divider, compactLayout && styles.compactDivider]} />
+                    <View style={styles.fighterBlock}>
+                        <Text
+                            numberOfLines={2}
+                            adjustsFontSizeToFit
+                            minimumFontScale={0.72}
+                            style={[styles.fighterName, { color: RED }]}
+                        >
+                            {fighter1}
+                        </Text>
+
+                        <Text style={[styles.finalScore, { color: RED }]}>
+                            {finalScores.left}
+                        </Text>
+
+                        <Text style={[styles.eventSummary, { color: RED }]}>
+                            KD: {totals.fighter1KD} • Deductions: {totals.fighter1Pen}
+                        </Text>
+                    </View>
+
+                    <View style={styles.vsColumn}>
+                        <Text style={styles.vs}>vs</Text>
+                    </View>
+
+                    <View style={styles.fighterBlock}>
+                        <Text
+                            numberOfLines={2}
+                            adjustsFontSizeToFit
+                            minimumFontScale={0.72}
+                            style={[styles.fighterName, { color: BLUE }]}
+                        >
+                            {fighter2}
+                        </Text>
+
+                        <Text style={[styles.finalScore, { color: BLUE }]}>
+                            {finalScores.right}
+                        </Text>
+
+                        <Text style={[styles.eventSummary, { color: BLUE }]}>
+                            KD: {totals.fighter2KD} • Deductions: {totals.fighter2Pen}
+                        </Text>
+                    </View>
+                </View>
+
                     {/* <Text style={[styles.metadata, compactLayout && styles.compactMetadata]}>{metadata}</Text> */}
 
                     <View style={[styles.tableHeader, compactLayout && styles.compactTableHeader]}>
@@ -537,8 +613,10 @@ export default function ExportCardScreen() {
                                         </Text>
                                     </View>
 
-                                    <MomentumCell
+                                    <QuickAwareMomentumCell
                                         value={score?.plusMinus}
+                                        leftScore={score?.left}
+                                        rightScore={score?.right}
                                         isQuickScore={score?.scoringMethod === 'quick'}
                                     />
 
@@ -760,6 +838,9 @@ const styles = StyleSheet.create({
     compactBrandRow: {
         // marginBottom: 4,
     },
+    weightClassPill: {
+        minWidth: 40,
+    },
     brandIcon: {
         width: 36,
         height: 36,
@@ -791,25 +872,82 @@ const styles = StyleSheet.create({
         lineHeight: 13,
         fontWeight: '800',
     },
+    genderValue: {
+        fontSize: 8.5,
+        marginBottom: 5,
+        fontWeight: 500
+    },
+    matchupHeader: {
+        flexDirection: 'row',
+        alignItems: 'stretch',
+        borderBottomWidth: 1,
+        borderBottomColor: '#C7D3DC',
+    },
     matchupRow: {
         flexDirection: 'row',
         alignItems: 'flex-start',
         justifyContent: 'space-between',
+    },
+    metadataRail: {
+        width: 44,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRightWidth: 1,
+        borderRightColor: '#C7D3DC',
+        paddingVertical: 4,
+        // marginRight: 8
+    },
+    metadataRailText: {
+        color: TEXT,
+        fontSize: 8,
+        lineHeight: 10,
+        textAlign: 'center',
+    },
+
+    metadataRailStrong: {
+        color: '#111',
+        fontSize: 10,
+        fontWeight: '800',
+        lineHeight: 12,
+        marginTop: 2,
+    },
+    metadataRailWeight: {
+        color: TEXT,
+        fontSize: 8.5,
+        lineHeight: 11,
+        textAlign: 'center',
+        fontWeight: '700',
+    },
+    headerPill: {
+        minWidth: 32,
+        minHeight: 22,
+        paddingHorizontal: 5,
+        borderRadius: 999,
+        borderWidth: 1,
+        borderColor: '#C7D3DC',
+        backgroundColor: '#F8FBFD',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    headerPillText: {
+        color: TEXT,
+        fontSize: 9.5,
+        fontWeight: '800',
     },
     compactMatchupRow: {
         marginBottom: -2,
     },
     fighterBlock: {
         flex: 1,
-        alignItems: 'center',
         minWidth: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     fighterName: {
         width: '100%',
-        height: 40,
         textAlign: 'center',
-        fontSize: 18,
-        lineHeight: 20,
+        fontSize: 20,
+        lineHeight: 23,
         fontWeight: '800',
     },
     compactFighterName: {
@@ -818,31 +956,35 @@ const styles = StyleSheet.create({
         lineHeight: 16,
     },
     vs: {
-        width: 34,
         color: '#222',
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: '800',
-        textAlign: 'center',
-        paddingTop: 6,
+        paddingTop: 8,
+    },
+    vsColumn: {
+        width: 50,
+    alignItems: 'center',
+    // justifyContent: 'center',
     },
     finalScore: {
         width: '100%',
         textAlign: 'center',
-        fontSize: 54,
-        lineHeight: 60,
+        fontSize: 46,
+        lineHeight: 48,
         fontWeight: '800',
-        marginTop: 1,
     },
     compactFinalScore: {
         fontSize: 40,
         lineHeight: 44,
     },
+
     eventSummary: {
         width: '100%',
         textAlign: 'center',
         fontSize: 10,
-        lineHeight: 15,
+        lineHeight: 13,
         fontWeight: '700',
+        marginBottom: 5
     },
     divider: {
         height: 1,

@@ -6,8 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 import { normalizeMatchRating, parseMatchDescription, serializeMatchDescription } from '../types/matchNotes';
 const tIcon = require('../assets/images/flatwhitet.png');
-
-
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 type RoundScore = {
     left?: string;
@@ -33,10 +32,26 @@ export default function CreateMatch() {
     const [fighter2Name, setFighter2Name] = useState(fighter2);
     const [selectedRounds, setSelectedRounds] = useState(roundAmount);
     const [discardModalVisible, setDiscardModalVisible] = useState(false);
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [fightDate, setFightDate] = useState<Date | null>(() => {
+        if (!initialFightDate) return null;
+
+        const parsedDate = new Date(`${initialFightDate}T12:00:00`);
+
+            return Number.isNaN(parsedDate.getTime())
+                ? null
+                : parsedDate;
+    });
 
 
     // const [selectedGender, setSelectedGender] = useState("");
     // const [selectedWeight, setSelectedWeight] = useState<number | string>(0);
+
+    const initialFightDate = Array.isArray(params.fightDate)
+    ? params.fightDate[0]
+    : params.fightDate;
+
+    
 
     const initialGender = Array.isArray(params.gender)
         ? params.gender[0]
@@ -390,7 +405,7 @@ export default function CreateMatch() {
                         ))}
                     </View>
                     <View style={styles.weightColumnRight}>
-                        {[110, 118, 130, 147, 168, '200+'].map((weight) => (
+                        {[108, 118, 130, 147, 168, '200+'].map((weight) => (
                             <Pressable
                                 key={weight}
                                 style={[
@@ -1084,7 +1099,6 @@ const styles = StyleSheet.create({
             backgroundColor: '#d32fba',
             justifyContent: 'center',
             alignItems: 'center',
-            height: '80%',
             width: '40%',
             borderRadius: 25
         },

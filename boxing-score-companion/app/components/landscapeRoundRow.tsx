@@ -81,6 +81,13 @@ export default function LandscapeRoundRow({
     const swipeOffset = useSharedValue(0);
     const swipeStartOffset = useSharedValue(0);
     const plusMinusNumber = plusMinus && plusMinus !== '-' ? Number(plusMinus) : null;
+    const leftRoundScoreNumber = Number(leftScore);
+    const rightRoundScoreNumber = Number(rightScore);
+    const quickScoreDifference =
+        isQuickScore && Number.isFinite(leftRoundScoreNumber) && Number.isFinite(rightRoundScoreNumber)
+            ? leftRoundScoreNumber - rightRoundScoreNumber
+            : null;
+    const winnerIndicator = quickScoreDifference ?? plusMinusNumber;
     const [scoringModalVisible, setScoringModalVisible] = useState(false);
     const [quickScoringVisible, setQuickScoringVisible] = useState(false);
     const [orientationChoiceVisible, setOrientationChoiceVisible] = useState(false);
@@ -152,18 +159,18 @@ export default function LandscapeRoundRow({
     };
 
     const plusMinusDisplay =
-        plusMinusNumber === null
+        winnerIndicator === null
             ? '-'
-            : plusMinusNumber < 0
-                ? String(Math.abs(plusMinusNumber))
-                : String(plusMinusNumber);
+            : winnerIndicator < 0
+                ? String(Math.abs(winnerIndicator))
+                : String(winnerIndicator);
 
     const plusMinusPillStyle =
-        plusMinusNumber === null
+        winnerIndicator === null
             ? [styles.plusMinusPill, styles.neutralPlusMinusPill]
-            : plusMinusNumber > 0
+            : winnerIndicator > 0
                 ? [styles.plusMinusPill, styles.redPlusMinusPill]
-                : plusMinusNumber < 0
+                : winnerIndicator < 0
                     ? [styles.plusMinusPill, styles.bluePlusMinusPill]
                     : [styles.plusMinusPill, styles.neutralPlusMinusPill];
 
@@ -172,11 +179,11 @@ export default function LandscapeRoundRow({
             ? '#D32F2F'
             : stoppageWinner === fighter2
                 ? '#1976D2'
-                : plusMinusNumber === null
+                : winnerIndicator === null
                     ? '#b0b0b0'
-                    : plusMinusNumber > 0
+                    : winnerIndicator > 0
                         ? '#D32F2F'
-                        : plusMinusNumber < 0
+                        : winnerIndicator < 0
                             ? '#1976D2'
                             : '#b0b0b0';
 
@@ -274,21 +281,19 @@ export default function LandscapeRoundRow({
                             )}
                         </View>
 
-                        {plusMinusNumber !== null && plusMinusNumber > 0 && (
+                        {winnerIndicator !== null && winnerIndicator > 0 && (
                             <Ionicons name="caret-up" style={styles.leftTriangle} size={16}/>
                         )}
 
                         <View style={styles.plusMinusSlot}>
                             <View style={plusMinusPillStyle}>
                                 <Text style={styles.plusMinusPillText}>
-                                    {isQuickScore && plusMinusNumber !== null
-                                        ? '\u00A0'
-                                        : plusMinusDisplay}
+                                    {isQuickScore ? '\u00A0' : plusMinusDisplay}
                                 </Text>
                             </View>
                         </View>
 
-                        {plusMinusNumber !== null && plusMinusNumber < 0 && (
+                        {winnerIndicator !== null && winnerIndicator < 0 && (
                             <Ionicons name="caret-down" style={styles.rightTriangle} size={16} />
                         )}
                         {/* <Text style={[styles.scoreText, styles.rightRoundScore, ]}>{rightScore ?? '-'}</Text>
