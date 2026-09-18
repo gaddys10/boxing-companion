@@ -245,6 +245,21 @@ export default function ExportCardScreen() {
     const genderValue = String(firstParam(params.gender) || 'idk');
     const genderLabel = genderValue === 'womens' ? "Women's" : "Men's";
     const weightValue = String(firstParam(params.weight) || '0');
+    const fightDateValue = firstParam(params.fightDate);
+    const matchDateLabel = useMemo(() => {
+        if (!fightDateValue) return '';
+
+        const [year, month, day] = String(fightDateValue).split('-').map(Number);
+        const date = new Date(year, month - 1, day);
+
+        return Number.isNaN(date.getTime())
+            ? ''
+            : date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+            });
+    }, [fightDateValue]);
 
     const weightClassAbbrev = useMemo(() => getWeightClassAbbreviation(weightValue), [weightValue]);
 
@@ -455,6 +470,9 @@ export default function ExportCardScreen() {
                 savedScores: JSON.stringify(roundScores),
                 gender: genderValue,
                 weight: weightValue,
+                fightDate: firstParam(params.fightDate)
+                    ? String(firstParam(params.fightDate))
+                    : undefined,
                 rating: String(rating),
                 description: firstParam(params.description)
                     ? String(firstParam(params.description))
@@ -502,11 +520,18 @@ export default function ExportCardScreen() {
                     
                     <View style={styles.matchupHeader}>
                     <View style={styles.metadataRail}>
-                        <View style={styles.headerPill}>
+                        <View
+                            style={[
+                                styles.headerPill,
+                                genderValue === 'womens'
+                                    ? styles.womensGenderPill
+                                    : styles.mensGenderPill,
+                            ]}
+                        >
                             <Ionicons
                                 name={genderValue === 'womens' ? 'female' : 'male'}
                                 size={12}
-                                color={genderValue === 'womens' ? '#F000D4' : BLUE}
+                                color="#fff"
                             />
                         </View>
                         <Text style={styles.genderValue}>{genderLabel}</Text>
@@ -522,6 +547,9 @@ export default function ExportCardScreen() {
                                 {weightValue}
                                 {!String(weightValue).toLowerCase().includes('lb') ? ' lbs' : ''}
                             </Text>
+                        )}
+                        {matchDateLabel && (
+                            <Text style={styles.metadataRailDate}>{matchDateLabel}</Text>
                         )}
                     </View>
 
@@ -874,7 +902,7 @@ const styles = StyleSheet.create({
     },
     genderValue: {
         fontSize: 8.5,
-        marginBottom: 5,
+        marginBottom: '13%',
         fontWeight: 500
     },
     matchupHeader: {
@@ -894,7 +922,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         borderRightWidth: 1,
         borderRightColor: '#C7D3DC',
-        paddingVertical: 4,
+        paddingBottom: 4,
+        paddingRight: 2,
         // marginRight: 8
     },
     metadataRailText: {
@@ -917,6 +946,15 @@ const styles = StyleSheet.create({
         lineHeight: 11,
         textAlign: 'center',
         fontWeight: '700',
+        marginBottom: '4%',
+
+    },
+    metadataRailDate: {
+        color: TEXT,
+        fontSize: 7.5,
+        lineHeight: 9,
+        marginTop: 3,
+        textAlign: 'center',
     },
     headerPill: {
         minWidth: 32,
@@ -929,9 +967,19 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
+    mensGenderPill: {
+        backgroundColor: BLUE,
+        borderColor: BLUE,
+        minWidth: 40,
+    },
+    womensGenderPill: {
+        backgroundColor: '#D32FBA',
+        borderColor: '#D32FBA',
+        minWidth: 40,
+    },
     headerPillText: {
         color: TEXT,
-        fontSize: 9.5,
+        fontSize: 9,
         fontWeight: '800',
     },
     compactMatchupRow: {

@@ -25,6 +25,7 @@ type RoundRowProps = {
     savedScores: string;
     gender?: "idk" | "mens" | "womens";
     weight: number | "200+";
+    fightDate?: string;
     rating: number;
     description: string;
     stoppageReason?: 'KO' | 'TKO' | 'DQ' | 'NC';
@@ -63,6 +64,7 @@ export default function RoundRow({
     savedScores,
     gender,
     weight,
+    fightDate,
     rating,
     description,
     stoppageReason,
@@ -127,6 +129,7 @@ export default function RoundRow({
                 savedScores,
                 gender,
                 weight,
+                fightDate,
                 rating,
                 description,
             },

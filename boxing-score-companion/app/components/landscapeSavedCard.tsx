@@ -22,10 +22,11 @@ type SavedCardProps = {
     savedScores?: string;
     rating?: MatchRating;
     description?: MatchDescription;
+    fightDate?: string;
     onDelete: (id: number) => void;
 }
 
-export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, gender, weight, savedScores, rating, description, onDelete}: SavedCardProps) {
+export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, gender, weight, savedScores, rating, description, fightDate, onDelete}: SavedCardProps) {
     const router = useRouter();
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const displayedFighter1Score = fighter1Score === '' || fighter1Score === '-' || fighter1Score == null ? 0 : fighter1Score;
@@ -56,6 +57,7 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
             savedScores,
             rating,
             description: serializeMatchDescription(description ?? []),
+            fightDate,
         }
         });
     };

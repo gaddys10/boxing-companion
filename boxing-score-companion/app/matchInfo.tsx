@@ -27,6 +27,7 @@ export default function MatchInfoScreen() {
         savedStoppageWinner,
         gender,
         weight,
+        fightDate,
         rating,
         description,
     } = useLocalSearchParams();
@@ -246,6 +247,7 @@ export default function MatchInfoScreen() {
                     savedScores: JSON.stringify(savedRoundScores),
                     weight: normalizedWeight,
                     gender: normalizedGender,
+                    fightDate,
                     ...scorecardTotals,
                     fighter1Score: fighter1LatestTotal,
                     fighter2Score: fighter2LatestTotal,
@@ -271,6 +273,7 @@ export default function MatchInfoScreen() {
                 savedScores: JSON.stringify(getSavedScores()),
                 gender: normalizedGender,
                 weight: normalizedWeight,
+                fightDate,
                 rating: matchRating,
                 description: serializedDescription,
             },
@@ -292,6 +295,7 @@ export default function MatchInfoScreen() {
                 savedScores: JSON.stringify(getSavedScores()),
                 gender: normalizedGender,
                 weight: normalizedWeight,
+                fightDate,
                 rating: matchRating,
                 description: serializedDescription,
             },
@@ -313,6 +317,7 @@ export default function MatchInfoScreen() {
                 savedScores: JSON.stringify(getSavedScores()),
                 gender: normalizedGender,
                 weight: normalizedWeight,
+                fightDate,
                 rating: matchRating,
                 description: serializedDescription,
             },
@@ -548,6 +553,7 @@ export default function MatchInfoScreen() {
                                     savedScores={JSON.stringify(roundScores)}
                                     gender={normalizedGender}
                                     weight={normalizedWeight}   
+                                    fightDate={typeof fightDate === 'string' ? fightDate : fightDate?.[0]}
                                     rating={matchRating}
                                     description={serializedDescription}
                                     onClearRound={handleClearRound}
@@ -605,7 +611,8 @@ export default function MatchInfoScreen() {
                                         id={id ? String(id) : undefined}
                                         savedScores={JSON.stringify(roundScores)}
                                         gender={normalizedGender}
-                                        weight={normalizedWeight}  
+                                        weight={normalizedWeight}
+                                        fightDate={typeof fightDate === 'string' ? fightDate : fightDate?.[0]}
                                         rating={matchRating}
                                         description={serializedDescription}
                                         onClearRound={handleClearRound}
