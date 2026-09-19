@@ -343,7 +343,7 @@ export default function CreateMatch() {
                     },
                 ]}
                 keyboardShouldPersistTaps="handled"
-                scrollEnabled={false}
+                scrollEnabled={!isLandscape}
                 showsVerticalScrollIndicator={false}
             >
 
@@ -975,7 +975,8 @@ portraitGenderPill: {
         justifyContent: 'center',
         boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
         borderWidth: 1,
-        borderColor: '#B6C6D1'
+        borderColor: '#B6C6D1',
+        minHeight: 42,
     },
     editButton: {
         backgroundColor: '#307Fb6',
@@ -989,6 +990,7 @@ portraitGenderPill: {
         borderColor: '#B6C6D1',
         paddingHorizontal: '6%',
         paddingVertical: '2.5%',
+        minHeight: 42,
     },
 
     
@@ -1049,6 +1051,7 @@ portraitGenderPill: {
         alignItems: 'center',
         justifyContent: 'center',
         boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
+        minHeight: 42,
     },
     landscapeCancelButton: {
         backgroundColor: '#de2f2f',

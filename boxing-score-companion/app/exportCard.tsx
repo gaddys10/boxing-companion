@@ -947,7 +947,6 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontWeight: '700',
         marginBottom: '4%',
-
     },
     metadataRailDate: {
         color: TEXT,
@@ -1301,13 +1300,13 @@ const styles = StyleSheet.create({
         marginTop: 7,
     },
     compactActionButton: {
-        minHeight: 40,
-        borderRadius: 10,
+        minHeight: 42,
+        borderRadius: 12,
     },
     shareButton: {
         flex: 1.35,
-        minHeight: 52,
-        borderRadius: 13,
+        minHeight: 42,
+        borderRadius: 12,
         backgroundColor: '#0B78EF',
         flexDirection: 'row',
         alignItems: 'center',
@@ -1321,15 +1320,15 @@ const styles = StyleSheet.create({
     },
     shareButtonText: {
         color: '#fff',
-        fontSize: 12,
-        fontWeight: '800',
+        fontSize: 14,
+        fontWeight: '700',
         textAlign: 'center',
         marginLeft: 7,
     },
     saveImageButton: {
         flex: 0.9,
-        minHeight: 52,
-        borderRadius: 13,
+        minHeight: 42,
+        borderRadius: 12,
         backgroundColor: '#fff',
         borderWidth: 1,
         borderColor: '#E0E4E7',
@@ -1345,8 +1344,8 @@ const styles = StyleSheet.create({
     },
     saveImageButtonText: {
         color: BLUE,
-        fontSize: 12,
-        fontWeight: '800',
+        fontSize: 14,
+        fontWeight: '700',
         marginLeft: 5,
     },
     backButton: {
@@ -1356,7 +1355,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginTop: 14,
         paddingHorizontal: 18,
-        minHeight: 40,
+        minHeight: 42,
     },
     actionBackButton: {
         flex: 0.65,
@@ -1365,7 +1364,7 @@ const styles = StyleSheet.create({
     },
     compactBackButton: {
         marginTop: 5,
-        minHeight: 30,
+        minHeight: 42,
     },
     backText: {
         color: BLUE,
