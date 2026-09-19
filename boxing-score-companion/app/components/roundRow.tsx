@@ -25,6 +25,7 @@ type RoundRowProps = {
     savedScores: string;
     gender?: "idk" | "mens" | "womens";
     weight: number | "200+";
+    fightDate?: string;
     rating: number;
     description: string;
     stoppageReason?: 'KO' | 'TKO' | 'DQ' | 'NC';
@@ -63,6 +64,7 @@ export default function RoundRow({
     savedScores,
     gender,
     weight,
+    fightDate,
     rating,
     description,
     stoppageReason,
@@ -74,6 +76,13 @@ export default function RoundRow({
 }: RoundRowProps) {
     const swipeableRef = React.useRef<Swipeable | null>(null);
     const plusMinusNumber = plusMinus && plusMinus !== '-' ? Number(plusMinus) : null;
+    const leftRoundScoreNumber = Number(leftScore);
+    const rightRoundScoreNumber = Number(rightScore);
+    const quickScoreDifference =
+        isQuickScore && Number.isFinite(leftRoundScoreNumber) && Number.isFinite(rightRoundScoreNumber)
+            ? leftRoundScoreNumber - rightRoundScoreNumber
+            : null;
+    const winnerIndicator = quickScoreDifference ?? plusMinusNumber;
     const [scoringModalVisible, setScoringModalVisible] = useState(false);
     const [quickScoringVisible, setQuickScoringVisible] = useState(false);
     const [orientationChoiceVisible, setOrientationChoiceVisible] = useState(false);
@@ -120,6 +129,7 @@ export default function RoundRow({
                 savedScores,
                 gender,
                 weight,
+                fightDate,
                 rating,
                 description,
             },
@@ -150,27 +160,27 @@ export default function RoundRow({
     
 
     const plusMinusDisplay =
-        plusMinusNumber === null
+        winnerIndicator === null
             ? '-'
-            : plusMinusNumber < 0
-                ? String(Math.abs(plusMinusNumber))
-                : String(plusMinusNumber);
+            : winnerIndicator < 0
+                ? String(Math.abs(winnerIndicator))
+                : String(winnerIndicator);
 
     const plusMinusStyle =
-        plusMinusNumber === null
+        winnerIndicator === null
             ? styles.plusMinus
-            : plusMinusNumber > 0
+            : winnerIndicator > 0
                 ? [styles.plusMinus, styles.redPlusMinus]
-                : plusMinusNumber < 0
+                : winnerIndicator < 0
                     ? [styles.plusMinus, styles.bluePlusMinus]
                     : styles.plusMinus;
 
     const plusMinusContainerStyle =
-        plusMinusNumber === null
+        winnerIndicator === null
             ? [styles.plusMinusContainer, styles.neutralPlusMinusContainer]
-            : plusMinusNumber > 0
+            : winnerIndicator > 0
                 ? [styles.plusMinusContainer, styles.redPlusMinusContainer]
-                : plusMinusNumber < 0
+                : winnerIndicator < 0
                     ? [styles.plusMinusContainer, styles.bluePlusMinusContainer]
                     : [styles.plusMinusContainer, styles.neutralPlusMinusContainer];
 
@@ -179,11 +189,11 @@ export default function RoundRow({
             ? '#D32F2F'
             : stoppageWinner === fighter2
                 ? '#1976D2'
-                : plusMinusNumber === null
+                : winnerIndicator === null
                     ? '#b0b0b0'
-                    : plusMinusNumber > 0
+                    : winnerIndicator > 0
                         ? '#D32F2F'
-                        : plusMinusNumber < 0
+                        : winnerIndicator < 0
                             ? '#1976D2'
                             : '#b0b0b0';
 
@@ -225,16 +235,16 @@ export default function RoundRow({
                         <Text style={[styles.scoreText, styles.leftRoundScore]}>{leftScore ?? '-'}</Text>
                     </View>
 
-                    {plusMinusNumber !== null && plusMinusNumber > 0 && (
+                    {winnerIndicator !== null && winnerIndicator > 0 && (
                         <Ionicons name="caret-back" style={styles.leftTriangle} size={16} />
                     )}
                     <View style={plusMinusContainerStyle}>
                         <Text style={[styles.scoreText, plusMinusStyle]}>
-                            {isQuickScore && plusMinusNumber !== null ? '\u00A0' : plusMinusDisplay}
+                            {isQuickScore ? '\u00A0' : plusMinusDisplay}
                         </Text>
                     </View>
 
-                    {plusMinusNumber !== null && plusMinusNumber < 0 && (
+                    {winnerIndicator !== null && winnerIndicator < 0 && (
                         <Ionicons name="caret-forward" style={styles.rightTriangle} size={16} />
                     )}
                     <View style={[styles.scoreCell, styles.rightRoundScoreCell]}>

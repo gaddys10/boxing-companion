@@ -1,13 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Modal, Pressable, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 import { normalizeMatchRating, parseMatchDescription, serializeMatchDescription } from '../types/matchNotes';
 const tIcon = require('../assets/images/flatwhitet.png');
-
-
 
 type RoundScore = {
     left?: string;
@@ -33,10 +32,29 @@ export default function CreateMatch() {
     const [fighter2Name, setFighter2Name] = useState(fighter2);
     const [selectedRounds, setSelectedRounds] = useState(roundAmount);
     const [discardModalVisible, setDiscardModalVisible] = useState(false);
+    
+    
 
 
     // const [selectedGender, setSelectedGender] = useState("");
     // const [selectedWeight, setSelectedWeight] = useState<number | string>(0);
+
+    const initialFightDate = Array.isArray(params.fightDate)
+    ? params.fightDate[0]
+    : params.fightDate;
+
+    const [showDatePicker, setShowDatePicker] = useState(false);
+
+    const [fightDate, setFightDate] = useState<Date | null>(() => {
+        if (!initialFightDate) return null;
+
+        const parsedDate = new Date(`${initialFightDate}T12:00:00`);
+
+            return Number.isNaN(parsedDate.getTime())
+                ? null
+                : parsedDate;
+    });
+    
 
     const initialGender = Array.isArray(params.gender)
         ? params.gender[0]
@@ -56,6 +74,18 @@ export default function CreateMatch() {
         if (!initialWeight) return 0;
         return initialWeight === "200+" ? "200+" : Number(initialWeight);
     });
+
+    const fightDateParam = fightDate
+    ? `${fightDate.getFullYear()}-${String(fightDate.getMonth() + 1).padStart(2, '0')}-${String(fightDate.getDate()).padStart(2, '0')}`
+    : '';
+
+    const fightDateDisplay = fightDate
+        ? fightDate.toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+        })
+        : 'Select fight date';
 
 
     const buttonText = String(params.buttonText || "Create Scorecard");
@@ -84,6 +114,7 @@ export default function CreateMatch() {
                 savedScores: params.savedScores,
                 gender: selectedGender,
                 weight: selectedWeight,
+                fightDate: fightDateParam,
                 rating: normalizeMatchRating(params.rating),
                 description: serializeMatchDescription(parseMatchDescription(params.description)),
             },
@@ -192,12 +223,23 @@ export default function CreateMatch() {
                     savedScores: JSON.stringify(savedScores),
                     gender: selectedGender,
                     weight: selectedWeight,
+                    fightDate: fightDateParam,
                     ...getSavedCardTotals(savedScores),
                     rating: normalizeMatchRating(params.rating),
                     description: parseMatchDescription(params.description),
                 }),
             },
         });
+    };
+
+    const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+        if (Platform.OS !== 'ios') {
+            setShowDatePicker(false);
+        }
+
+        if (event.type === 'set' && selectedDate) {
+            setFightDate(selectedDate);
+        }
     };
 
     const roundSelector = (
@@ -301,7 +343,7 @@ export default function CreateMatch() {
                     },
                 ]}
                 keyboardShouldPersistTaps="handled"
-                scrollEnabled={false}
+                scrollEnabled={!isLandscape}
                 showsVerticalScrollIndicator={false}
             >
 
@@ -321,7 +363,7 @@ export default function CreateMatch() {
                         value={fighter1Name}
                         placeholderTextColor="#D32f2f"
                         onChangeText={setFighter1Name}
-                        style={isLandscape ? [styles.landscapeFighter1Input, { height: landscapeInputHeight }] : [styles.fighter1input, { minHeight: Math.max(40, 40 * scale) }]}
+                        style={isLandscape ? [styles.landscapeFighter1Input, { height: landscapeInputHeight }] : [styles.fighter1input, { minHeight: Math.max(38, 38 * scale) }]}
                     />
                 </View>
 
@@ -333,7 +375,7 @@ export default function CreateMatch() {
                         placeholderTextColor="#307Fb6"
                         value={fighter2Name}
                         onChangeText={setFighter2Name}
-                        style={isLandscape ? [styles.landscapeFighter2Input, { height: landscapeInputHeight }] : [styles.fighter2Input, { minHeight: Math.max(40, 40 * scale) }]}
+                        style={isLandscape ? [styles.landscapeFighter2Input, { height: landscapeInputHeight }] : [styles.fighter2Input, { minHeight: Math.max(38, 38 * scale) }]}
                     />
                 </View>
             </View>
@@ -343,10 +385,162 @@ export default function CreateMatch() {
                     <View style={styles.landscapeGenderContainer}>{genderSelector}</View>
                 </View>
             ) : (
-                <>
-                    {roundSelector}
-                    {genderSelector}
-                </>
+                <View style={styles.roundGenderRow}>
+                    {/* Rounds */}
+                    <View style={styles.roundGenderColumn}>
+                        <Text style={styles.compactSectionLabel}>
+                            Select rounds:
+                        </Text>
+
+                        <View style={styles.portraitRoundsGrid}>
+                            {rounds.map((round) => (
+                                <Pressable
+                                    key={round}
+                                    style={[
+                                        styles.portraitRoundButton,
+                                        selectedRounds === round && styles.roundButtonSelected,
+                                    ]}
+                                    onPress={() => setSelectedRounds(round)}
+                                >
+                                    <Text
+                                        style={[
+                                            styles.roundButtonText,
+                                            selectedRounds === round && styles.roundButtonTextSelected,
+                                        ]}
+                                    >
+                                        {round}
+                                    </Text>
+                                </Pressable>
+                            ))}
+                        </View>
+                    </View>
+
+                    {/* Gender */}
+                    <View style={styles.roundGenderColumn}>
+                        <Text style={styles.compactSectionLabel}>
+                            Select gender:{' '}
+                            <Text style={styles.optionalLabel}>(optional)</Text>
+                        </Text>
+
+                        <View style={styles.portraitGenderStack}>
+                            <Pressable
+                                style={[
+                                    styles.portraitGenderPill,
+                                    selectedGender === 'mens' && styles.malePillSelected,
+                                ]}
+                                onPress={() =>
+                                    selectedGender === 'mens'
+                                        ? setSelectedGender('idk')
+                                        : setSelectedGender('mens')
+                                }
+                            >
+                                <Ionicons
+                                    name="male-outline"
+                                    size={18}
+                                    color={selectedGender === 'mens' ? '#fff' : '#000'}
+                                />
+                                <Text
+                                    style={[
+                                        styles.maleText,
+                                        selectedGender === 'mens' && styles.maleTextSelected,
+                                    ]}
+                                >
+                                    Men's
+                                </Text>
+                            </Pressable>
+
+                            <Pressable
+                                style={[
+                                    styles.portraitGenderPill,
+                                    selectedGender === 'womens' && styles.femalePillSelected,
+                                ]}
+                                onPress={() =>
+                                    selectedGender === 'womens'
+                                        ? setSelectedGender('idk')
+                                        : setSelectedGender('womens')
+                                }
+                            >
+                                <Ionicons
+                                    name="female-outline"
+                                    size={18}
+                                    color={selectedGender === 'womens' ? '#fff' : '#000'}
+                                />
+                                <Text
+                                    style={[
+                                        styles.femaleText,
+                                        selectedGender === 'womens' && styles.femaleTextSelected,
+                                    ]}
+                                >
+                                    Women's
+                                </Text>
+                            </Pressable>
+                        </View>
+                    </View>
+                </View>
+            )}
+
+            <Text style={isLandscape ? styles.landscapeWeightLabel : styles.blackNameLabel}>
+                Select Date: <Text style={styles.optionalLabel}>(optional)</Text>
+            </Text>
+            <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Select fight date"
+                style={({ pressed }) => [
+                    styles.datePickerButton,
+                    pressed && styles.datePickerButtonPressed,
+                ]}
+                onPress={() => setShowDatePicker(true)}
+            >
+                <Ionicons name="calendar-outline" size={18} color="#307Fb6" />
+                <Text style={[styles.datePickerText, !fightDate && styles.datePickerPlaceholder]}>
+                    {fightDateDisplay}
+                </Text>
+                <Ionicons name="chevron-down" size={17} color="#307Fb6" />
+            </Pressable>
+
+            {showDatePicker && Platform.OS !== 'ios' && (
+                <DateTimePicker
+                    value={fightDate ?? new Date()}
+                    mode="date"
+                    display="default"
+                    onChange={handleDateChange}
+                />
+            )}
+
+            {Platform.OS === 'ios' && (
+                <Modal
+                    animationType="fade"
+                    transparent
+                    visible={showDatePicker}
+                    onRequestClose={() => setShowDatePicker(false)}
+                >
+                    <Pressable style={styles.datePickerOverlay} onPress={() => setShowDatePicker(false)}>
+                        <Pressable style={styles.datePickerModal} onPress={(event) => event.stopPropagation()}>
+                            <Text style={styles.datePickerModalTitle}>Select Date</Text>
+                            <DateTimePicker
+                                value={fightDate ?? new Date()}
+                                mode="date"
+                                display="spinner"
+                                onChange={handleDateChange}
+                                style={styles.datePickerSpinner}
+                            />
+                            <View style={styles.datePickerActions}>
+                                <Pressable
+                                    style={styles.datePickerClearButton}
+                                    onPress={() => {
+                                        setFightDate(null);
+                                        setShowDatePicker(false);
+                                    }}
+                                >
+                                    <Text style={styles.datePickerClearText}>Clear Date</Text>
+                                </Pressable>
+                                <Pressable style={styles.datePickerDoneButton} onPress={() => setShowDatePicker(false)}>
+                                    <Text style={styles.datePickerDoneText}>Done</Text>
+                                </Pressable>
+                            </View>
+                        </Pressable>
+                    </Pressable>
+                </Modal>
             )}
 
             <Text style={isLandscape ? styles.landscapeWeightLabel : styles.blackNameLabel}>
@@ -390,7 +584,7 @@ export default function CreateMatch() {
                         ))}
                     </View>
                     <View style={styles.weightColumnRight}>
-                        {[110, 118, 130, 147, 168, '200+'].map((weight) => (
+                        {[108, 118, 130, 147, 168, '200+'].map((weight) => (
                             <Pressable
                                 key={weight}
                                 style={[
@@ -673,6 +867,62 @@ const styles = StyleSheet.create({
         color: '#307Fb6',
         fontWeight: '700',
     },
+    roundGenderRow: {
+    width: '100%',
+    flexDirection: 'row',
+    gap: 18,
+    marginBottom: 18,
+},
+
+roundGenderColumn: {
+    flex: 1,
+    minWidth: 0,
+},
+
+compactSectionLabel: {
+    color: '#000',
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 10,
+},
+
+portraitRoundsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+    columnGap: 8,
+    rowGap: 7,
+},
+
+portraitRoundButton: {
+    backgroundColor: '#fff',
+    width: 46,
+    height: 32,
+    borderWidth: 1,
+    borderColor: '#B6C6D1',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 0,
+},
+
+portraitGenderStack: {
+    gap: 7,
+    justifyContent: 'center',
+    alignItems: 'center'
+},
+
+portraitGenderPill: {
+    backgroundColor: '#fff',
+    width: '75%',
+    height: 32,
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: '#B6C6D1',
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+},
     discardButton: {
         backgroundColor: '#D32F2F',
     },
@@ -715,20 +965,21 @@ const styles = StyleSheet.create({
         fontWeight: 500
     },
     button: {
-        backgroundColor: '#fff',
-        paddingHorizontal: '6%',
+        backgroundColor: '#307Fb6',
+        paddingHorizontal: '3%',
         paddingVertical: '2.5%',
         borderRadius: 12,
         // marginTop: 25,
-        minWidth: '29%',
+        minWidth: '25%',
         alignItems: 'center',
         justifyContent: 'center',
         boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
         borderWidth: 1,
-        borderColor: '#B6C6D1'
+        borderColor: '#B6C6D1',
+        minHeight: 42,
     },
     editButton: {
-        backgroundColor: '#fff',
+        backgroundColor: '#307Fb6',
                 minWidth: '25%',
         borderRadius: 12,
         // marginTop: 25,
@@ -739,6 +990,7 @@ const styles = StyleSheet.create({
         borderColor: '#B6C6D1',
         paddingHorizontal: '6%',
         paddingVertical: '2.5%',
+        minHeight: 42,
     },
 
     
@@ -771,7 +1023,7 @@ const styles = StyleSheet.create({
     },
 
     buttonText: {
-        color: '#307Fb6',
+        color: '#fff',
         fontSize: 14,
         fontWeight: '700',
         textAlign: 'center'
@@ -785,7 +1037,7 @@ const styles = StyleSheet.create({
     },
     editingButtonText: {
         fontSize: 14,
-        color: '#307Fb6',
+        color: '#fff',
     },
     cancelButton: {
         backgroundColor: '#de2f2f',
@@ -799,6 +1051,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
+        minHeight: 42,
     },
     landscapeCancelButton: {
         backgroundColor: '#de2f2f',
@@ -839,7 +1092,7 @@ const styles = StyleSheet.create({
         color: '#307Fb6',
     },
     landscapeEditSaveButton: {
-        backgroundColor: '#fff',
+        backgroundColor: '#307Fb6',
         paddingHorizontal: '1%',
         borderRadius: 12,
         flex: 1,
@@ -854,7 +1107,7 @@ const styles = StyleSheet.create({
         color: '#307Fb6',
     },
     landscapeButton: {
-        backgroundColor: '#fff',
+        backgroundColor: '#307Fb6',
         paddingHorizontal: 24,
         borderRadius: 12,
         flex: 1,
@@ -867,7 +1120,7 @@ const styles = StyleSheet.create({
         boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
     },
     landscapeEditContinueButton: {
-        backgroundColor: '#fff',
+        backgroundColor: '#307Fb6',
         paddingHorizontal: 24,
         borderRadius: 12,
         flex: 1,
@@ -923,6 +1176,7 @@ const styles = StyleSheet.create({
         gap: '2%',
     },
     landscapeWeightPill: {
+        backgroundColor: '#fff',
         height: '27%',
         width:  '70%',
         borderColor: '#B6C6D1',
@@ -939,6 +1193,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#307Fb6'
     },
     weightPill: {
+        backgroundColor: '#fff',
         height: '14.5%',
         width: '85%',
         borderColor: '#B6C6D1',
@@ -977,7 +1232,7 @@ const styles = StyleSheet.create({
         width: '100%',
         padding: "3%",
         borderRadius: 8,
-        marginBottom: '8%',
+        marginBottom: '6%',
         color: '#D32f2f',
         fontWeight: 600,
         borderWidth: 1,
@@ -1021,7 +1276,88 @@ const styles = StyleSheet.create({
         alignSelf: 'flex-start'
     },
     optionalLabel: {
+        fontSize: 11,
         fontWeight: '400'
+    },
+    datePickerButton: {
+        width: '100%',
+        minHeight: 40,
+        marginBottom: 18,
+        paddingHorizontal: 14,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: '#B6C6D1',
+        borderRadius: 12,
+    },
+    datePickerButtonPressed: {
+        backgroundColor: '#E7EEF3',
+    },
+    datePickerText: {
+        flex: 1,
+        color: '#000',
+        fontSize: 14,
+    },
+    datePickerPlaceholder: {
+        color: '#667681',
+    },
+    datePickerOverlay: {
+        flex: 1,
+        paddingHorizontal: 24,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    },
+    datePickerModal: {
+        width: '100%',
+        maxWidth: 420,
+        padding: 20,
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        alignItems: 'center',
+    },
+    datePickerModalTitle: {
+        color: '#000',
+        fontSize: 16,
+        fontWeight: '700',
+    },
+    datePickerSpinner: {
+        width: '100%',
+    },
+    datePickerActions: {
+        flexDirection: 'row',
+        gap: 10,
+        justifyContent: 'center',
+        width: '100%',
+    },
+    datePickerClearButton: {
+        minHeight: 42,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderColor: '#B6C6D1',
+        borderRadius: 12,
+        borderWidth: 1,
+        flex: 1,
+    },
+    datePickerClearText: {
+        color: '#D32F2F',
+        fontSize: 14,
+        fontWeight: '700',
+    },
+    datePickerDoneButton: {
+        minWidth: 120,
+        minHeight: 42,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#307Fb6',
+        borderRadius: 12,
+    },
+    datePickerDoneText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '700',
     },
     blueNameLabel: {
         color: '#307Fb6',
@@ -1049,6 +1385,7 @@ const styles = StyleSheet.create({
         marginBottom: '6%'
     },
         malePill: {
+            backgroundColor: '#fff',
             flexDirection: 'row',
             borderWidth: 1,
             borderColor: '#B6C6D1',
@@ -1067,6 +1404,7 @@ const styles = StyleSheet.create({
         },
 
         femalePill: {
+            backgroundColor: '#fff',
             flexDirection: 'row',
             borderWidth: 1,
             borderColor: '#B6C6D1',
@@ -1084,7 +1422,6 @@ const styles = StyleSheet.create({
             backgroundColor: '#d32fba',
             justifyContent: 'center',
             alignItems: 'center',
-            height: '80%',
             width: '40%',
             borderRadius: 25
         },
@@ -1115,7 +1452,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#D32f2f'
     },
     roundButton: {
-        backgroundColor: 'transparent',
+        backgroundColor: '#fff',
         borderWidth: 1,
         borderColor: '#B6C6D1',
         // paddingHorizontal: '4.25%',
@@ -1128,7 +1465,7 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     landscapeRoundButton: {
-        backgroundColor: 'transparent',
+        backgroundColor: '#fff',
         borderWidth: 1,
         borderColor: '#B6C6D1',
         width: '13%',
@@ -1145,6 +1482,9 @@ const styles = StyleSheet.create({
     roundButtonText: {
         color: '#000',
         fontSize: 12,
+        lineHeight: 14,
+        textAlign: 'center',
+        includeFontPadding: false,
     },
     roundButtonTextSelected: {
         color: '#fff',
@@ -1168,7 +1508,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderBottomLeftRadius: 15,
         borderBottomRightRadius: 15,
-        marginBottom: '7%',
+        marginBottom: '5%',
     },
 
     // LANDSCAPE STYLES
@@ -1181,7 +1521,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderBottomLeftRadius: 20,
         borderBottomRightRadius: 20,
-        marginBottom: '2%',
+        marginBottom: '1.5%',
         boxShadow: '4',
         shadowColor: '#11334b',
         shadowOffset: { width: 2, height: 2 },

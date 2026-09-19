@@ -822,14 +822,10 @@ const styles = StyleSheet.create({
         color: '#7D8991',
     },
     bottomBar: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        bottom: 0,
         backgroundColor: SCREEN,
         paddingTop: 8,
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        gap: 8,
     },
     cancelButton: {
         minHeight: 42,
@@ -842,7 +838,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.3,
         shadowRadius: 4,
         elevation: 4,
-        width: '45%'
+        flex: 1,
 
     },
     saveButton: {
@@ -856,7 +852,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.3,
         shadowRadius: 4,
         elevation: 4,
-        width: '45%'
+        flex: 1,
     },
     cancelButtonText: {
         color: '#fff',

@@ -24,10 +24,11 @@ type SavedCardProps = {
   scrollY?: number;
   viewportHeight?: number;
   weight?: number | '200+';
+  fightDate?: string;
   gender?: "idk" | "mens" | "womens";
 }
 
-export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, savedScores, rating, description, weight, gender, onDelete, scrollY = 0, viewportHeight = 0}: SavedCardProps) {
+export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, savedScores, rating, description, weight, gender, fightDate, onDelete, scrollY = 0, viewportHeight = 0}: SavedCardProps) {
   const router = useRouter();
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [cardLayout, setCardLayout] = useState<{ y: number; height: number } | null>(null);
@@ -57,7 +58,8 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
           rating,
           description: serializeMatchDescription(description ?? []),
           gender,
-          weight
+          weight,
+          fightDate,
       }
     });
   };

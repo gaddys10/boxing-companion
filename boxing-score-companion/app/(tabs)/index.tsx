@@ -26,6 +26,7 @@ type Scorecard = {
   rounds: number;
   gender?: "idk" | "mens" | "womens";
   weight?: number | "200+";
+  fightDate?: string;
   savedScores?: string;
   rating?: MatchRating;
   description?: MatchDescription;
@@ -212,6 +213,7 @@ export default function HomeScreen() {
                 rounds={card.rounds}
                 gender={card.gender}
                 weight={card.weight}
+                fightDate={card.fightDate}
                 savedScores={card.savedScores}
                 rating={card.rating}
                 description={card.description}
@@ -245,6 +247,7 @@ export default function HomeScreen() {
                 rounds={card.rounds}
                 gender={card.gender}
                 weight={card.weight}
+                fightDate={card.fightDate}
                 savedScores={card.savedScores}
                 rating={card.rating}
                 description={card.description}

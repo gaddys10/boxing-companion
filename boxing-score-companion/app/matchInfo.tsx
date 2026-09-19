@@ -27,6 +27,7 @@ export default function MatchInfoScreen() {
         savedStoppageWinner,
         gender,
         weight,
+        fightDate,
         rating,
         description,
     } = useLocalSearchParams();
@@ -246,6 +247,7 @@ export default function MatchInfoScreen() {
                     savedScores: JSON.stringify(savedRoundScores),
                     weight: normalizedWeight,
                     gender: normalizedGender,
+                    fightDate,
                     ...scorecardTotals,
                     fighter1Score: fighter1LatestTotal,
                     fighter2Score: fighter2LatestTotal,
@@ -271,6 +273,7 @@ export default function MatchInfoScreen() {
                 savedScores: JSON.stringify(getSavedScores()),
                 gender: normalizedGender,
                 weight: normalizedWeight,
+                fightDate,
                 rating: matchRating,
                 description: serializedDescription,
             },
@@ -292,6 +295,7 @@ export default function MatchInfoScreen() {
                 savedScores: JSON.stringify(getSavedScores()),
                 gender: normalizedGender,
                 weight: normalizedWeight,
+                fightDate,
                 rating: matchRating,
                 description: serializedDescription,
             },
@@ -313,6 +317,7 @@ export default function MatchInfoScreen() {
                 savedScores: JSON.stringify(getSavedScores()),
                 gender: normalizedGender,
                 weight: normalizedWeight,
+                fightDate,
                 rating: matchRating,
                 description: serializedDescription,
             },
@@ -469,15 +474,18 @@ export default function MatchInfoScreen() {
                 }
 
                 {isLandscape && (
-                    <View style={[styles.landscapeButtonContainer, {  gap: 10 * sx }]}>
-                        <Pressable style={[styles.landscapeCardDetailsButton, { width: 112 * sx, height: 38 * sy }]} onPress={handleCardDetails}>
-                            <Text onPress={handleCardDetails} style={styles.landscapecardDetailsButtonText}>Card Details</Text>
+                    <View style={[styles.landscapeButtonContainer, { gap: 8 * sx }]}>
+                        <Pressable style={[styles.actionButton, styles.secondaryAction, styles.landscapeAction]} onPress={handleCardDetails}>
+                            <Text style={styles.secondaryActionText}>Card Info</Text>
                         </Pressable>
-                        <Pressable style={[styles.landscapeShareButton, { width: 112 * sx, height: 38 * sy }]} onPress={handleSaveScorecard}>
-                            <Text style={styles.landscapeShareButtonText}>Share</Text>
+                        <Pressable style={[styles.actionButton, styles.secondaryAction, styles.landscapeAction]} onPress={handleNotes}>
+                            <Text style={styles.secondaryActionText}>Notes</Text>
                         </Pressable>
-                        <Pressable style={[styles.landscapeButton, { width: 112 * sx, height: 38 * sy }]} onPress={handleSaveScorecard}>
-                            <Text style={styles.landscapeButtonText}>Save</Text>
+                        <Pressable style={[styles.actionButton, styles.secondaryAction, styles.landscapeAction]} onPress={handleShare}>
+                            <Text style={styles.secondaryActionText}>Share</Text>
+                        </Pressable>
+                        <Pressable style={[styles.actionButton, styles.primaryAction, styles.landscapeAction]} onPress={handleSaveScorecard}>
+                            <Text style={styles.primaryActionText}>Save</Text>
                         </Pressable>
                     </View>
                 )}
@@ -548,6 +556,7 @@ export default function MatchInfoScreen() {
                                     savedScores={JSON.stringify(roundScores)}
                                     gender={normalizedGender}
                                     weight={normalizedWeight}   
+                                    fightDate={typeof fightDate === 'string' ? fightDate : fightDate?.[0]}
                                     rating={matchRating}
                                     description={serializedDescription}
                                     onClearRound={handleClearRound}
@@ -605,7 +614,8 @@ export default function MatchInfoScreen() {
                                         id={id ? String(id) : undefined}
                                         savedScores={JSON.stringify(roundScores)}
                                         gender={normalizedGender}
-                                        weight={normalizedWeight}  
+                                        weight={normalizedWeight}
+                                        fightDate={typeof fightDate === 'string' ? fightDate : fightDate?.[0]}
                                         rating={matchRating}
                                         description={serializedDescription}
                                         onClearRound={handleClearRound}
@@ -620,41 +630,40 @@ export default function MatchInfoScreen() {
                     
                 }
                 {!isLandscape &&
-                    <View style={styles.buttonContainer}>
+                    <View style={[styles.buttonContainer, { paddingBottom: Math.max(insets.bottom, 8) }]}>
 
 {/* save button  */}
                         <Pressable
-                            style={isLandscape ? styles.landscapeButton : styles.button}
-                            // onPress={() => router.push('/')}
+                            style={[styles.actionButton, styles.primaryAction]}
                             onPress={handleSaveScorecard}
                         >
-                            <Text style={isLandscape ? styles.landscapeButtonText : styles.buttonText}>
+                            <Text style={styles.primaryActionText}>
                                 Save
                             </Text>
                         </Pressable>
 
                         {/* save button  */}
                         <Pressable
-                            style={isLandscape ? styles.landscapeButton : styles.cardDetailsButton}
+                            style={[styles.actionButton, styles.secondaryAction]}
                             onPress={handleCardDetails}
                         >
-                            <Text style={isLandscape ? styles.landscapeButtonText : styles.cardDetailsButtonText}>
+                            <Text style={styles.secondaryActionText}>
                                 Card Info
                             </Text>
                         </Pressable>
                         <Pressable
-                            style={isLandscape ? styles.landscapeButton : styles.shareButton}
+                            style={[styles.actionButton, styles.secondaryAction]}
                             onPress={handleNotes}
                         >
-                            <Text style={isLandscape ? styles.landscapeButtonText : styles.shareButtonText}>
+                            <Text style={styles.secondaryActionText}>
                                 Notes
                             </Text>
                         </Pressable>
                         <Pressable
-                            style={isLandscape ? styles.landscapeButton : styles.shareButton}
+                            style={[styles.actionButton, styles.secondaryAction]}
                             onPress={handleShare}
                         >
-                            <Text style={isLandscape ? styles.landscapeButtonText : styles.shareButtonText}>
+                            <Text style={styles.secondaryActionText}>
                                 Share
                             </Text>
                         </Pressable>
@@ -698,71 +707,38 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontWeight: '700',
     },
-    shareButton: {
-        backgroundColor: '#fff',
-        paddingHorizontal: '5%',
-        paddingVertical: '2.5%',
+    actionButton: {
+        flex: 1,
+        minWidth: 0,
+        minHeight: 42,
+        paddingHorizontal: 4,
         borderRadius: 12,
-        overflow: 'hidden',
-        alignSelf: 'center',
         alignItems: 'center',
-        bottom: '4%',
-        borderWidth: 1,
-        borderColor: 'rgba(200, 200, 200, 0.7)',
-        boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
-    },
-    shareButtonText: {
-        color: '#1976D2',
-        fontSize: 14,
-        fontWeight: '700',
-        zIndex: 1
-    },
-    cardDetailsButton: {
-        backgroundColor: '#fff',
-        paddingHorizontal: '5%',
-        paddingVertical: '2.5%',
-        borderRadius: 12,
-        overflow: 'hidden',
-        alignSelf: 'center',
-        alignItems: 'center',
-        bottom: '4%',
-        borderWidth: 1,
-                // borderColor: 'rgba(200, 200, 200, 0.7)',
-        borderColor:'rgba(25, 118, 210, 0.4)',
-
-        boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
-    },
-    cardDetailsButtonText: {
-        color: '#1976D2',
-        fontSize: 14,
-        fontWeight: '700',
-        zIndex: 1
-    },
-
-    button: {
-        backgroundColor: '#D32F2F',
-        paddingHorizontal: '6%',
-        paddingVertical: '2.5%',
-        borderRadius: 12,
-        overflow: 'hidden',
-        alignSelf: 'center',
-        alignItems: 'center',
+        justifyContent: 'center',
         boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
-        bottom: '4%'
     },
-    buttonText: {
+    primaryAction: { backgroundColor: '#D32F2F' },
+    secondaryAction: { backgroundColor: '#fff' },
+    primaryActionText: {
         color: '#fff',
         fontSize: 14,
         fontWeight: '700',
-        zIndex: 1
+        textAlign: 'center',
+    },
+    secondaryActionText: {
+        color: '#1976D2',
+        fontSize: 14,
+        fontWeight: '700',
+        textAlign: 'center',
     },
     container: {
         flex: 1,
         backgroundColor: 'transparent',
         padding: 15,
         paddingRight: 10,
+        paddingBottom: 0,
     },
     fighter1Name: {
         color: '#D32F2F',
@@ -814,16 +790,17 @@ const styles = StyleSheet.create({
     },
     landscapeButtonContainer: {
         position: 'absolute',
-        right: '8.5%',
-        top: '3%',
+        right: 12,
+        top: 14,
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        gap: 40
+        width: '58%',
+        height: 42,
     },
     buttonContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-around',
-        bottom: '1%',
+        gap: 8,
+        paddingTop: 8,
+        paddingHorizontal: 4,
     },
     headerText: {
         textAlign: 'center',
@@ -916,7 +893,7 @@ const styles = StyleSheet.create({
     totalEvents: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: '2%',
+        // marginBottom: '2%',
         width: '92%',
         alignSelf: 'center',
     },
@@ -940,59 +917,7 @@ const styles = StyleSheet.create({
     },
 
     //LANDSCAPE STYLES
-    landscapeButton: {
-        backgroundColor: '#D32F2F',
-        paddingHorizontal: 12,
-        borderRadius: 10,
-        width: 140,
-        minHeight: 36,
-        zIndex: 2,
-        justifyContent: 'center',
-        alignItems: 'center',
-        overflow: 'hidden',
-        boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
-    },
-    landscapeCardDetailsButton: {
-        backgroundColor: '#fff',
-        paddingHorizontal: 12,
-        borderRadius: 10,
-        width: 140,
-        minHeight: 36,
-        zIndex: 2,
-        justifyContent: 'center',
-        alignItems: 'center',
-        overflow: 'hidden',
-        boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
-    },
-
-    landscapeShareButton: {
-        backgroundColor: '#fff',
-        paddingHorizontal: 12,
-        borderRadius: 10,
-        width: 140,
-        minHeight: 36,
-        zIndex: 2,
-        justifyContent: 'center',
-        alignItems: 'center',
-        overflow: 'hidden',
-        boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
-    },
-    landscapecardDetailsButtonText: {
-        color: '#1976D2',
-        fontSize: 14,
-        fontWeight: '700',
-    },
-    landscapeShareButtonText: {
-        color: '#1976D2',
-        fontSize: 14,
-        fontWeight: '700',
-    },
-    landscapeButtonText: {
-        color: '#fff',
-        fontSize: 14,
-        fontWeight: '700',
-        zIndex: 1
-    },
+    landscapeAction: { minHeight: 42 },
     landscapeContainer: {
         flex: 1,
         backgroundColor: 'transparent',
