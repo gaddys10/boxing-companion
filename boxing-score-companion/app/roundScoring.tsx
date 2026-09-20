@@ -452,7 +452,9 @@ export default function RoundScoringScreen() {
             }}>
                 <Image
                     source={require('../assets/images/bg2.png')}
-                    style={[StyleSheet.absoluteFill, styles.rightAreaImage, { opacity: 0.8 }]}
+                    style={[StyleSheet.absoluteFill, 
+                        isLandscape ? styles.rightAreaImage : styles.portraitRightAreaImage, 
+                        { opacity: 0.8 }]}
                     resizeMode="cover"
                 />
 
@@ -1363,8 +1365,15 @@ const styles = StyleSheet.create({
         position: 'absolute',
         right: 0,
         top: -70,
-        width: '120%',
-        height: '120%',
+        width: '119%',
+        height: '119%',
+    },
+    portraitRightAreaImage: {
+        position: 'absolute',
+        right: 0,
+        top: -120,
+        width: '116%',
+        height: '116%',
     },
     leftEvents2: {
         position: 'absolute',
