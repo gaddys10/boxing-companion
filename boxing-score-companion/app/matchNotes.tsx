@@ -218,10 +218,7 @@ export default function MatchNotesScreen() {
     };
 
     const goBack = () => {
-        router.replace({
-            pathname: '/matchInfo',
-            params,
-        });
+        router.back();
     };
 
     const saveNotes = () => {

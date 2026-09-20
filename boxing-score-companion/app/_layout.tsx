@@ -31,7 +31,7 @@ export default function RootLayout() {
         <Stack screenOptions={{ gestureEnabled: false, fullScreenGestureEnabled: false }}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="createMatch" options={{ animationTypeForReplace: 'pop', orientation: 'default', }} />
-          <Stack.Screen name="matchInfo" options={{ animationTypeForReplace: 'pop', orientation: 'default', }} />
+          <Stack.Screen name="matchInfo" options={{ animationTypeForReplace: 'push', orientation: 'default', }} />
           <Stack.Screen name="matchNotes" options={{ animationTypeForReplace: 'push', orientation: 'default', }} />
           <Stack.Screen name="modal" options={{ presentation: 'modal',  title: 'Modal' }} />
           <Stack.Screen name="roundScoring" options={{headerShown: false, orientation: 'default', animation: 'fade', animationDuration: 200}}/>

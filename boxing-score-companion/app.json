@@ -39,7 +39,14 @@
       "expo-status-bar",
       "expo-web-browser",
       "expo-sharing",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-6228968095032196~7575749011",
+          "iosAppId": "ca-app-pub-6228968095032196~8916102418"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

@@ -242,6 +242,13 @@ export default function CreateMatch() {
         }
     };
 
+    const handleDatePickerDone = () => {
+        if (!fightDate) {
+            setFightDate(new Date());
+        }
+        setShowDatePicker(false);
+    };
+
     const roundSelector = (
         <>
             <Text style={isLandscape ? styles.landscapeRoundLabel : styles.blackNameLabel}>Select number of rounds:</Text>
@@ -534,7 +541,7 @@ export default function CreateMatch() {
                                 >
                                     <Text style={styles.datePickerClearText}>Clear Date</Text>
                                 </Pressable>
-                                <Pressable style={styles.datePickerDoneButton} onPress={() => setShowDatePicker(false)}>
+                                <Pressable style={styles.datePickerDoneButton} onPress={handleDatePickerDone}>
                                     <Text style={styles.datePickerDoneText}>Done</Text>
                                 </Pressable>
                             </View>
@@ -764,7 +771,7 @@ export default function CreateMatch() {
                         </Pressable>
                     )}
                     <Pressable
-                        style={[styles.button, isEditing && styles.editingActionButton]}
+                        style={[styles.createButton, isEditing && styles.editingActionButton]}
                         onPress={handleStartFight}
                     >
                         <Text style={[styles.buttonText, isEditing && styles.editingButtonText]}>{buttonText}</Text>
@@ -978,6 +985,21 @@ portraitGenderPill: {
         borderColor: '#B6C6D1',
         minHeight: 42,
     },
+    createButton: {
+        backgroundColor: '#307Fb6',
+        paddingHorizontal: '3%',
+        paddingVertical: '2.5%',
+        borderRadius: 12,
+        // marginTop: 25,
+        minWidth: '25%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
+        borderWidth: 1,
+        borderColor: '#B6C6D1',
+        borderBottomWidth: 0,
+        minHeight: 42,
+    },
     editButton: {
         backgroundColor: '#307Fb6',
                 minWidth: '25%',
@@ -987,6 +1009,7 @@ portraitGenderPill: {
         justifyContent: 'center',
         boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
         borderWidth: 1,
+        borderBottomWidth: 0,
         borderColor: '#B6C6D1',
         paddingHorizontal: '6%',
         paddingVertical: '2.5%',
@@ -1103,6 +1126,7 @@ portraitGenderPill: {
         justifyContent: 'center',
         boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
         borderWidth: 1,
+        borderBottomWidth: 0,
         borderColor: '#B6C6D1',
         color: '#307Fb6',
     },
@@ -1417,13 +1441,8 @@ portraitGenderPill: {
 
         },
         femalePillSelected: {
-            flexDirection: 'row',
             borderWidth: 0,
             backgroundColor: '#d32fba',
-            justifyContent: 'center',
-            alignItems: 'center',
-            width: '40%',
-            borderRadius: 25
         },
         maleText: {
             color: '#000',
