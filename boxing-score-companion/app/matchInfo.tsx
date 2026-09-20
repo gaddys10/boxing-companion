@@ -281,7 +281,7 @@ export default function MatchInfoScreen() {
     };
 
     const handleNotes = () => {
-        router.replace({
+        router.push({
             pathname: '/matchNotes',
             params: {
                 id: id ? String(id) : undefined,

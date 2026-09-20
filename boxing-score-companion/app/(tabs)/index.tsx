@@ -43,8 +43,8 @@ export default function HomeScreen() {
   const [scrollViewportHeight, setScrollViewportHeight] = useState(0);
   const { isLandscape, insets, contentHeight, sy, scale } = useResponsiveLayout();
 
-  const portraitTitleTop = 51 * sy;
-  const portraitTitleHeight = 111 * sy;
+  const portraitTitleTop = 61 * sy;
+  const portraitTitleHeight = 105 * sy;
   const portraitCardsTop = 224 * sy;
   const searchBoxHeight = Math.max(44, 50 * scale);
   const portraitSearchTop = portraitTitleTop
@@ -150,6 +150,7 @@ export default function HomeScreen() {
                 <Text style={styles.landscapeTitle3}> Companion</Text>
               </View>
               <Image source={tIcon} style={styles.landscapeIcon} resizeMode="contain" />
+              <Text style={styles.versionText}>v0.1</Text>
             </View>
             <View style={[styles.landscapeSearchBox, { top: landscapeSearchTop, height: searchBoxHeight }]}>
               <View style={styles.searchInputBox}>
@@ -174,11 +175,13 @@ export default function HomeScreen() {
           <>
             <View style={[styles.titleBigContainer, { top: portraitTitleTop, height: portraitTitleHeight }]}>
               <View style={styles.titleRight}>
+                <Image source={tIcon} style={styles.icon} resizeMode="contain" />
                 <Text style={styles.title}>Boxing</Text>
                 <View style={styles.title2Container}><Text style={styles.title2}>Score</Text></View>
                 <Text style={styles.title3}> Companion</Text>
               </View>
-              <Image source={tIcon} style={styles.icon} resizeMode="contain" />
+              <Text style={styles.versionText}>v0.1</Text>
+
             </View>
             <View style={[styles.searchBox, {
               top: portraitSearchTop,
@@ -306,10 +309,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   icon: {
-    width: '35%',
-    height: '85%',
-    marginLeft: '-2%',
-    alignSelf: 'center',
+    position: 'absolute',
+    right: '95%',
+    top: '13%',
+    width: 86,
+    height: '77%',
   },
 
   savedCardContainer: {
@@ -363,15 +367,17 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#fff',
-    fontSize: 26,
+    fontSize: 22,
     fontWeight: '700',
+    textAlign: 'left',
     marginBottom: '1.5%',
     marginLeft: '4.5%'
   },
   title2: {
     color: '#fff',
-    fontSize: 26,
+    fontSize: 22,
     fontWeight: '700',
+    textAlign: 'left',
   },
   title2Container: {
     backgroundColor: '#D32F2F',
@@ -389,8 +395,9 @@ const styles = StyleSheet.create({
   },
   title3: {
     color: '#fff',
-    fontSize: 26,
+    fontSize: 22,
     fontWeight: '700',
+    textAlign: 'left',
   },
   titleBigContainer: {
     position: 'absolute',
@@ -409,6 +416,14 @@ const styles = StyleSheet.create({
   titleRight: {
     height: '100%',
     justifyContent: 'center',
+  },
+  versionText: {
+    position: 'absolute',
+    right: 15,
+    bottom: 15,
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '600',
   },
 
   //Landscape styles
@@ -439,8 +454,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   landscapeIcon: {
-    width: 60,
-    height: 60,
+    width: 50,
+    height: 50,
     marginLeft: -5,
     alignSelf: 'center',
   },
@@ -491,19 +506,19 @@ const styles = StyleSheet.create({
   },
   landscapeTitle: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '700',
     marginBottom: 3,
     marginLeft: 7
   },
   landscapeTitle2: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '700',
   },
   landscapeTitle3: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '700',
     marginBottom: 0,
     marginLeft: 3

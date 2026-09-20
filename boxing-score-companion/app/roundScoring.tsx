@@ -275,7 +275,7 @@ export default function RoundScoringScreen() {
                         setLeftDeductions((current) => current > 0 ? current - 1 : 0);
                         resetLongPressFill(leftDeductUndoProgress);
                     }}
-                    delayLongPress={1000}
+                    delayLongPress={800}
                     style={[
                         isLandscape ? styles.undoDeductLeft : styles.portraitUndoRibbonLeft,
                         {
@@ -291,8 +291,9 @@ export default function RoundScoringScreen() {
                         pointerEvents="none"
                         style={StyleSheet.absoluteFill}
                     />
-                    <Animated.View pointerEvents="none" style={[styles.fillOverlayTopLeft, { width: leftDeductUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
+                    <Animated.View pointerEvents="none" style={[styles.fillOverlayTopLeft, { width: leftDeductUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '150%'] }) }]} />
                     <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.78} style={isLandscape ? styles.leftEvents : styles.portraitUndoEvent}>Deductions: {leftDeductions}</Text>
+                    <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={isLandscape ? styles.leftDedUndo : styles.portraitUndoInstruction}>Hold to Undo</Text>
                 </Pressable>
 
                 {/* undo left knockdowns  */}
@@ -303,10 +304,16 @@ export default function RoundScoringScreen() {
                         handleScorePress('left');
                     }}
                     onPressIn={() => startLongPressFill(leftKDUndoProgress, 1000)}
+                    onPressOut={() => resetLongPressFill(leftKDUndoProgress)}
                     onLongPress={() => {
+                        if (leftKnockdowns <= 0) {
+                            resetLongPressFill(leftKDUndoProgress);
+                            return;
+                        }
+
                         void confirmHaptic();
-                        setScore((currentScore) => currentScore <= -70 ? currentScore = -99 : currentScore - 30);
-                        setLeftKnockdowns((current) => current > 0 ? current - 1 : 0);
+                        setScore((currentScore) => currentScore <= -70 ? -99 : currentScore - 30);
+                        setLeftKnockdowns((current) => current - 1);
                         resetLongPressFill(leftKDUndoProgress);
                     }}
                     style={[
@@ -316,7 +323,7 @@ export default function RoundScoringScreen() {
                             top: isLandscape ? topControlTop : portraitKnockdownTop,
                         },
                     ]}
-                    delayLongPress={950}
+                    delayLongPress={800}
                 >
                         <LinearGradient
                             colors={['#f7e7a8', '#d7b55d', '#b78c35']}
@@ -325,7 +332,7 @@ export default function RoundScoringScreen() {
                             pointerEvents="none"
                             style={StyleSheet.absoluteFill}
                         />
-                        <Animated.View pointerEvents="none" style={[styles.fillOverlayTopLeft, { width: leftKDUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
+                        <Animated.View pointerEvents="none" style={[styles.fillOverlayTopLeft, { width: leftKDUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '150%'] }) }]} />
                         <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72} style={isLandscape ? styles.leftEvents2 : styles.portraitUndoEvent}>Knockdowns: {leftKnockdowns}</Text>
                         <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={isLandscape ? styles.leftKdUndo : styles.portraitUndoInstruction}>Hold to Undo</Text>
                 </Pressable>
@@ -459,9 +466,14 @@ export default function RoundScoringScreen() {
                     onPressIn={() => startLongPressFill(rightKDUndoProgress, 1000)}
                     onPressOut={() => resetLongPressFill(rightKDUndoProgress)}
                     onLongPress={() => {
+                        if (rightKnockdowns <= 0) {
+                            resetLongPressFill(rightKDUndoProgress);
+                            return;
+                        }
+
                         void confirmHaptic();
                         setScore((currentScore) => currentScore + 30);
-                        setRightKnockdowns((current) => current > 0 ? current - 1 : 0);
+                        setRightKnockdowns((current) => current - 1);
                         resetLongPressFill(rightKDUndoProgress);
                     }}
                     style={[
@@ -471,7 +483,7 @@ export default function RoundScoringScreen() {
                             height: isLandscape ? undoHeight : portraitRibbonHeight,
                         },
                     ]}
-                    delayLongPress={1000}>
+                    delayLongPress={800}>
                         <LinearGradient
                             colors={['#f7e7a8', '#d7b55d', '#b78c35']}
                             start={{ x: 0, y: 0 }}
@@ -479,7 +491,7 @@ export default function RoundScoringScreen() {
                             pointerEvents="none"
                             style={StyleSheet.absoluteFill}
                         />
-                        <Animated.View pointerEvents="none" style={[styles.fillOverlayTopLeft, { width: rightKDUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
+                        <Animated.View pointerEvents="none" style={[styles.fillOverlayTopLeft, { width: rightKDUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '150%'] }) }]} />
                         <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72} style={isLandscape ? styles.rightEvents2 : styles.portraitUndoEvent}>Knockdowns: {rightKnockdowns}</Text>
                         <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={isLandscape ? styles.rightKdUndo : styles.portraitUndoInstruction}>Hold to Undo</Text>
                 </Pressable>
@@ -502,7 +514,7 @@ export default function RoundScoringScreen() {
                         setRightDeductions((current) => current > 0 ? current - 1 : 0);
                         resetLongPressFill(rightDeductUndoProgress);
                     }}
-                    delayLongPress={700}
+                    delayLongPress={800}
                     style={[
                         isLandscape ? styles.undoDeductRight : styles.portraitUndoRibbonRight,
                         {
@@ -650,7 +662,7 @@ export default function RoundScoringScreen() {
 
                     saveRoundAndExit(false);
                 }}
-                delayLongPress={1000}
+                delayLongPress={950}
             >
             <LinearGradient
                 colors={['#f7e7a8', '#d7b55d', '#b78c35']}
@@ -1483,16 +1495,16 @@ const styles = StyleSheet.create({
         ...StyleSheet.absoluteFill,
         backgroundColor: 'black',
         opacity: 0.35,
-        borderTopRightRadius: 10,
         zIndex: 0
 
     },
     fillOverlayTopLeft: {
-        ...StyleSheet.absoluteFill,
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        bottom: 0,
         backgroundColor: 'black',
         opacity: 0.35,
-        borderBottomLeftRadius: 15,
-        borderBottomRightRadius: 10
     }
 
 });
