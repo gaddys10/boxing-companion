@@ -645,7 +645,7 @@ export default function MatchInfoScreen() {
                             onPress={handleSaveScorecard}
                         >
                             <Text style={styles.primaryActionText}>
-                                Save
+                                Save & Exit
                             </Text>
                         </Pressable>
 
@@ -730,7 +730,7 @@ const styles = StyleSheet.create({
     secondaryAction: { backgroundColor: '#fff' },
     primaryActionText: {
         color: '#fff',
-        fontSize: 14,
+        fontSize: 12.5,
         fontWeight: '700',
         textAlign: 'center',
     },

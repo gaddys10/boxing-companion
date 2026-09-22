@@ -462,7 +462,7 @@ export default function ExportCardScreen() {
             const imageUri = await captureExportCard();
             await MediaLibrary.Asset.create(imageUri);
             void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            Alert.alert('Scorecard Saved ✅', 'Scorecard image successfully saved to Photos.');
+            Alert.alert('Scorecard Saved ✅', 'Scorecard image successfully saved.');
         } catch (error) {
             console.error('Unable to save scorecard:', error);
             Alert.alert('Save failed', 'The scorecard image could not be saved.');
@@ -844,7 +844,7 @@ const styles = StyleSheet.create({
     },
     scrollContentNoScroll: {
         flexGrow: 1,
-        justifyContent: 'flex-start',
+        justifyContent: 'space-between',
     },
     exportCard: {
         position: 'relative',
@@ -1018,6 +1018,7 @@ const styles = StyleSheet.create({
         width: '100%',
         textAlign: 'center',
         fontSize: 20,
+        height: 46,
         lineHeight: 23,
         fontWeight: '800',
     },
