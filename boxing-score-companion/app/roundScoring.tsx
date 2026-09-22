@@ -235,6 +235,13 @@ export default function RoundScoringScreen() {
                 savedScores: params.savedScores,
                 rating: params.rating,
                 description: params.description,
+                savedLeftScore: '',
+                savedRightScore: '',
+                savedPlusMinus: String(score),
+                savedLeftDeductions: String(leftDeductions),
+                savedRightDeductions: String(rightDeductions),
+                savedLeftKnockdowns: String(leftKnockdowns),
+                savedRightKnockdowns: String(rightKnockdowns),
                 savedRound: String(round),
                 savedStoppageReason: stoppageReason,
                 savedStoppageWinner: stoppageReason === 'NC' ? 'NC' : selectedStoppageWinner,
@@ -256,7 +263,9 @@ export default function RoundScoringScreen() {
                 }}
             >
                 <Image
-                    source={require('../assets/images/bg1.png')}
+                    // source={require('../assets/images/bg1.png')}
+                    source={require('../assets/images/bg1.jpg')}
+
                     style={[StyleSheet.absoluteFill, styles.leftAreaImage, { opacity: 0.8 }]}
                     resizeMode="cover"
                 />
@@ -451,8 +460,10 @@ export default function RoundScoringScreen() {
                 handleScorePress('right');
             }}>
                 <Image
-                    source={require('../assets/images/bg2.png')}
-                    style={[StyleSheet.absoluteFill, styles.rightAreaImage, { opacity: 0.8 }]}
+                    source={require('../assets/images/bg2.jpg')}
+                    style={[StyleSheet.absoluteFill, 
+                        isLandscape ? styles.rightAreaImage : styles.portraitRightAreaImage, 
+                        { opacity: 0.8 }]}
                     resizeMode="cover"
                 />
 
@@ -662,7 +673,7 @@ export default function RoundScoringScreen() {
 
                     saveRoundAndExit(false);
                 }}
-                delayLongPress={950}
+                delayLongPress={1000}
             >
             <LinearGradient
                 colors={['#f7e7a8', '#d7b55d', '#b78c35']}
@@ -1363,8 +1374,15 @@ const styles = StyleSheet.create({
         position: 'absolute',
         right: 0,
         top: -70,
-        width: '120%',
-        height: '120%',
+        width: '119%',
+        height: '119%',
+    },
+    portraitRightAreaImage: {
+        position: 'absolute',
+        right: 0,
+        top: -120,
+        width: '116%',
+        height: '116%',
     },
     leftEvents2: {
         position: 'absolute',

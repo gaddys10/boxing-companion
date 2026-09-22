@@ -259,7 +259,7 @@ export default function CreateMatch() {
                         style={[
                             isLandscape ? styles.landscapeRoundButton : styles.roundButton,
                             isLandscape
-                                ? { minHeight: roundButtonSize, minWidth: roundButtonSize }
+                                ? { minHeight: roundButtonSize }
                                 : { height: roundButtonSize, width: roundButtonSize },
                             selectedRounds === round && styles.roundButtonSelected,
                         ]}
@@ -286,6 +286,7 @@ export default function CreateMatch() {
                 <Pressable
                     style={[
                         styles.malePill,
+                        isLandscape && styles.landscapeGenderPill,
                         { height: genderPillHeight },
                         selectedGender === "mens" && styles.malePillSelected
                     ]}
@@ -304,6 +305,7 @@ export default function CreateMatch() {
 
                 <Pressable style={[
                     styles.femalePill,
+                    isLandscape && styles.landscapeGenderPill,
                     { height: genderPillHeight },
                     selectedGender === "womens" && styles.femalePillSelected
                     ]}
@@ -388,8 +390,44 @@ export default function CreateMatch() {
             </View>
             {isLandscape ? (
                 <View style={styles.landscapeRoundGenderRow}>
-                    <View style={styles.landscapeRoundContainer}>{roundSelector}</View>
-                    <View style={styles.landscapeGenderContainer}>{genderSelector}</View>
+                    <View style={styles.landscapeRoundContainer}>
+                        {roundSelector}
+                    </View>
+
+                    <View style={styles.landscapeGenderContainer}>
+                        {genderSelector}
+                    </View>
+
+                    <View style={styles.landscapeDateContainer}>
+                        <Text style={styles.landscapeRoundLabel}>
+                            Select Date: <Text style={styles.optionalLabel}>(optional)</Text>
+                        </Text>
+
+                        <Pressable
+                            accessibilityRole="button"
+                            accessibilityLabel="Select fight date"
+                            style={({ pressed }) => [
+                                styles.datePickerButton,
+                                styles.landscapeDatePickerButton,
+                                pressed && styles.datePickerButtonPressed,
+                            ]}
+                            onPress={() => setShowDatePicker(true)}
+                        >
+                            <Ionicons name="calendar-outline" size={17} color="#307Fb6" />
+
+                            <Text
+                                numberOfLines={1}
+                                style={[
+                                    styles.datePickerText,
+                                    !fightDate && styles.datePickerPlaceholder,
+                                ]}
+                            >
+                                {fightDateDisplay}
+                            </Text>
+
+                            <Ionicons name="chevron-down" size={16} color="#307Fb6" />
+                        </Pressable>
+                    </View>
                 </View>
             ) : (
                 <View style={styles.roundGenderRow}>
@@ -486,24 +524,29 @@ export default function CreateMatch() {
                 </View>
             )}
 
-            <Text style={isLandscape ? styles.landscapeWeightLabel : styles.blackNameLabel}>
-                Select Date: <Text style={styles.optionalLabel}>(optional)</Text>
-            </Text>
-            <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Select fight date"
-                style={({ pressed }) => [
-                    styles.datePickerButton,
-                    pressed && styles.datePickerButtonPressed,
-                ]}
-                onPress={() => setShowDatePicker(true)}
-            >
-                <Ionicons name="calendar-outline" size={18} color="#307Fb6" />
-                <Text style={[styles.datePickerText, !fightDate && styles.datePickerPlaceholder]}>
-                    {fightDateDisplay}
-                </Text>
-                <Ionicons name="chevron-down" size={17} color="#307Fb6" />
-            </Pressable>
+            {!isLandscape && (
+                <>
+                    <Text style={styles.blackNameLabel}>
+                        Select Date: <Text style={styles.optionalLabel}>(optional)</Text>
+                    </Text>
+
+                    <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel="Select fight date"
+                        style={({ pressed }) => [
+                            styles.datePickerButton,
+                            pressed && styles.datePickerButtonPressed,
+                        ]}
+                        onPress={() => setShowDatePicker(true)}
+                    >
+                        <Ionicons name="calendar-outline" size={18} color="#307Fb6" />
+                        <Text style={[styles.datePickerText, !fightDate && styles.datePickerPlaceholder]}>
+                            {fightDateDisplay}
+                        </Text>
+                        <Ionicons name="chevron-down" size={17} color="#307Fb6" />
+                    </Pressable>
+                </>
+            )}
 
             {showDatePicker && Platform.OS !== 'ios' && (
                 <DateTimePicker
@@ -703,6 +746,7 @@ export default function CreateMatch() {
                                 key={weight}
                                 style={[
                                     isLandscape ? styles.landscapeWeightPill : styles.weightPill,
+                                    { height: weightPillHeight },
                                     selectedWeight === weight && styles.landscapeWeightPillSelected
                                 ]}
                                 onPress={() => setSelectedWeight(selectedWeight === weight ? 0 : weight)}
@@ -939,18 +983,24 @@ portraitGenderPill: {
     },
     landscapeRoundGenderRow: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         width: '100%',
-        height: '17%'
+        height: '17%',
+        gap: 6,
     },
     landscapeRoundContainer: {
-        width: '50%',
+        flex: 1.05,
         height: '100%',
-        marginRight: '1%'
+        minWidth: 0,
     },
     landscapeGenderContainer: {
-        width: '50%',
+        flex: 1.15,
         height: '100%',
+        minWidth: 0,
+    },
+    landscapeDateContainer: {
+        flex: 0.95,
+        height: '100%',
+        minWidth: 0,
     },
     screen: {
         flex: 1,
@@ -1401,7 +1451,7 @@ portraitGenderPill: {
     },
     genderPills: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'flex-start',
         height: '5%',
         width: '100%',
         paddingHorizontal: '8%',
@@ -1414,7 +1464,7 @@ portraitGenderPill: {
             borderWidth: 1,
             borderColor: '#B6C6D1',
             color: 'red',
-
+            marginRight: '5%',
             width: '40%',
             justifyContent: 'center',
             alignItems: 'center',
@@ -1487,10 +1537,10 @@ portraitGenderPill: {
         backgroundColor: '#fff',
         borderWidth: 1,
         borderColor: '#B6C6D1',
-        width: '13%',
+        width: 34,
         height: '100%',
         borderRadius: 8,
-        marginHorizontal: 5,
+        marginHorizontal: 1,
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -1534,7 +1584,7 @@ portraitGenderPill: {
     landscapeTitleContainer: {
         backgroundColor: '#307fb6',
         height: '9.5%',
-        width: '115%',
+        width: '100%',
         justifyContent: 'flex-end',
         paddingBottom: '1%',
         alignItems: 'center',
@@ -1547,19 +1597,36 @@ portraitGenderPill: {
         shadowOpacity: 0.4,
         shadowRadius: 1,
     },
-
+    landscapeDatePickerButton: {
+        width: '100%',
+        minHeight: 36,
+        marginBottom: 0,
+        paddingHorizontal: 10,
+        gap: 6,
+    },
 
 
     landscapeGenderPills: {
         height: '55%',
-        maxWidth: 520,
+        width: '90%',
+        alignSelf: 'flex-start',
+        paddingHorizontal: 0,
+        paddingRight: 0,
+        marginBottom: 0,
+        gap: 4,
+    },
+    landscapeGenderPill: {
+        flex: 1,
+        marginRight: 15,
+        width: 'auto',
     },
     landscapeWeightClassContainer: {
         height: '30%',
         width: '100%',
         alignSelf: 'center',
         justifyContent: 'center',
-        marginBottom: '.5%'
+        marginBottom: '2%',
+        marginTop: '-.5%'
     },
     landscapeWeightColumn: {
         width: '17.5%',
@@ -1649,7 +1716,7 @@ portraitGenderPill: {
     },
     landscapeRoundsContainer: {
         flexDirection: 'row',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
         width: '100%',
         height: '40%'
     },
