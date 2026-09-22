@@ -30,6 +30,7 @@ type RoundRowProps = {
     description: string;
     stoppageReason?: 'KO' | 'TKO' | 'DQ' | 'NC';
     stoppageWinner?: string;
+    isAfterStoppage?: boolean;
     onClearRound: (roundNumber: number) => void;
     onSaveRound: (roundNumber: number, score: {
         left: string;
@@ -69,6 +70,7 @@ export default function RoundRow({
     description,
     stoppageReason,
     stoppageWinner,
+    isAfterStoppage,
     onClearRound,
     onSaveRound,
     onMarkStoppage,
@@ -159,8 +161,9 @@ export default function RoundRow({
     };
     
 
-    const plusMinusDisplay =
-        winnerIndicator === null
+    const plusMinusDisplay = plusMinus === ''
+        ? ''
+        : winnerIndicator === null
             ? '-'
             : winnerIndicator < 0
                 ? String(Math.abs(winnerIndicator))
@@ -253,17 +256,16 @@ export default function RoundRow({
                     <View style={[styles.scoreCell, styles.rightTotalScoreCell]}>
                         <Text style={[styles.scoreText, styles.rightTotalScore, stoppageWinner === 'NC' && styles.noContestTotalScore]}>{rightTotal ?? '-'}</Text>
                     </View>
-                    <Pressable
-                        style={styles.button}
-                        onPress={() => setScoringModalVisible(true)}
-                    >
-                        <MaterialCommunityIcons 
-                            name="pencil" size={20} 
-                            color="#333A3F" 
-                            // style={styles.editButtonIcon}
-                            />
-                        {/* <Ionicons name="pencil" size={20} color="#333" /> */}
-                    </Pressable>
+                    {isAfterStoppage ? (
+                        <View style={styles.buttonSpacer} />
+                    ) : (
+                        <Pressable
+                            style={styles.button}
+                            onPress={() => setScoringModalVisible(true)}
+                        >
+                            <MaterialCommunityIcons name="pencil" size={20} color="#333A3F" />
+                        </Pressable>
+                    )}
                 </View>
                 {
                     (Number(leftKds) > 0 || Number(leftPen) > 0) &&
@@ -895,6 +897,11 @@ const styles = StyleSheet.create({
         marginTop: 2,
         paddingVertical: 5,
         borderRadius: 12,
+    },
+    buttonSpacer: {
+        height: 30,
+        marginRight: 5,
+        width: 36,
     },
     buttonText: {   
         color: '#333',

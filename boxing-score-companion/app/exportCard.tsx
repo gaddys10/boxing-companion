@@ -9,6 +9,7 @@ import {
     ActivityIndicator,
     Alert,
     Image,
+    Platform,
     Pressable,
     ScrollView,
     Share,
@@ -396,13 +397,13 @@ export default function ExportCardScreen() {
                 : 'Scorecard';
     const shareMessage = `${fighter1} vs ${fighter2} — ${shareResult} | Boxing Score Companion`;
 
-    const captureExportCard = async () => {
+    const captureExportCard = async (result: 'tmpfile' | 'data-uri' = 'tmpfile') => {
         if (!exportCardRef.current) throw new Error('Export card is not ready yet.');
 
         return captureRef(exportCardRef, {
             format: 'png',
             quality: 1,
-            result: 'tmpfile',
+            result,
         });
     };
 
@@ -437,7 +438,18 @@ export default function ExportCardScreen() {
         void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
         try {
-            const permission = await MediaLibrary.requestPermissionsAsync();
+            if (Platform.OS === 'web') {
+                const imageUri = await captureExportCard('data-uri');
+                const link = document.createElement('a');
+                link.href = imageUri;
+                link.download = 'boxing-scorecard.png';
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                return;
+            }
+
+            const permission = await MediaLibrary.requestPermissionsAsync(true);
 
             if (permission.status !== 'granted') {
                 Alert.alert(
@@ -448,9 +460,9 @@ export default function ExportCardScreen() {
             }
 
             const imageUri = await captureExportCard();
-            await MediaLibrary.createAssetAsync(imageUri);
+            await MediaLibrary.Asset.create(imageUri);
             void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            Alert.alert('Saved', 'Your scorecard image was saved to Photos.');
+            Alert.alert('Scorecard Saved ✅', 'Scorecard image successfully saved to Photos.');
         } catch (error) {
             console.error('Unable to save scorecard:', error);
             Alert.alert('Save failed', 'The scorecard image could not be saved.');
@@ -512,7 +524,7 @@ export default function ExportCardScreen() {
                     style={[styles.exportCard, compactLayout && styles.compactExportCard]}
                 >
                     <Image
-                        source={require('../assets/images/bgfbsc.png')}
+                        source={require('../assets/images/bgfbsc.jpg')}
                         resizeMode="stretch"
                         style={styles.exportBackground}
                     />
@@ -520,34 +532,41 @@ export default function ExportCardScreen() {
                     
                     <View style={styles.matchupHeader}>
                     <View style={styles.metadataRail}>
-                        <View
-                            style={[
-                                styles.headerPill,
-                                genderValue === 'womens'
-                                    ? styles.womensGenderPill
-                                    : styles.mensGenderPill,
-                            ]}
-                        >
-                            <Ionicons
-                                name={genderValue === 'womens' ? 'female' : 'male'}
-                                size={12}
-                                color="#fff"
-                            />
+                        <View style={styles.metadataRailGroup}>
+                            <View
+                                style={[
+                                    styles.headerPill,
+                                    styles.metadataRailPill,
+                                    genderValue === 'womens'
+                                        ? styles.womensGenderPill
+                                        : styles.mensGenderPill,
+                                ]}
+                            >
+                                <Ionicons
+                                    name={genderValue === 'womens' ? 'female' : 'male'}
+                                    size={12}
+                                    color="#fff"
+                                />
+                            </View>
+                            <Text style={styles.genderValue}>{genderLabel}</Text>
                         </View>
-                        <Text style={styles.genderValue}>{genderLabel}</Text>
 
-                        {weightClassAbbrev && (
-                            <View style={[styles.headerPill, styles.weightClassPill]}>
-                                <Text style={styles.headerPillText}>{weightClassAbbrev}</Text>
+                        {(weightClassAbbrev || (weightValue !== '0' && weightValue !== 'undefined' && weightValue !== 'null')) && (
+                            <View style={styles.metadataRailGroup}>
+                                {weightClassAbbrev && (
+                                    <View style={[styles.headerPill, styles.metadataRailPill, styles.weightClassPill]}>
+                                        <Text style={styles.headerPillText}>{weightClassAbbrev}</Text>
+                                    </View>
+                                )}
+                                {weightValue !== '0' && weightValue !== 'undefined' && weightValue !== 'null' && (
+                                    <Text style={styles.metadataRailWeight}>
+                                        {weightValue}
+                                        {!String(weightValue).toLowerCase().includes('lb') ? ' lbs' : ''}
+                                    </Text>
+                                )}
                             </View>
                         )}
 
-                        {weightValue !== '0' && weightValue !== 'undefined' && weightValue !== 'null' && (
-                            <Text style={styles.metadataRailWeight}>
-                                {weightValue}
-                                {!String(weightValue).toLowerCase().includes('lb') ? ' lbs' : ''}
-                            </Text>
-                        )}
                         {matchDateLabel && (
                             <Text style={styles.metadataRailDate}>{matchDateLabel}</Text>
                         )}
@@ -870,39 +889,38 @@ const styles = StyleSheet.create({
         minWidth: 40,
     },
     brandIcon: {
-        width: 36,
-        height: 36,
+        width: 32,
+        height: 32,
         marginRight: 5,
     },
     compactBrandIcon: {
-        width: 40,
-        height: 40,
+        width: 34,
+        height: 34,
     },
     brandTextWrap: {
         minWidth: 70,
     },
     brandBlue: {
         color: BLUE,
-        fontSize: 11,
-        lineHeight: 13,
+        fontSize: 9,
+        lineHeight: 11,
         fontWeight: '800',
         marginLeft: 1.5
     },
     brandScoreBar: {
         backgroundColor: RED,
         paddingHorizontal: 2,
-        marginVertical: 1,
+        marginVertical: 0,
         alignSelf: 'stretch',
     },
     brandScore: {
         color: '#fff',
-        fontSize: 11,
-        lineHeight: 13,
+        fontSize: 9,
+        lineHeight: 11,
         fontWeight: '800',
     },
     genderValue: {
         fontSize: 8.5,
-        marginBottom: '13%',
         fontWeight: 500
     },
     matchupHeader: {
@@ -919,12 +937,18 @@ const styles = StyleSheet.create({
     metadataRail: {
         width: 44,
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'space-between',
         borderRightWidth: 1,
         borderRightColor: '#C7D3DC',
-        paddingBottom: 4,
+        paddingVertical: 5,
         paddingRight: 2,
         // marginRight: 8
+    },
+    metadataRailGroup: {
+        alignItems: 'center',
+    },
+    metadataRailPill: {
+        marginBottom: 2,
     },
     metadataRailText: {
         color: TEXT,
@@ -946,18 +970,17 @@ const styles = StyleSheet.create({
         lineHeight: 11,
         textAlign: 'center',
         fontWeight: '700',
-        marginBottom: '4%',
     },
     metadataRailDate: {
         color: TEXT,
-        fontSize: 7.5,
+        fontSize: 9,
         lineHeight: 9,
-        marginTop: 3,
+        fontWeight: 500,
         textAlign: 'center',
     },
     headerPill: {
         minWidth: 32,
-        minHeight: 22,
+        minHeight: 20,
         paddingHorizontal: 5,
         borderRadius: 999,
         borderWidth: 1,
@@ -965,6 +988,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F8FBFD',
         alignItems: 'center',
         justifyContent: 'center',
+        marginBottom: '5%'
     },
     mensGenderPill: {
         backgroundColor: BLUE,
@@ -1276,7 +1300,7 @@ const styles = StyleSheet.create({
     },
     descriptorChip: {
         maxWidth: '100%',
-        minHeight: 28,
+        minHeight: 26,
         paddingHorizontal: 7,
         borderRadius: 14,
         borderWidth: 1,

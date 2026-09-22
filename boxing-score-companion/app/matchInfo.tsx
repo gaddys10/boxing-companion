@@ -100,8 +100,10 @@ export default function MatchInfoScreen() {
 
         if (savedRound && savedLeftScore !== undefined && savedRightScore !== undefined && savedPlusMinus !== undefined){
             const roundNumber = Number(savedRound);
+            const existingRound = currentScores[roundNumber] ?? {};
 
             currentScores[roundNumber] = {
+                ...existingRound,
                 left: String(savedLeftScore),
                 right: String(savedRightScore),
                 plusMinus: String(savedPlusMinus),
@@ -111,17 +113,14 @@ export default function MatchInfoScreen() {
                 rightKnockdowns: String(savedRightKnockdowns ?? 0),
                 scoringMethod: 'full',
             };
-        } else if (savedRound && savedStoppageReason) {
+        }
+
+        if (savedRound && savedStoppageReason) {
             const roundNumber = Number(savedRound);
+            const existingRound = currentScores[roundNumber] ?? {};
 
             currentScores[roundNumber] = {
-                left: '',
-                right: '',
-                plusMinus: '',
-                leftDeductions: '0',
-                rightDeductions: '0',
-                leftKnockdowns: '0',
-                rightKnockdowns: '0',
+                ...existingRound,
                 stoppageReason: String(savedStoppageReason) as RoundScore['stoppageReason'],
                 stoppageWinner: String(savedStoppageWinner),
             };
@@ -222,6 +221,10 @@ export default function MatchInfoScreen() {
     };
 
     const scorecardTotals = getScorecardTotals();
+    const firstStoppageRound = Object.keys(roundScores)
+        .map(Number)
+        .filter((roundNumber) => Boolean(roundScores[roundNumber]?.stoppageReason))
+        .sort((firstRound, secondRound) => firstRound - secondRound)[0];
     const getTotalEventsText = (knockdowns: number, penalties: number) => {
         const events = [];
 
@@ -361,10 +364,6 @@ export default function MatchInfoScreen() {
                 ...(currentScores[roundNumber] ?? {}),
                 left: '',
                 right: '',
-                leftDeductions: '0',
-                rightDeductions: '0',
-                leftKnockdowns: '0',
-                rightKnockdowns: '0',
                 stoppageReason,
                 stoppageWinner: stoppageReason === 'NC' ? 'NC' : stoppageWinner,
             },
@@ -395,7 +394,7 @@ export default function MatchInfoScreen() {
     return (
         <View style={styles.backgroundRoot}>
             <Image
-                source={require('../assets/images/bgfbsc.png')}
+                source={require('../assets/images/bgfbsc.jpg')}
                 resizeMode="stretch"
                 style={styles.backgroundImage}
             />
@@ -500,7 +499,7 @@ export default function MatchInfoScreen() {
                         <Text style={[styles.landscapeHeaderText, styles.landscapeRightHeader, styles.landscapeHeaderOuterBottom]}>Total</Text>
                     </View>
                 ) : (
-                    <View style={[styles.headerRow, { paddingHorizontal: Math.max(0, horizontalGutter - 15) }]}>
+                    <View style={[styles.headerRow, { paddingHorizontal: Math.max(0, horizontalGutter - 25) }]}>
                         <View style={styles.headerRoundLabelSpacer} />
                         <View style={styles.headerScoreCell}><Text style={styles.headerText}>Total</Text></View>
                         <View style={styles.headerScoreCell}><Text style={styles.headerText}>Round</Text></View>
@@ -516,38 +515,42 @@ export default function MatchInfoScreen() {
                     <ScrollView style={[styles.rowContainer, { paddingHorizontal: horizontalGutter * 0.62, marginHorizontal: -horizontalGutter }]}>
                         {Array.from({ length: parseInt(rounds as string) }).map((_, index) => {
                             const roundNumber = index + 1;
+                            const roundScore = roundScores[roundNumber];
+                            const isStoppedRound = Boolean(roundScore?.stoppageReason);
+                            const isAfterStoppage = firstStoppageRound !== undefined && roundNumber > firstStoppageRound;
                             return (
                                 <RoundRow
                                     key={roundNumber}
                                     roundNumber={roundNumber}
                                         
-                                    leftScore={roundScores[roundNumber]?.left}
-                                    rightScore={roundScores[roundNumber]?.right}
-                                    leftTotal={roundScores[roundNumber]?.stoppageWinner === 'NC'
+                                    leftScore={isStoppedRound || isAfterStoppage ? '' : roundScore?.left}
+                                    rightScore={isStoppedRound || isAfterStoppage ? '' : roundScore?.right}
+                                    leftTotal={isAfterStoppage ? '' : roundScore?.stoppageWinner === 'NC'
                                         ? 'NC'
-                                        : roundScores[roundNumber]?.stoppageWinner
-                                        ? roundScores[roundNumber].stoppageWinner === String(fighter1)
-                                            ? roundScores[roundNumber].stoppageReason
+                                        : roundScore?.stoppageWinner
+                                        ? roundScore.stoppageWinner === String(fighter1)
+                                            ? roundScore.stoppageReason
                                             : ''
                                         : isRoundScored(roundNumber) ? String(getTotalScore('left', roundNumber)) : '-'}
-                                    rightTotal={roundScores[roundNumber]?.stoppageWinner === 'NC'
+                                    rightTotal={isAfterStoppage ? '' : roundScore?.stoppageWinner === 'NC'
                                         ? 'NC'
-                                        : roundScores[roundNumber]?.stoppageWinner
-                                        ? roundScores[roundNumber].stoppageWinner === String(fighter2)
-                                            ? roundScores[roundNumber].stoppageReason
+                                        : roundScore?.stoppageWinner
+                                        ? roundScore.stoppageWinner === String(fighter2)
+                                            ? roundScore.stoppageReason
                                             : ''
                                         : isRoundScored(roundNumber) ? String(getTotalScore('right', roundNumber)) : '-'}
                                     // plusMinus={isRoundScored(roundNumber) ? String(getPlusMinus(roundNumber)) : '-'}
-                                    plusMinus={roundScores[roundNumber]?.stoppageWinner
-                                        ? roundScores[roundNumber]?.plusMinus
-                                        : isRoundScored(roundNumber) ? roundScores[roundNumber]?.plusMinus : '-'}
-                                    isQuickScore={roundScores[roundNumber]?.scoringMethod === 'quick'}
-                                    leftKds={roundScores[roundNumber]?.leftKnockdowns}
-                                    leftPen={roundScores[roundNumber]?.leftDeductions}
-                                    rightKds={roundScores[roundNumber]?.rightKnockdowns}
-                                    rightPen={roundScores[roundNumber]?.rightDeductions}
-                                    stoppageReason={roundScores[roundNumber]?.stoppageReason}
-                                    stoppageWinner={roundScores[roundNumber]?.stoppageWinner}
+                                    plusMinus={isAfterStoppage ? '' : roundScore?.stoppageWinner
+                                        ? roundScore.plusMinus
+                                        : isRoundScored(roundNumber) ? roundScore?.plusMinus : '-'}
+                                    isQuickScore={!isAfterStoppage && roundScore?.scoringMethod === 'quick'}
+                                    isAfterStoppage={isAfterStoppage}
+                                    leftKds={isAfterStoppage ? '' : roundScore?.leftKnockdowns}
+                                    leftPen={isAfterStoppage ? '' : roundScore?.leftDeductions}
+                                    rightKds={isAfterStoppage ? '' : roundScore?.rightKnockdowns}
+                                    rightPen={isAfterStoppage ? '' : roundScore?.rightDeductions}
+                                    stoppageReason={isAfterStoppage ? undefined : roundScore?.stoppageReason}
+                                    stoppageWinner={isAfterStoppage ? undefined : roundScore?.stoppageWinner}
                                     // savedPlusMinus={savedPlusMinusForRound}
                                     fighter1={String(fighter1)}
                                     fighter2={String(fighter2)}
@@ -576,37 +579,41 @@ export default function MatchInfoScreen() {
                     >
                         {Array.from({ length: parseInt(rounds as string) }).map((_, index) => {
                             const roundNumber = index + 1;
+                            const roundScore = roundScores[roundNumber];
+                            const isStoppedRound = Boolean(roundScore?.stoppageReason);
+                            const isAfterStoppage = firstStoppageRound !== undefined && roundNumber > firstStoppageRound;
                             return (
                                 
                                     <LandscapeRoundRow
                                         key={roundNumber}
                                         roundNumber={roundNumber}
-                                        leftScore={roundScores[roundNumber]?.left}
-                                        rightScore={roundScores[roundNumber]?.right}
-                                        leftTotal={roundScores[roundNumber]?.stoppageWinner === 'NC'
+                                        leftScore={isStoppedRound || isAfterStoppage ? '' : roundScore?.left}
+                                        rightScore={isStoppedRound || isAfterStoppage ? '' : roundScore?.right}
+                                        leftTotal={isAfterStoppage ? '' : roundScore?.stoppageWinner === 'NC'
                                             ? 'NC'
-                                            : roundScores[roundNumber]?.stoppageWinner
-                                            ? roundScores[roundNumber].stoppageWinner === String(fighter1)
-                                                ? roundScores[roundNumber].stoppageReason
+                                            : roundScore?.stoppageWinner
+                                            ? roundScore.stoppageWinner === String(fighter1)
+                                                ? roundScore.stoppageReason
                                                 : ''
                                             : isRoundScored(roundNumber) ? String(getTotalScore('left', roundNumber)) : '-'}
-                                        rightTotal={roundScores[roundNumber]?.stoppageWinner === 'NC'
+                                        rightTotal={isAfterStoppage ? '' : roundScore?.stoppageWinner === 'NC'
                                             ? 'NC'
-                                            : roundScores[roundNumber]?.stoppageWinner
-                                            ? roundScores[roundNumber].stoppageWinner === String(fighter2)
-                                                ? roundScores[roundNumber].stoppageReason
+                                            : roundScore?.stoppageWinner
+                                            ? roundScore.stoppageWinner === String(fighter2)
+                                                ? roundScore.stoppageReason
                                                 : ''
                                             : isRoundScored(roundNumber) ? String(getTotalScore('right', roundNumber)) : '-'}
-                                        plusMinus={roundScores[roundNumber]?.stoppageWinner
-                                            ? roundScores[roundNumber]?.plusMinus
-                                            : isRoundScored(roundNumber) ? roundScores[roundNumber]?.plusMinus : '-'}
-                                        isQuickScore={roundScores[roundNumber]?.scoringMethod === 'quick'}
-                                        leftKds={roundScores[roundNumber]?.leftKnockdowns}
-                                        leftPen={roundScores[roundNumber]?.leftDeductions}
-                                        rightKds={roundScores[roundNumber]?.rightKnockdowns}
-                                        rightPen={roundScores[roundNumber]?.rightDeductions}
-                                        stoppageReason={roundScores[roundNumber]?.stoppageReason}
-                                        stoppageWinner={roundScores[roundNumber]?.stoppageWinner}
+                                        plusMinus={isAfterStoppage ? '' : roundScore?.stoppageWinner
+                                            ? roundScore.plusMinus
+                                            : isRoundScored(roundNumber) ? roundScore?.plusMinus : '-'}
+                                        isQuickScore={!isAfterStoppage && roundScore?.scoringMethod === 'quick'}
+                                        isAfterStoppage={isAfterStoppage}
+                                        leftKds={isAfterStoppage ? '' : roundScore?.leftKnockdowns}
+                                        leftPen={isAfterStoppage ? '' : roundScore?.leftDeductions}
+                                        rightKds={isAfterStoppage ? '' : roundScore?.rightKnockdowns}
+                                        rightPen={isAfterStoppage ? '' : roundScore?.rightDeductions}
+                                        stoppageReason={isAfterStoppage ? undefined : roundScore?.stoppageReason}
+                                        stoppageWinner={isAfterStoppage ? undefined : roundScore?.stoppageWinner}
                                         // savedPlusMinus={savedPlusMinusForRound}
                                         fighter1={String(fighter1)}
                                         fighter2={String(fighter2)}
@@ -817,7 +824,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     headerPlusMinusCell: {
-        width: 42,
+        width: 46,
         alignItems: 'center',
     },
     headerActionSpacer: {

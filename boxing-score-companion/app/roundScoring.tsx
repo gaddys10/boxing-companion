@@ -235,6 +235,13 @@ export default function RoundScoringScreen() {
                 savedScores: params.savedScores,
                 rating: params.rating,
                 description: params.description,
+                savedLeftScore: '',
+                savedRightScore: '',
+                savedPlusMinus: String(score),
+                savedLeftDeductions: String(leftDeductions),
+                savedRightDeductions: String(rightDeductions),
+                savedLeftKnockdowns: String(leftKnockdowns),
+                savedRightKnockdowns: String(rightKnockdowns),
                 savedRound: String(round),
                 savedStoppageReason: stoppageReason,
                 savedStoppageWinner: stoppageReason === 'NC' ? 'NC' : selectedStoppageWinner,
@@ -256,7 +263,9 @@ export default function RoundScoringScreen() {
                 }}
             >
                 <Image
-                    source={require('../assets/images/bg1.png')}
+                    // source={require('../assets/images/bg1.png')}
+                    source={require('../assets/images/bg1.jpg')}
+
                     style={[StyleSheet.absoluteFill, styles.leftAreaImage, { opacity: 0.8 }]}
                     resizeMode="cover"
                 />
@@ -451,7 +460,7 @@ export default function RoundScoringScreen() {
                 handleScorePress('right');
             }}>
                 <Image
-                    source={require('../assets/images/bg2.png')}
+                    source={require('../assets/images/bg2.jpg')}
                     style={[StyleSheet.absoluteFill, 
                         isLandscape ? styles.rightAreaImage : styles.portraitRightAreaImage, 
                         { opacity: 0.8 }]}
@@ -664,7 +673,7 @@ export default function RoundScoringScreen() {
 
                     saveRoundAndExit(false);
                 }}
-                delayLongPress={950}
+                delayLongPress={1000}
             >
             <LinearGradient
                 colors={['#f7e7a8', '#d7b55d', '#b78c35']}
