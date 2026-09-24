@@ -423,6 +423,7 @@ export default function LandscapeRoundRow({
                                 <View style={styles.methodRow}>
                                     <View style={styles.methodOption}>
                                         <Pressable style={styles.scoringButton} onPress={openQuickScoring}>
+                                            <Ionicons name="flash" size={20} color="#fff" />
                                             <Text style={styles.scoringButtonText}>Quick Scoring</Text>
                                         </Pressable>
                                         <Text style={styles.modalText}>Score the round in just a few taps!</Text>
@@ -432,12 +433,14 @@ export default function LandscapeRoundRow({
                                             style={styles.scoringButton}
                                             onPress={() => setOrientationChoiceVisible(true)}
                                         >
+                                            <Ionicons name="game-controller-outline" size={21} color="#fff" />
                                             <Text style={styles.scoringButtonText}>Full Scoring</Text>
                                         </Pressable>
                                         <Text style={styles.modalText}>Interactive live scoring with momentum tracking</Text>
                                     </View>
                                 </View>
                                 <Pressable style={[styles.modalButton, styles.cancelButton]} onPress={closeScoringModal}>
+                                    <Ionicons name="close" size={18} color="#fff" />
                                     <Text style={styles.cancelButtonText}>Cancel</Text>
                                 </Pressable>
                             </>
@@ -708,7 +711,7 @@ const styles = StyleSheet.create({
         marginTop: 12,
         width: 180,
         shadowColor: '#11334b',
-        shadowOffset: { width: 2, height: 2 },
+        shadowOffset: { width: 5, height: 5 },
         shadowOpacity: 0.4,
         shadowRadius: 1,
     },
@@ -841,7 +844,7 @@ const styles = StyleSheet.create({
     stoppageCancelButton: {
         backgroundColor: '#d32f2f',
         shadowColor: '#11334b',
-        shadowOffset: { width: 2, height: 2 },
+        shadowOffset: { width: 5, height: 5 },
         shadowOpacity: 0.4,
         shadowRadius: 1,
         borderWidth: 1,
@@ -850,7 +853,7 @@ const styles = StyleSheet.create({
     stoppageConfirmButton: {
         backgroundColor: '#fff',
         shadowColor: '#11334b',
-        shadowOffset: { width: 2, height: 2 },
+        shadowOffset: { width: 5, height: 5 },
         shadowOpacity: 0.4,
         shadowRadius: 1,
         borderWidth: 1,
@@ -892,6 +895,8 @@ const styles = StyleSheet.create({
     modalButton: {
         alignItems: 'center',
         borderRadius: 10,
+        flexDirection: 'row',
+        gap: 6,
         justifyContent: 'center',
         minHeight: 38,
         paddingHorizontal: 18,
@@ -925,7 +930,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         minHeight: 54,
         shadowColor: '#11334b',
-        shadowOffset: { width: 2, height: 2 },
+        shadowOffset: { width: 5, height: 5 },
         shadowOpacity: 0.4,
         shadowRadius: 1,
     },
@@ -969,12 +974,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#1976D2',
         borderRadius: 12,
+        flexDirection: 'row',
+        gap: 8,
         justifyContent: 'center',
         minHeight: 50,
         width: '75%',
         marginBottom: '2.5%',
         shadowColor: '#11334b',
-        shadowOffset: { width: 2, height: 2 },
+        shadowOffset: { width: 5, height: 5 },
         shadowOpacity: 0.4,
         shadowRadius: 1,
         borderWidth: 1,

@@ -182,11 +182,13 @@ function QuickAwareMomentumCell({
     leftScore,
     rightScore,
     isQuickScore,
+    scale,
 }: {
     value?: string;
     leftScore?: string;
     rightScore?: string;
     isQuickScore?: boolean;
+    scale: number;
 }) {
     const parsedValue = Number(value);
     const validValue = value !== undefined && value !== '' && value !== '-' && Number.isFinite(parsedValue);
@@ -202,7 +204,10 @@ function QuickAwareMomentumCell({
         return (
             <View style={styles.momentumWrap}>
                 <View style={[styles.momentumPill, styles.momentumNeutral]}>
-                    <Text style={styles.momentumNeutralText}>
+                    <Text style={[
+                        styles.momentumText,
+                        { fontSize: 14 * scale },
+                    ]}>
                         {isQuickScore ? '\u00A0' : parsed === 0 ? '0' : '-'}
                     </Text>
                 </View>
@@ -216,8 +221,17 @@ function QuickAwareMomentumCell({
     return (
         <View style={styles.momentumWrap}>
             {leftFavored && <Ionicons name="caret-back" size={16} color={color} style={{ position: 'absolute', left: 2 }} />}
-            <View style={[styles.momentumPill, { backgroundColor: color }]}>
-                <Text style={styles.momentumText}>{isQuickScore ? '\u00A0' : Math.abs(parsed)}</Text>
+            <View style={[styles.momentumPill, { backgroundColor: color ,
+            //  minWidth: 38 * scale,
+            height: 20 * scale,
+            // paddingHorizontal: 7 * scale,
+            }]}>
+                <Text style={[
+                    styles.momentumText,
+                    { fontSize: 14 * scale },
+                ]}>
+                    {isQuickScore ? '\u00A0' : Math.abs(parsed)}
+                </Text>
             </View>
             {!leftFavored && <Ionicons name="caret-forward" size={16} color={color} style={{ position: 'absolute', right: 2 }} />}
         </View>
@@ -228,7 +242,8 @@ export default function ExportCardScreen() {
     const router = useRouter();
     const params = useLocalSearchParams();
     const { insets, horizontalGutter } = useResponsiveLayout();
-    const { height } = useWindowDimensions();
+    const { width, height } = useWindowDimensions();
+    const railWidth = Math.max(44, Math.min(52, width * 0.12));
     const exportCardRef = useRef<View>(null);
     const [busyAction, setBusyAction] = useState<'share' | 'save' | null>(null);
 
@@ -236,10 +251,14 @@ export default function ExportCardScreen() {
     const fighter2 = String(firstParam(params.fighter2) || 'Fighter 2');
     const roundCount = Math.max(1, Number(firstParam(params.rounds) || 10));
     const availableHeight = height - insets.top - insets.bottom;
-    const compactLayout = roundCount >= 10 || availableHeight < 760;
-    const rowHeight = compactLayout
-        ? Math.max(24, Math.min(34, (availableHeight - 420) / roundCount))
-        : ROW_HEIGHT;
+    const compactLayout = (roundCount >= 12 && availableHeight < 820) || availableHeight < 760;
+    const [measuredRowHeight, setMeasuredRowHeight] = useState(ROW_HEIGHT);
+
+    const rowScale = Math.min(
+        1.15,
+        Math.max(1, measuredRowHeight / ROW_HEIGHT)
+    );
+
     const rating = normalizeMatchRating(params.rating);
     const descriptors = parseMatchDescription(params.description).slice(0, MAX_DESCRIPTORS);
 
@@ -472,6 +491,11 @@ export default function ExportCardScreen() {
     };
 
     const handleBack = () => {
+        if (router.canGoBack()) {
+            router.back();
+            return;
+        }
+
         router.replace({
             pathname: '/matchInfo',
             params: {
@@ -511,7 +535,7 @@ export default function ExportCardScreen() {
                     styles.scrollContentNoScroll,
                     {
                         paddingHorizontal: Math.max(horizontalGutter * 0.3, 8),
-                        paddingBottom: Math.max(insets.bottom, 8) + (compactLayout ? 4 : 14),
+                        paddingBottom: Math.max(insets.bottom, 8),
                     },
                 ]}
                 showsVerticalScrollIndicator={false}
@@ -531,94 +555,98 @@ export default function ExportCardScreen() {
 
                     
                     <View style={styles.matchupHeader}>
-                    <View style={styles.metadataRail}>
-                        <View style={styles.metadataRailGroup}>
-                            <View
-                                style={[
-                                    styles.headerPill,
-                                    styles.metadataRailPill,
-                                    genderValue === 'womens'
-                                        ? styles.womensGenderPill
-                                        : styles.mensGenderPill,
-                                ]}
-                            >
-                                <Ionicons
-                                    name={genderValue === 'womens' ? 'female' : 'male'}
-                                    size={12}
-                                    color="#fff"
-                                />
+                        <View style={[styles.metadataRail, { width: railWidth }]}>
+                            <View style={styles.metadataRailGroup}>
+                                <View
+                                    style={[
+                                        styles.headerPill,
+                                        styles.metadataRailPill,
+                                        genderValue === 'womens'
+                                            ? styles.womensGenderPill
+                                            : styles.mensGenderPill,
+                                    ]}
+                                >
+                                    <Ionicons
+                                        name={genderValue === 'womens' ? 'female' : 'male'}
+                                        size={12}
+                                        color="#fff"
+                                    />
+                                </View>
+                                <Text style={styles.genderValue}>{genderLabel}</Text>
                             </View>
-                            <Text style={styles.genderValue}>{genderLabel}</Text>
+
+                            {(weightClassAbbrev || (weightValue !== '0' && weightValue !== 'undefined' && weightValue !== 'null')) && (
+                                <View style={styles.metadataRailGroup}>
+                                    {weightClassAbbrev && (
+                                        <View style={[styles.headerPill, styles.metadataRailPill, styles.weightClassPill]}>
+                                            <Text style={styles.headerPillText}>{weightClassAbbrev}</Text>
+                                        </View>
+                                    )}
+                                    {weightValue !== '0' && weightValue !== 'undefined' && weightValue !== 'null' && (
+                                        <Text style={styles.metadataRailWeight}>
+                                            {weightValue}
+                                            {!String(weightValue).toLowerCase().includes('lb') ? ' lbs' : ''}
+                                        </Text>
+                                    )}
+                                </View>
+                            )}
+
+                            {matchDateLabel && (
+                                <Text style={styles.metadataRailDate}>{matchDateLabel}</Text>
+                            )}
                         </View>
 
-                        {(weightClassAbbrev || (weightValue !== '0' && weightValue !== 'undefined' && weightValue !== 'null')) && (
-                            <View style={styles.metadataRailGroup}>
-                                {weightClassAbbrev && (
-                                    <View style={[styles.headerPill, styles.metadataRailPill, styles.weightClassPill]}>
-                                        <Text style={styles.headerPillText}>{weightClassAbbrev}</Text>
-                                    </View>
-                                )}
-                                {weightValue !== '0' && weightValue !== 'undefined' && weightValue !== 'null' && (
-                                    <Text style={styles.metadataRailWeight}>
-                                        {weightValue}
-                                        {!String(weightValue).toLowerCase().includes('lb') ? ' lbs' : ''}
-                                    </Text>
-                                )}
+                        <View style={styles.fighterBlock}>
+                            <View style={styles.fighterNameSlot}>
+                                <Text
+                                    numberOfLines={2}
+                                    adjustsFontSizeToFit
+                                    minimumFontScale={0.72}
+                                    style={[styles.fighterName, { color: RED }]}
+                                >
+                                    {fighter1}
+                                </Text>
                             </View>
-                        )}
 
-                        {matchDateLabel && (
-                            <Text style={styles.metadataRailDate}>{matchDateLabel}</Text>
-                        )}
+                            <Text style={[styles.finalScore, { color: RED }]}>
+                                {finalScores.left}
+                            </Text>
+
+                            <Text style={[styles.eventSummary, { color: RED }]}>
+                                KD: {totals.fighter1KD} • Deductions: {totals.fighter1Pen}
+                            </Text>
+                        </View>
+
+                        <View style={styles.vsColumn}>
+                            <Text style={styles.vs}>vs</Text>
+                        </View>
+
+                        <View style={styles.fighterBlock}>
+                            <View style={styles.fighterNameSlot}>
+                                <Text
+                                    numberOfLines={2}
+                                    adjustsFontSizeToFit
+                                    minimumFontScale={0.72}
+                                    style={[styles.fighterName, { color: BLUE }]}
+                                >
+                                    {fighter2}
+                                </Text>
+                            </View>
+
+                            <Text style={[styles.finalScore, { color: BLUE }]}>
+                                {finalScores.right}
+                            </Text>
+
+                            <Text style={[styles.eventSummary, { color: BLUE }]}>
+                                KD: {totals.fighter2KD} • Deductions: {totals.fighter2Pen}
+                            </Text>
+                        </View>
                     </View>
-
-                    <View style={styles.fighterBlock}>
-                        <Text
-                            numberOfLines={2}
-                            adjustsFontSizeToFit
-                            minimumFontScale={0.72}
-                            style={[styles.fighterName, { color: RED }]}
-                        >
-                            {fighter1}
-                        </Text>
-
-                        <Text style={[styles.finalScore, { color: RED }]}>
-                            {finalScores.left}
-                        </Text>
-
-                        <Text style={[styles.eventSummary, { color: RED }]}>
-                            KD: {totals.fighter1KD} • Deductions: {totals.fighter1Pen}
-                        </Text>
-                    </View>
-
-                    <View style={styles.vsColumn}>
-                        <Text style={styles.vs}>vs</Text>
-                    </View>
-
-                    <View style={styles.fighterBlock}>
-                        <Text
-                            numberOfLines={2}
-                            adjustsFontSizeToFit
-                            minimumFontScale={0.72}
-                            style={[styles.fighterName, { color: BLUE }]}
-                        >
-                            {fighter2}
-                        </Text>
-
-                        <Text style={[styles.finalScore, { color: BLUE }]}>
-                            {finalScores.right}
-                        </Text>
-
-                        <Text style={[styles.eventSummary, { color: BLUE }]}>
-                            KD: {totals.fighter2KD} • Deductions: {totals.fighter2Pen}
-                        </Text>
-                    </View>
-                </View>
 
                     {/* <Text style={[styles.metadata, compactLayout && styles.compactMetadata]}>{metadata}</Text> */}
 
                     <View style={[styles.tableHeader, compactLayout && styles.compactTableHeader]}>
-                        <View style={styles.roundHeaderSpacer} />
+                        <View style={[styles.roundHeaderSpacer, { width: railWidth }]} />
                         <View style={styles.tableHeaderCell}><Text style={styles.tableHeaderText}>Total</Text></View>
                         <View style={styles.tableHeaderCell}><Text style={styles.tableHeaderText}>Round</Text></View>
                         <View style={styles.momentumHeader}><Text style={styles.tableHeaderText}>Momentum</Text></View>
@@ -639,13 +667,33 @@ export default function ExportCardScreen() {
                             const winnerColor = roundWinnerColor(score, fighter1, fighter2);
 
                             return (
-                                <View key={row.roundNumber} style={[styles.scoreRow, { minHeight: rowHeight }]}>
-                                    <View style={[styles.roundLabel, { backgroundColor: winnerColor }]}>
-                                        <Text style={styles.roundLabelText}>R{row.roundNumber}</Text>
+                                <View
+                                    key={row.roundNumber}
+                                    style={[styles.scoreRow]}
+                                    onLayout={
+                                            row.roundNumber === 1
+                                                ? (event) => setMeasuredRowHeight(event.nativeEvent.layout.height)
+                                                : undefined
+                                    }
+                                >
+                                    <View style={[styles.roundLabel, { width: railWidth, backgroundColor: winnerColor }]}>
+                                        <Text style={[
+                                            styles.roundLabelText,
+                                            { fontSize: 12 * rowScale },
+                                        ]}>
+                                            R{row.roundNumber}
+                                        </Text>
                                     </View>
 
                                     <View style={styles.totalCell}>
-                                        <Text style={[styles.scoreText, { color: RED }]}>{row.leftTotal}</Text>
+                                        <Text style={[
+                                            styles.scoreText,
+                                            {
+                                                color: RED,
+                                                fontSize: 14 * rowScale,
+                                                lineHeight: 19 * rowScale,
+                                            },
+                                        ]}>{row.leftTotal}</Text>
                                     </View>
 
                                     <View style={styles.roundScoreCell}>
@@ -655,7 +703,14 @@ export default function ExportCardScreen() {
                                             color={RED}
                                             side="left"
                                         />
-                                        <Text style={[styles.scoreText, { color: RED }]}>
+                                        <Text style={[
+                                            styles.scoreText,
+                                            {
+                                                color: RED,
+                                                fontSize: 14 * rowScale,
+                                                lineHeight: 19 * rowScale,
+                                            },
+                                        ]}>
                                             {score?.left || '-'}
                                         </Text>
                                     </View>
@@ -665,10 +720,18 @@ export default function ExportCardScreen() {
                                         leftScore={score?.left}
                                         rightScore={score?.right}
                                         isQuickScore={score?.scoringMethod === 'quick'}
+                                        scale={rowScale}
                                     />
 
                                     <View style={styles.roundScoreCell}>
-                                        <Text style={[styles.scoreText, { color: BLUE }]}>
+                                        <Text style={[
+                                            styles.scoreText,
+                                            {
+                                                color: BLUE,
+                                                fontSize: 14 * rowScale,
+                                                lineHeight: 19 * rowScale,
+                                            },
+                                        ]}>
                                             {score?.right || '-'}
                                         </Text>
                                         <EventBadge
@@ -680,7 +743,16 @@ export default function ExportCardScreen() {
                                     </View>
 
                                     <View style={styles.totalCell}>
-                                        <Text style={[styles.scoreText, { color: BLUE }]}>{row.rightTotal}</Text>
+                                        <Text style={[
+                                            styles.scoreText,
+                                            {
+                                                color: BLUE,
+                                                fontSize: 14 * rowScale,
+                                                lineHeight: 19 * rowScale,
+                                            },
+                                        ]}>
+                                            {row.rightTotal}
+                                        </Text>
                                     </View>
                                 </View>
                             );
@@ -752,6 +824,7 @@ export default function ExportCardScreen() {
                     <Pressable
                         onPress={handleBack}
                         style={({ pressed }) => [
+                            styles.actionButton,
                             styles.backButton,
                             styles.actionBackButton,
                             compactLayout && styles.compactBackButton,
@@ -760,13 +833,14 @@ export default function ExportCardScreen() {
                         accessibilityRole="button"
                         accessibilityLabel="Back to scorecard"
                     >
-                        <Ionicons name="chevron-back" size={22} color={BLUE} />
+                        <Ionicons name="chevron-back" size={22} color={HEADER_BLUE} />
                         <Text style={styles.backText}>Back</Text>
                     </Pressable>
                     <Pressable
                         onPress={handleShare}
                         disabled={busyAction !== null}
                         style={({ pressed }) => [
+                            styles.actionButton,
                             styles.shareButton,
                             compactLayout && styles.compactActionButton,
                             (pressed || busyAction !== null) && styles.pressed,
@@ -779,7 +853,7 @@ export default function ExportCardScreen() {
                         ) : (
                             <>
                                 <Ionicons name="share-social-outline" size={23} color="#fff" />
-                                <Text style={styles.shareButtonText}>Share Scorecard</Text>
+                                <Text style={styles.shareButtonText}>Share</Text>
                             </>
                         )}
                     </Pressable>
@@ -788,6 +862,7 @@ export default function ExportCardScreen() {
                         onPress={handleSaveImage}
                         disabled={busyAction !== null}
                         style={({ pressed }) => [
+                            styles.actionButton,
                             styles.saveImageButton,
                             compactLayout && styles.compactActionButton,
                             (pressed || busyAction !== null) && styles.pressed,
@@ -796,11 +871,11 @@ export default function ExportCardScreen() {
                         accessibilityLabel="Save scorecard image"
                     >
                         {busyAction === 'save' ? (
-                            <ActivityIndicator color={BLUE} />
+                            <ActivityIndicator color="#fff" />
                         ) : (
                             <>
-                                <Ionicons name="download-outline" size={23} color={BLUE} />
-                                <Text style={styles.saveImageButtonText}>Save Image</Text>
+                                <Ionicons name="download-outline" size={23} color="#fff" />
+                                <Text style={styles.saveImageButtonText}>Save</Text>
                             </>
                         )}
                     </Pressable>
@@ -855,12 +930,13 @@ const styles = StyleSheet.create({
         borderColor: 'rgba(210, 220, 228, 0.9)',
         paddingHorizontal: 11,
         paddingTop: 10,
-        paddingBottom: 14,
+        paddingBottom: 7,
         shadowColor: '#676767',
         shadowOffset: { width: 1, height: 2 },
         shadowOpacity: 0.18,
         shadowRadius: 4,
         elevation: 3,
+        flexGrow: 1,
     },
     compactExportCard: {
         paddingHorizontal: 8,
@@ -879,7 +955,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: 9,
+        marginTop: 7,
         marginBottom: 0
     },
     compactBrandRow: {
@@ -920,7 +996,7 @@ const styles = StyleSheet.create({
         fontWeight: '800',
     },
     genderValue: {
-        fontSize: 8.5,
+        fontSize: 9,
         fontWeight: 500
     },
     matchupHeader: {
@@ -966,14 +1042,14 @@ const styles = StyleSheet.create({
     },
     metadataRailWeight: {
         color: TEXT,
-        fontSize: 8.5,
+        fontSize: 9,
         lineHeight: 11,
         textAlign: 'center',
         fontWeight: '700',
     },
     metadataRailDate: {
         color: TEXT,
-        fontSize: 9,
+        fontSize: 9.5,
         lineHeight: 9,
         fontWeight: 500,
         textAlign: 'center',
@@ -991,8 +1067,8 @@ const styles = StyleSheet.create({
         marginBottom: '5%'
     },
     mensGenderPill: {
-        backgroundColor: BLUE,
-        borderColor: BLUE,
+        backgroundColor: HEADER_BLUE,
+        borderColor: HEADER_BLUE,
         minWidth: 40,
     },
     womensGenderPill: {
@@ -1018,9 +1094,14 @@ const styles = StyleSheet.create({
         width: '100%',
         textAlign: 'center',
         fontSize: 20,
-        height: 46,
         lineHeight: 23,
         fontWeight: '800',
+    },
+    fighterNameSlot: {
+        width: '100%',
+        height: 46,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     compactFighterName: {
         height: 30,
@@ -1031,12 +1112,12 @@ const styles = StyleSheet.create({
         color: '#222',
         fontSize: 15,
         fontWeight: '800',
-        paddingTop: 8,
     },
     vsColumn: {
         width: 50,
-    alignItems: 'center',
-    // justifyContent: 'center',
+        height: 46,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     finalScore: {
         width: '100%',
@@ -1106,12 +1187,15 @@ const styles = StyleSheet.create({
     },
     rowsWrap: {
         gap: 3,
+        flexGrow: 1
     },
     compactRowsWrap: {
         gap: 2,
     },
     scoreRow: {
-        minHeight: ROW_HEIGHT,
+        flex: 1,
+        minHeight: 33,
+        maxHeight: 40,
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: 'rgba(255,255,255,0.94)',
@@ -1317,30 +1401,43 @@ const styles = StyleSheet.create({
     },
     actionRow: {
         flexDirection: 'row',
-        gap: 10,
+        alignItems: 'flex-end',
+        gap: 8,
         marginTop: 14,
+        paddingHorizontal: 8,
     },
     compactActionRow: {
-        gap: 6,
+        gap: 8,
         marginTop: 7,
+        paddingHorizontal: 6,
     },
     compactActionButton: {
-        minHeight: 42,
+        minHeight: 40,
         borderRadius: 12,
     },
-    shareButton: {
-        flex: 1.35,
-        minHeight: 42,
+    actionButton: {
+        flex: 1,
+        minWidth: 0,
+        minHeight: 40,
         borderRadius: 12,
-        backgroundColor: '#0B78EF',
-        flexDirection: 'row',
+        paddingHorizontal: 8,
         alignItems: 'center',
         justifyContent: 'center',
-        paddingHorizontal: 8,
-        shadowColor: '#676767',
-        shadowOffset: { width: 1, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 3,
+        boxShadow: '4',
+        shadowColor: '#11334b',
+        shadowOffset: { width: 5, height: 5 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1,
+    },
+    shareButton: {
+        backgroundColor: HEADER_BLUE,
+        borderWidth: 0,
+        transform: [{ translateY: 1 }],
+        flexDirection: 'row',
+        shadowColor: '#11334b',
+        shadowOffset: { width: 5, height: 5 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1,
         elevation: 3,
     },
     shareButtonText: {
@@ -1351,50 +1448,44 @@ const styles = StyleSheet.create({
         marginLeft: 7,
     },
     saveImageButton: {
-        flex: 0.9,
-        minHeight: 42,
-        borderRadius: 12,
-        backgroundColor: '#fff',
-        borderWidth: 1,
-        borderColor: '#E0E4E7',
+        backgroundColor: HEADER_BLUE,
+        borderWidth: 0,
+        transform: [{ translateY: 1 }],
         flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingHorizontal: 8,
-        shadowColor: '#676767',
-        shadowOffset: { width: 1, height: 2 },
-        shadowOpacity: 0.16,
-        shadowRadius: 3,
+        shadowColor: '#11334b',
+        shadowOffset: { width: 5, height: 5 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1,
         elevation: 2,
     },
     saveImageButtonText: {
-        color: BLUE,
+        color: '#fff',
         fontSize: 14,
         fontWeight: '700',
         marginLeft: 5,
     },
     backButton: {
-        alignSelf: 'center',
         flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: 14,
-        paddingHorizontal: 18,
-        minHeight: 42,
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: '#E0E4E7',
+        shadowColor: '#11334b',
+        shadowOffset: { width: 5, height: 5 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1,
+        elevation: 2,
     },
     actionBackButton: {
-        flex: 0.65,
         marginTop: 0,
-        paddingHorizontal: 6,
     },
     compactBackButton: {
-        marginTop: 5,
-        minHeight: 42,
+        marginTop: 0,
+        minHeight: 40,
     },
     backText: {
-        color: BLUE,
-        fontSize: 12,
-        fontWeight: '800',
+        color: HEADER_BLUE,
+        fontSize: 14,
+        fontWeight: '700',
     },
     pressed: {
         opacity: 0.62,

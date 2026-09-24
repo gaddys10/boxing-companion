@@ -312,8 +312,11 @@ export default function RoundRow({
                     <View style={quickScoringVisible ? styles.portraitQuickModal : styles.selectScoringModal}>
                         {orientationChoiceVisible ? (
                             <>
-                                <Text style={styles.modalTitle}>Choose Orientation</Text>
-                                <Text style={[styles.modalText, styles.orientationPrompt]}>How would you like to score this round?</Text>
+                                <Text style={styles.modalTitle}>Choose Full Scoring Orientation</Text>
+                                <Text style={[styles.modalText, styles.orientationPrompt]}>How would you like to score this round? {"\n"} {"\n"}
+                                    Orientation lock will be active while on the round scoring screen.
+
+                                </Text>
                                 <Pressable
                                     accessibilityRole="button"
                                     accessibilityLabel="Score in portrait mode"
@@ -345,9 +348,10 @@ export default function RoundRow({
                             <>
                                 <Text style={styles.modalTitle}>Select Scoring Method</Text>
                                 <Pressable style={styles.quickScoring} onPress={openQuickScoring}>
+                                    <Ionicons name="flash" size={26} color="#1976D2" />
                                     <Text style={styles.quickScoringText}>Quick Scoring</Text>
                                 </Pressable>
-                                <Text style={[styles.modalText, {textAlign: 'center'}]}>Score the round in just a few taps!</Text>
+                                <Text style={[styles.modalText, {textAlign: 'center'}]}>Score the round in just a few taps.</Text>
                                 <Pressable 
                                     style={styles.fullScoring}
                                     // onPress={() => {
@@ -368,13 +372,17 @@ export default function RoundRow({
                                     // }}
                                     onPress={openFullScoring}
                                 >
+                                    <Ionicons name="game-controller-outline" size={26} color="#1976D2" />
                                     <Text style={styles.quickScoringText}>Full Scoring</Text>
                                 </Pressable>
                                 <Text style={[styles.modalText, {textAlign: 'center'}]}>
-                                    Use the full, interactive live scoring experience with round momentum tracking.
+                                    Use the full, interactive scoring experience with round momentum tracking. {"\n"} {"\n"}
+                                    Tap each side of the screen to track punches, pressure, and other meaningful moments throughout the round. {"\n"} {"\n"}
+                                    Hold the buttons to track knockdowns, deductions, and stoppages.
                                 </Text>
                                 <View style={styles.modalActions}>
                                     <Pressable style={[styles.modalButton, styles.cancelButton]} onPress={closeScoringModal}>
+                                        <Ionicons name="close" size={18} color="#fff" />
                                         <Text style={styles.cancelButtonText}>Cancel</Text>
                                     </Pressable>
                                 </View>
@@ -602,7 +610,7 @@ const styles = StyleSheet.create({
         marginLeft: 0,
         boxShadow: '4',
         shadowColor: '#11334b',
-        shadowOffset: { width: 2, height: 2 },
+        shadowOffset: { width: 5, height: 5 },
         shadowOpacity: 0.4,
         shadowRadius: 1,
         borderWidth: 1,
@@ -613,7 +621,7 @@ const styles = StyleSheet.create({
         marginLeft: 0,
         boxShadow: '4',
         shadowColor: '#11334b',
-        shadowOffset: { width: 2, height: 2 },
+        shadowOffset: { width: 5, height: 5 },
         shadowOpacity: 0.4,
         shadowRadius: 1,
         borderWidth: 1,
@@ -670,6 +678,8 @@ const styles = StyleSheet.create({
         width: '75%',
         alignSelf: 'center',
         backgroundColor: '#fff',
+        flexDirection: 'row',
+        gap: 8,
         height: '15%',
         borderRadius: 15,
         justifyContent: 'center',
@@ -677,7 +687,7 @@ const styles = StyleSheet.create({
         marginBottom: '5%',
         boxShadow: '4',
         shadowColor: '#11334b',
-        shadowOffset: { width: 2, height: 2 },
+        shadowOffset: { width: 5, height: 5 },
         shadowOpacity: 0.4,
         shadowRadius: 1,
         borderWidth: 1,
@@ -784,12 +794,14 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         height: '15%',
         backgroundColor: '#fff',
+        flexDirection: 'row',
+        gap: 8,
         borderRadius: 15,
         justifyContent: 'center',
         alignItems: 'center',
         boxShadow: '4',
         shadowColor: '#11334b',
-        shadowOffset: { width: 2, height: 2 },
+        shadowOffset: { width: 5, height: 5 },
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
         shadowOpacity: 0.4,
@@ -800,7 +812,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#d32f2f',
         boxShadow: '4',
         shadowColor: '#11334b',
-        shadowOffset: { width: 2, height: 2 },
+        shadowOffset: { width: 5, height: 5 },
         shadowOpacity: 0.4,
         shadowRadius: 1,
     },
@@ -815,7 +827,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#1976D2',
         boxShadow: '4',
         shadowColor: '#11334b',
-        shadowOffset: { width: 2, height: 2 },
+        shadowOffset: { width: 5, height: 5 },
         shadowOpacity: 0.4,
         shadowRadius: 1
     },
@@ -845,7 +857,8 @@ const styles = StyleSheet.create({
     },
     selectScoringModal: {
         width: '100%',
-        height: '51%',
+        height: '73%',
+        maxHeight: '90%',
         maxWidth: 340,
         backgroundColor: '#fff',
         borderRadius: 12,
@@ -882,6 +895,9 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         borderRadius: 8,
         alignItems: 'center',
+        flexDirection: 'row',
+        gap: 6,
+        justifyContent: 'center',
         marginLeft: 10,
     },
     bluePlusMinus: {

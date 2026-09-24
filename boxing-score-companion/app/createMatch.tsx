@@ -1,7 +1,7 @@
-import { Ionicons } from '@expo/vector-icons';
+import { FontAwesome6, Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Modal, Pressable, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useResponsiveLayout } from '../hooks/use-responsive-layout';
@@ -32,8 +32,6 @@ export default function CreateMatch() {
     const [fighter2Name, setFighter2Name] = useState(fighter2);
     const [selectedRounds, setSelectedRounds] = useState(roundAmount);
     const [discardModalVisible, setDiscardModalVisible] = useState(false);
-    
-    
 
 
     // const [selectedGender, setSelectedGender] = useState("");
@@ -91,13 +89,12 @@ export default function CreateMatch() {
     const buttonText = String(params.buttonText || "Create Scorecard");
     const rounds = [4, 5, 6, 8, 10, 12];
     const { height, isLandscape, insets, sx, sy, scale, horizontalGutter } = useResponsiveLayout();
-    const landscapeHeightRef = useRef(0);
-    if (isLandscape && height > landscapeHeightRef.current) {
-        landscapeHeightRef.current = height;
-    }
-    const stableLandscapeHeight = landscapeHeightRef.current || height;
     const id = params.id ? String(params.id) : undefined;
-    const landscapeInputHeight = Math.max(36, Math.min(56, stableLandscapeHeight * 0.05));
+
+    const landscapeInputHeight = Math.max(
+        36,
+        Math.min(40, height * 0.05)
+    );
     const roundButtonSize = Math.max(32, Math.min(40, 32 * sx));
     const genderPillHeight = Math.max(36, Math.min(48, 36 * sy));
     const weightPillHeight = Math.max(32, Math.min(40, 36 * sy));
@@ -348,7 +345,7 @@ export default function CreateMatch() {
                         paddingLeft: Math.max(insets.left, 16 * sx),
                         paddingRight: Math.max(insets.right, 16 * sx),
                         paddingBottom: Math.max(insets.bottom, 8 * sy),
-                        minHeight: stableLandscapeHeight,
+                        minHeight: Math.max(0, height - insets.top),
                     },
                 ]}
                 keyboardShouldPersistTaps="handled"
@@ -561,6 +558,12 @@ export default function CreateMatch() {
                 <Modal
                     animationType="fade"
                     transparent
+                    presentationStyle="overFullScreen"
+                    supportedOrientations={
+                        isLandscape
+                            ? ['landscape', 'landscape-left', 'landscape-right']
+                            : ['portrait']
+                    }
                     visible={showDatePicker}
                     onRequestClose={() => setShowDatePicker(false)}
                 >
@@ -571,6 +574,8 @@ export default function CreateMatch() {
                                 value={fightDate ?? new Date()}
                                 mode="date"
                                 display="spinner"
+                                themeVariant="light"
+                                textColor="#000000"
                                 onChange={handleDateChange}
                                 style={styles.datePickerSpinner}
                             />
@@ -768,9 +773,13 @@ export default function CreateMatch() {
                     <Pressable
                         style={[
                             isEditing ? styles.landscapeEditCancelButton : styles.landscapeCancelButton,
+                            styles.buttonWithIcon,
+                            styles.actionButtonShadow,
+                            !isEditing && styles.initialLandscapeCancelButton,
                         ]}
                         onPress={() => setDiscardModalVisible(true)}
                     >
+                        <Ionicons name="trash-outline" size={18} color="#fff" />
                         <Text style={styles.cancelButtonText}>Cancel</Text>
                     </Pressable>
 
@@ -778,10 +787,10 @@ export default function CreateMatch() {
                     {/* save and exit button  */}
                     {isEditing && 
                         <Pressable
-                            style={[styles.landscapeEditSaveButton, styles.landscapeActionButton]}
+                            style={[styles.landscapeEditSaveButton, styles.landscapeActionButton, styles.actionButtonShadow]}
                             onPress={handleSaveChangesAndExit}
                         >
-                            <Text style={[styles.buttonText, styles.editingButtonText]}>Save & Exit</Text>
+                            <Text style={[styles.buttonText, styles.saveExitButtonText]}>Save & Exit</Text>
                         </Pressable>
                     }
 
@@ -790,12 +799,17 @@ export default function CreateMatch() {
                     <Pressable
                         style={[
                             isEditing? styles.landscapeEditContinueButton : styles.landscapeButton,
+                            styles.buttonWithIcon,
+                            styles.actionButtonShadow,
+                            !isEditing && styles.initialLandscapeCreateButton,
                         ]}
                         onPress={handleStartFight}
                     >
+                        {!isEditing && <FontAwesome6 name="plus" size={16} color="#fff" />}
                         <Text style={[styles.buttonText, isEditing && styles.editingButtonText]} onPress={handleStartFight}>
                             {buttonText}
                         </Text>
+                        {isEditing && <Ionicons name="chevron-forward" size={18} color="#fff" />}
                     </Pressable>
                 </View>
             }
@@ -803,22 +817,35 @@ export default function CreateMatch() {
             </ScrollView>
             {!isLandscape && (
                 <View style={[styles.buttonContainer, { paddingBottom: Math.max(insets.bottom, 8) }]}>
-                    <Pressable style={styles.cancelButton} onPress={() => setDiscardModalVisible(true)}>
+                    <Pressable
+                        style={[styles.cancelButton, styles.buttonWithIcon, styles.actionButtonShadow, !isEditing && styles.initialCancelButton]}
+                        onPress={() => setDiscardModalVisible(true)}
+                    >
+                        <Ionicons name="trash-outline" size={18} color="#fff" />
                         <Text style={styles.cancelButtonText}>Cancel</Text>
                     </Pressable>
                     {isEditing && (
                         <Pressable
-                            style={[styles.editButton, styles.editingActionButton]}
+                            style={[styles.editButton, styles.editingActionButton, styles.actionButtonShadow]}
                             onPress={handleSaveChangesAndExit}
                         >
-                            <Text style={[styles.buttonText, styles.editingButtonText]}>Save & Exit</Text>
+                            <Text style={[styles.buttonText, styles.saveExitButtonText]}>Save & Exit</Text>
                         </Pressable>
                     )}
                     <Pressable
-                        style={[styles.createButton, isEditing && styles.editingActionButton]}
+                        style={[
+                            styles.createButton,
+                            styles.buttonWithIcon,
+                            styles.actionButtonShadow,
+                            isEditing ? styles.editingActionButton : styles.initialCreateButton,
+                        ]}
                         onPress={handleStartFight}
                     >
+                        {!isEditing && <FontAwesome6 name="plus" size={16} color="#fff" />}
+
                         <Text style={[styles.buttonText, isEditing && styles.editingButtonText]}>{buttonText}</Text>
+
+                        {isEditing && <Ionicons name="chevron-forward" size={16} color="#fff" />}
                     </Pressable>
                 </View>
             )}
@@ -907,7 +934,7 @@ const styles = StyleSheet.create({
         minHeight: 44,
         paddingHorizontal: 12,
         shadowColor: '#11334b',
-        shadowOffset: { width: 2, height: 2 },
+        shadowOffset: { width: 5, height: 5 },
         shadowOpacity: 0.4,
         shadowRadius: 1,
     },
@@ -1030,7 +1057,7 @@ portraitGenderPill: {
         minWidth: '25%',
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
+        boxShadow: '4',
         borderWidth: 1,
         borderColor: '#B6C6D1',
         minHeight: 42,
@@ -1044,22 +1071,20 @@ portraitGenderPill: {
         minWidth: '25%',
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
-        borderWidth: 1,
-        borderColor: '#B6C6D1',
+        boxShadow: '4',
+        borderWidth: 0,
         borderBottomWidth: 0,
         minHeight: 42,
     },
     editButton: {
-        backgroundColor: '#307Fb6',
+        backgroundColor: '#fff',
                 minWidth: '25%',
         borderRadius: 12,
         // marginTop: 25,
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
+        boxShadow: '4',
         borderWidth: 1,
-        borderBottomWidth: 0,
         borderColor: '#B6C6D1',
         paddingHorizontal: '6%',
         paddingVertical: '2.5%',
@@ -1089,10 +1114,11 @@ portraitGenderPill: {
     landscapeButtonContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
+        alignItems: 'center',
         width: '80%',
         gap: 12,
         paddingBottom: 12,
-        height: '15%'
+        height: 54,
     },
 
     buttonText: {
@@ -1100,6 +1126,36 @@ portraitGenderPill: {
         fontSize: 14,
         fontWeight: '700',
         textAlign: 'center'
+    },
+    buttonWithIcon: {
+        flexDirection: 'row',
+        gap: 6,
+    },
+    actionButtonShadow: {
+        boxShadow: '4',
+        shadowColor: '#11334b',
+        shadowOffset: { width: 5, height: 5 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1,
+        elevation: 4,
+    },
+    initialCancelButton: {
+        flex: 0.9,
+        minWidth: 0,
+    },
+    initialCreateButton: {
+        flex: 1.1,
+        minWidth: 0,
+    },
+    initialLandscapeCancelButton: {
+        flex: 0.9,
+        maxWidth: 180,
+        minWidth: 0,
+    },
+    initialLandscapeCreateButton: {
+        flex: 1.1,
+        maxWidth: 200,
+        minWidth: 0,
     },
 
     editingCancelButton: {
@@ -1111,6 +1167,12 @@ portraitGenderPill: {
     editingButtonText: {
         fontSize: 14,
         color: '#fff',
+        marginLeft: 5,
+        marginRight: -3,
+    },
+    saveExitButtonText: {
+        fontSize: 14,
+        color: '#307Fb6',
     },
     cancelButton: {
         backgroundColor: '#de2f2f',
@@ -1123,33 +1185,36 @@ portraitGenderPill: {
 
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
+        boxShadow: '4',
         minHeight: 42,
+        borderWidth: 0,
     },
     landscapeCancelButton: {
         backgroundColor: '#de2f2f',
         paddingHorizontal: 24,
         borderRadius: 12,
-        height: '80%',
+        height: 42,
         flex: 1,
         maxWidth: 200,
         minWidth: 0,
-        borderWidth: 1,
+        borderWidth: 0,
         borderColor: '#B6C6D1',
+        alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
+        boxShadow: '4',
     },
     landscapeEditCancelButton: {
         backgroundColor: '#de2f2f',
         paddingHorizontal: 24,
         borderRadius: 12,
-        height: '100%',
-        borderWidth: 1,
+        height: 42,
+        borderWidth: 0,
         width: '31%',
         minWidth: 0,
         borderColor: '#B6C6D1',
+        alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
+        boxShadow: '4',
     },
     landscapeEditButton: {
         backgroundColor: '#fff',
@@ -1159,24 +1224,23 @@ portraitGenderPill: {
         height: '39%',
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
+        boxShadow: '4',
         borderWidth: 1,
         borderColor: '#B6C6D1',
         color: '#307Fb6',
     },
     landscapeEditSaveButton: {
-        backgroundColor: '#307Fb6',
+        backgroundColor: '#fff',
         paddingHorizontal: '1%',
         borderRadius: 12,
         flex: 1,
         maxWidth: 200,
         minWidth: 0,
-        height: '100%',
+        height: 42,
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
+        boxShadow: '4',
         borderWidth: 1,
-        borderBottomWidth: 0,
         borderColor: '#B6C6D1',
         color: '#307Fb6',
     },
@@ -1187,11 +1251,12 @@ portraitGenderPill: {
         flex: 1,
         maxWidth: 200,
         minWidth: 0,
-        height: '80%',
-        borderWidth: 1,
+        height: 42,
+        borderWidth: 0,
         borderColor: '#B6C6D1',
+        alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
+        boxShadow: '4',
     },
     landscapeEditContinueButton: {
         backgroundColor: '#307Fb6',
@@ -1200,11 +1265,12 @@ portraitGenderPill: {
         flex: 1,
         maxWidth: 200,
         minWidth: 0,
-        height: '100%',
-        borderWidth: 1,
+        height: 42,
+        borderWidth: 0,
         borderColor: '#B6C6D1',
+        alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '2px 4px 6px rgba(0, 0, 0, 0.3)',
+        boxShadow: '4',
     },
     landscapeActionButton: {
         flex: 1,
@@ -1217,7 +1283,7 @@ portraitGenderPill: {
 
     cancelButtonText: {
         color: '#fff',
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: '700',
         textAlign: 'center'
     },
@@ -1593,7 +1659,7 @@ portraitGenderPill: {
         marginBottom: '1.5%',
         boxShadow: '4',
         shadowColor: '#11334b',
-        shadowOffset: { width: 2, height: 2 },
+        shadowOffset: { width: 5, height: 5 },
         shadowOpacity: 0.4,
         shadowRadius: 1,
     },
@@ -1637,10 +1703,11 @@ portraitGenderPill: {
     landscapeEditButtonContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
+        alignItems: 'center',
         width: '100%',
         gap: 12,
         paddingBottom: 12,
-        height: '12.5%'
+        height: 54,
     },
     landscapeContainer: {
         flexGrow: 1,

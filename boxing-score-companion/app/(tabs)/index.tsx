@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, TextInput, Image, ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { FontAwesome6, Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SavedCard from '../components/savedCard';
 import LandscapeSavedCard from '../components/landscapeSavedCard';
@@ -168,7 +168,8 @@ export default function HomeScreen() {
               </View>
             </View>
             <Pressable style={styles.landscapeButton} onPress={handleStartFight}>
-              <Text numberOfLines={1} style={styles.buttonText}>+ New Scorecard</Text>
+              <FontAwesome6 name="plus" size={14} color="#fff" />
+              <Text numberOfLines={1} style={styles.buttonText}>New Scorecard</Text>
             </Pressable>
           </View>
         ) : (
@@ -264,7 +265,8 @@ export default function HomeScreen() {
 
         {!isLandscape && (
           <Pressable style={[styles.button, { bottom: Math.max(34 * sy, insets.bottom), minHeight: 44 }]} onPress={handleStartFight}>
-            <Text style={styles.buttonText}>+ New Scorecard</Text>
+            <FontAwesome6 name="plus" size={18} color="#fff" />
+            <Text style={styles.buttonText}>New Scorecard</Text>
           </Pressable>
         )}
         
@@ -281,7 +283,9 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
   },
   button: {
-    backgroundColor: '#fff',
+    backgroundColor: '#307Fb6',
+    flexDirection: 'row',
+    gap: 5,
     paddingHorizontal: '5%',
     paddingVertical: '3%',
     borderRadius: 12,
@@ -293,8 +297,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 5, height: 5 },
     shadowOpacity: 0.4,
     shadowRadius: 1,
-    borderWidth: 1,
-    borderColor: '#B6C6D1',
+    borderWidth: 0,
     justifyContent: 'center',
     alignItems: 'center'
   },
@@ -304,7 +307,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonText: {
-    color: '#111',
+    color: '#fff',
     fontSize: 14,
     fontWeight: '700',
   },
@@ -429,7 +432,9 @@ const styles = StyleSheet.create({
   //Landscape styles
 
   landscapeButton: {
-    backgroundColor: '#fff',
+    backgroundColor: '#307Fb6',
+    flexDirection: 'row',
+    gap: 5,
     paddingHorizontal: 14,
     minHeight: 44,
     position: 'absolute',
@@ -443,8 +448,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 5, height: 5 },
     shadowOpacity: 0.4,
     shadowRadius: 1,
-    borderWidth: 1,
-    borderColor: '#B6C6D1'
+    borderWidth: 0,
   },
   landscapeContainer: {
     flex: 1,
