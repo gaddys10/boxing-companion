@@ -271,12 +271,14 @@ export default function MatchNotesScreen() {
                 <Text style={styles.title}>Match Notes</Text>
             </View>
 
-            <View style={styles.scrollView}>
+            <View style={[!isLandscape ? styles.scrollView : styles.landscapeScrollView, isLandscape && styles.landscapeContent]}>
                 <View style={[styles.card, styles.ratingCard, isLandscape && styles.landscapeRatingCard]}>
-                    <Text style={styles.sectionTitle}>Rate this fight</Text>
-                    <Text style={styles.sectionDescription}>
-                        Rate your overall enjoyment from 0 to 5 stars.
-                    </Text>
+                    <View style={isLandscape && styles.landscapeHeadingCopy}>
+                        <Text style={styles.sectionTitle}>Rate this fight</Text>
+                        <Text style={[styles.sectionDescription, isLandscape && styles.landscapeSectionDescription]}>
+                            {isLandscape ? 'Rate from 0 to 5' : 'Rate your enjoyment from 0 to 5 stars.'}
+                        </Text>
+                    </View>
 
                     <View
                         style={styles.starsRow}
@@ -331,13 +333,13 @@ export default function MatchNotesScreen() {
                     </View>
                 </View>
 
-                <View style={[styles.bottomCard, styles.descriptorCard, isLandscape && styles.landscapeDescriptorCard]}>
+                <View style={[styles.bottomCard, isLandscape && styles.landscapeDescriptorCard]}>
                     <View style={styles.descriptorHeadingRow}>
-                        <View style={styles.descriptorHeadingCopy}>
+                        <View style={[styles.descriptorHeadingCopy, isLandscape && styles.landscapeHeadingCopy]}>
                             <Text style={styles.sectionTitle}>
                                 {/* How would you  */}
                                 Describe this fight</Text>
-                            <Text style={styles.sectionDescription}>
+                            <Text style={[styles.sectionDescription, isLandscape && styles.landscapeSectionDescription]}>
                                 Pick up to {MAX_DESCRIPTORS} match descriptors.
                                 {/* that tell the story of the fight. */}
                             </Text>
@@ -386,7 +388,12 @@ export default function MatchNotesScreen() {
                     )}
 
                     <View
-                        style={[styles.descriptorScrollWrapper, { maxHeight: descriptorScrollMaxHeight }]}
+                        style={[
+                            styles.descriptorScrollWrapper,
+                            isLandscape
+                                ? styles.landscapeDescriptorScrollWrapper
+                                : { maxHeight: descriptorScrollMaxHeight },
+                        ]}
                         onLayout={(event) => setDescriptorViewportHeight(event.nativeEvent.layout.height)}
                     >
                         <ScrollView
@@ -473,6 +480,7 @@ export default function MatchNotesScreen() {
                     accessibilityRole="button"
                     accessibilityLabel="Cancel note changes"
                 >
+                    <Ionicons name="close" size={20} color="#fff" />
                     <Text style={styles.cancelButtonText}>Cancel</Text>
                 </Pressable>
                 <Pressable
@@ -481,6 +489,7 @@ export default function MatchNotesScreen() {
                     accessibilityRole="button"
                     accessibilityLabel="Save notes to scorecard"
                 >
+                    <Ionicons name="checkmark" size={20} color="#fff" />
                     <Text style={styles.saveButtonText}>Save Notes</Text>
                 </Pressable>
             </View>
@@ -496,6 +505,11 @@ const styles = StyleSheet.create({
     scrollView: {
         flex: 1,
         width: '90%',
+        alignSelf: 'center',
+    },
+    landscapeScrollView: {
+        flex: 1,
+        width: '92%',
         alignSelf: 'center',
     },
     titleContainer: {
@@ -532,9 +546,10 @@ const styles = StyleSheet.create({
     },
     landscapeContent: {
         flexDirection: 'row',
-        alignItems: 'flex-start',
+        alignItems: 'stretch',
         gap: 16,
         paddingTop: 16,
+        paddingBottom: 8,
     },
     card: {
         backgroundColor: '#fff',
@@ -573,10 +588,13 @@ const styles = StyleSheet.create({
     landscapeRatingCard: {
         width: '38%',
         minWidth: 300,
+        marginVertical: 0,
     },
     landscapeDescriptorCard: {
         flex: 1,
+        width: 'auto',
         minWidth: 0,
+        overflow: 'hidden'
     },
     sectionTitle: {
         color: TEXT,
@@ -590,6 +608,15 @@ const styles = StyleSheet.create({
         lineHeight: 18,
         marginTop: 5,
         
+    },
+    landscapeHeadingCopy: {
+        flexDirection: 'row',
+        alignItems: 'baseline',
+        gap: 8,
+    },
+    landscapeSectionDescription: {
+        flexShrink: 1,
+        marginTop: 0,
     },
     starsRow: {
         flexDirection: 'row',
@@ -689,7 +716,7 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start',
         justifyContent: 'space-between',
         gap: 12,
-        marginBottom: 17,
+        marginBottom: 5,
     },
     descriptorHeadingCopy: {
         flex: 1,
@@ -728,6 +755,10 @@ const styles = StyleSheet.create({
         maxHeight: 336,
         position: 'relative',
     },
+    landscapeDescriptorScrollWrapper: {
+        flex: 1,
+        minHeight: 0,
+    },
     counterBadge: {
         minWidth: 48,
         height: 30,
@@ -762,12 +793,12 @@ const styles = StyleSheet.create({
         height: '100%',
         paddingRight: '5%'
     },
+    landscapeDescriptorScroll: {
+        flex: 1,
+    },
     descriptorPillSpacer: {
         width: 6,
         height: 50,
-    },
-    landscapeDescriptorScroll: {
-        maxHeight: 150,
     },
     descriptorScrollbarTrack: {
         position: 'absolute',
@@ -822,32 +853,41 @@ const styles = StyleSheet.create({
         backgroundColor: SCREEN,
         paddingTop: 8,
         flexDirection: 'row',
+        alignItems: 'flex-end',
         gap: 8,
     },
     cancelButton: {
-        minHeight: 42,
+        minHeight: 40,
         backgroundColor: RED,
+        flexDirection: 'row',
+        gap: 6,
         borderRadius: 12,
+        borderWidth: 0,
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: '#676767',
-        shadowOffset: { width: 2, height: 3 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
+        boxShadow: '4',
+        shadowColor: '#11334b',
+        shadowOffset: { width: 5, height: 5 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1,
         elevation: 4,
         flex: 1,
 
     },
     saveButton: {
-        minHeight: 42,
-        backgroundColor: "#fff",
+        minHeight: 40,
+        backgroundColor: '#307Fb6',
+        flexDirection: 'row',
+        gap: 6,
         borderRadius: 12,
+        borderWidth: 0,
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: '#676767',
-        shadowOffset: { width: 2, height: 3 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
+        boxShadow: '4',
+        shadowColor: '#11334b',
+        shadowOffset: { width: 5, height: 5 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1,
         elevation: 4,
         flex: 1,
     },
@@ -857,7 +897,7 @@ const styles = StyleSheet.create({
         fontWeight: '700',
     },
     saveButtonText: {
-        color: '#1976D2',
+        color: '#fff',
         fontSize: 16,
         fontWeight: '700',
     },

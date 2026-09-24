@@ -505,6 +505,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     marginBottom: 8,
+    textAlign: 'center',
   },
   modalText: {
     color: '#333A3F',
@@ -514,7 +515,8 @@ const styles = StyleSheet.create({
   },
   modalActions: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    gap: 10,
+    justifyContent: 'center',
   },
   modalButton: {
     minWidth: 88,
@@ -522,16 +524,24 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
     alignItems: 'center',
-    marginLeft: 10,
+    justifyContent: 'center',
+    boxShadow: '4',
+    elevation: 4,
+    shadowColor: '#11334b',
+    shadowOffset: { width: 5, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 1,
   },
   cancelButton: {
-    backgroundColor: '#EEF1F3',
+    backgroundColor: '#fff',
+    borderColor: '#B6C6D1',
+    borderWidth: 1,
   },
   confirmDeleteButton: {
     backgroundColor: '#d32f2f',
   },
   cancelButtonText: {
-    color: '#333A3F',
+    color: '#307Fb6',
     fontWeight: '700',
   },
   confirmDeleteText: {

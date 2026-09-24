@@ -1327,11 +1327,11 @@ const styles = StyleSheet.create({
     stoppageModalActions: { flexDirection: 'row', justifyContent: 'space-around', marginTop: '10%', gap: 10 },
     stoppageModalButton: { minWidth: 88, paddingVertical: 8, borderRadius: 8, alignItems: 'center', overflow: 'hidden' },
     stoppageCancelButton: {
-        backgroundColor: '#d32f2f', shadowColor: '#11334b', shadowOffset: { width: 2, height: 2 },
+        backgroundColor: '#d32f2f', shadowColor: '#11334b', shadowOffset: { width: 5, height: 5 },
         shadowOpacity: 0.4, shadowRadius: 1, borderWidth: 1, borderColor: 'rgba(200, 200, 200, 0.7)',
     },
     stoppageConfirmButton: {
-        backgroundColor: '#fff', shadowColor: '#11334b', shadowOffset: { width: 2, height: 2 },
+        backgroundColor: '#fff', shadowColor: '#11334b', shadowOffset: { width: 5, height: 5 },
         shadowOpacity: 0.4, shadowRadius: 1, borderWidth: 1, borderColor: 'rgba(200, 200, 200, 0.7)',
     },
     stoppageCancelButtonText: { color: '#fff', fontWeight: '700' },

@@ -306,7 +306,7 @@ export default function MatchInfoScreen() {
     };
 
     const handleShare = () => {
-        router.replace({
+        router.push({
             pathname: '/exportCard',
             params: {
                 id: id ? String(id) : undefined,
@@ -474,17 +474,17 @@ export default function MatchInfoScreen() {
 
                 {isLandscape && (
                     <View style={[styles.landscapeButtonContainer, { gap: 8 * sx }]}>
-                        <Pressable style={[styles.actionButton, styles.secondaryAction, styles.landscapeAction]} onPress={handleCardDetails}>
-                            <Text style={styles.secondaryActionText}>Card Info</Text>
+                        <Pressable style={[styles.actionButton, styles.primaryAction, styles.landscapeAction]} onPress={handleSaveScorecard}>
+                            <Text style={styles.primaryActionText}>Save & Exit</Text>
+                        </Pressable>
+                        <Pressable style={[styles.actionButton, styles.primaryAction, styles.landscapeAction]} onPress={handleCardDetails}>
+                            <Text style={styles.primaryActionText}>Card Info</Text>
                         </Pressable>
                         <Pressable style={[styles.actionButton, styles.secondaryAction, styles.landscapeAction]} onPress={handleNotes}>
                             <Text style={styles.secondaryActionText}>Notes</Text>
                         </Pressable>
                         <Pressable style={[styles.actionButton, styles.secondaryAction, styles.landscapeAction]} onPress={handleShare}>
                             <Text style={styles.secondaryActionText}>Share</Text>
-                        </Pressable>
-                        <Pressable style={[styles.actionButton, styles.primaryAction, styles.landscapeAction]} onPress={handleSaveScorecard}>
-                            <Text style={styles.primaryActionText}>Save</Text>
                         </Pressable>
                     </View>
                 )}
@@ -651,10 +651,10 @@ export default function MatchInfoScreen() {
 
                         {/* save button  */}
                         <Pressable
-                            style={[styles.actionButton, styles.secondaryAction]}
+                            style={[styles.actionButton, styles.primaryAction]}
                             onPress={handleCardDetails}
                         >
-                            <Text style={styles.secondaryActionText}>
+                            <Text style={styles.primaryActionText}>
                                 Card Info
                             </Text>
                         </Pressable>
@@ -722,21 +722,32 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '1px 1px 3px rgba(103, 103, 103, 0.7)',
+        boxShadow: '4',
+        shadowColor: '#11334b',
+        shadowOffset: { width: 5, height: 5 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1,
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
     },
-    primaryAction: { backgroundColor: '#D32F2F' },
-    secondaryAction: { backgroundColor: '#fff' },
+    primaryAction: {
+        backgroundColor: '#fff',
+        borderColor: '#D8E0E6',
+    },
+    secondaryAction: {
+        backgroundColor: '#307Fb6',
+        borderWidth: 0,
+        transform: [{ translateY: 1 }],
+    },
     primaryActionText: {
-        color: '#fff',
+        color: '#307Fb6',
         fontSize: 12.5,
         fontWeight: '700',
         textAlign: 'center',
     },
     secondaryActionText: {
-        color: '#1976D2',
-        fontSize: 14,
+        color: '#fff',
+        fontSize: 12.5,
         fontWeight: '700',
         textAlign: 'center',
     },
@@ -797,10 +808,10 @@ const styles = StyleSheet.create({
     },
     landscapeButtonContainer: {
         position: 'absolute',
-        right: 12,
-        top: 14,
+        left: '38%',
+        right: '7%',
+        top: 8,
         flexDirection: 'row',
-        width: '58%',
         height: 42,
     },
     buttonContainer: {
