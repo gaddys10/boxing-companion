@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { View, Text, Pressable, StyleSheet, Modal } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Modal, Image } from 'react-native';
 import { router } from 'expo-router';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -111,14 +111,10 @@ export default function RoundRow({
         setOrientationChoiceVisible(true);
     };
 
-    const startFullScoring = async (orientationLock: ScreenOrientation.OrientationLock) => {
+    const startFullScoring = async (
+    orientationLock: ScreenOrientation.OrientationLock
+    ) => {
         closeScoringModal();
-
-        try {
-            await ScreenOrientation.lockAsync(orientationLock);
-        } catch {
-            // Orientation locking may be unavailable on some devices; scoring can still continue.
-        }
 
         router.push({
             pathname: '/roundScoring',
@@ -134,6 +130,10 @@ export default function RoundRow({
                 fightDate,
                 rating,
                 description,
+                scoringOrientation:
+                    orientationLock === ScreenOrientation.OrientationLock.PORTRAIT_UP
+                        ? 'portrait'
+                        : 'landscape',
             },
         });
     };
@@ -313,17 +313,21 @@ export default function RoundRow({
                         {orientationChoiceVisible ? (
                             <>
                                 <Text style={styles.modalTitle}>Choose Full Scoring Orientation</Text>
-                                <Text style={[styles.modalText, styles.orientationPrompt]}>How would you like to score this round? {"\n"} {"\n"}
-                                    Orientation lock will be active while on the round scoring screen.
-
-                                </Text>
+                                <Text style={[styles.modalText, styles.orientationPrompt]}>How would you like to score this round?</Text>
                                 <Pressable
                                     accessibilityRole="button"
                                     accessibilityLabel="Score in portrait mode"
                                     style={styles.quickScoring}
                                     onPress={() => startFullScoring(ScreenOrientation.OrientationLock.PORTRAIT_UP)}
                                 >
-                                    <Text style={styles.quickScoringText}>Portrait</Text>
+                                    <View style={styles.orientationImageSlot}>
+                                        <Image
+                                            source={require('../../assets/images/portrait.png')}
+                                            style={styles.orientationPortraitImage}
+                                            resizeMode="contain"
+                                        />
+                                    </View>
+                                    <Text style={[styles.quickScoringText, styles.orientationChoiceText]}>Portrait</Text>
                                 </Pressable>
                                 <Pressable
                                     accessibilityRole="button"
@@ -331,8 +335,18 @@ export default function RoundRow({
                                     style={styles.fullScoring}
                                     onPress={() => startFullScoring(ScreenOrientation.OrientationLock.LANDSCAPE)}
                                 >
-                                    <Text style={styles.quickScoringText}>Landscape</Text>
+                                    <View style={styles.orientationImageSlot}>
+                                        <Image
+                                            source={require('../../assets/images/landscape.png')}
+                                            style={styles.orientationLandscapeImage}
+                                            resizeMode="contain"
+                                        />
+                                    </View>
+                                    <Text style={[styles.quickScoringText, styles.orientationChoiceText]}>Landscape</Text>
                                 </Pressable>
+                                <Text style={[styles.modalText, styles.orientationPrompt]}>
+                                    Orientation lock will be active while on the round scoring screen.
+                                </Text>
                                 <View style={styles.modalActions}>
                                     <Pressable
                                         accessibilityRole="button"
@@ -348,8 +362,8 @@ export default function RoundRow({
                             <>
                                 <Text style={styles.modalTitle}>Select Scoring Method</Text>
                                 <Pressable style={styles.quickScoring} onPress={openQuickScoring}>
-                                    <Ionicons name="flash" size={26} color="#1976D2" />
-                                    <Text style={styles.quickScoringText}>Quick Scoring</Text>
+                                    <Ionicons name="flash" size={46} color="#1976D2" style={styles.scoringMethodIcon} />
+                                    <Text numberOfLines={1} style={[styles.quickScoringText, styles.scoringMethodText]}>Quick Scoring</Text>
                                 </Pressable>
                                 <Text style={[styles.modalText, {textAlign: 'center'}]}>Score the round in just a few taps.</Text>
                                 <Pressable 
@@ -372,13 +386,17 @@ export default function RoundRow({
                                     // }}
                                     onPress={openFullScoring}
                                 >
-                                    <Ionicons name="game-controller-outline" size={26} color="#1976D2" />
-                                    <Text style={styles.quickScoringText}>Full Scoring</Text>
+                                    <Image
+                                        source={require('../../assets/images/portrait.png')}
+                                        style={styles.scoringMethodImage}
+                                        resizeMode="contain"
+                                    />
+                                    <Text style={[styles.quickScoringText, styles.scoringMethodText]}>Full Scoring</Text>
                                 </Pressable>
                                 <Text style={[styles.modalText, {textAlign: 'center'}]}>
                                     Use the full, interactive scoring experience with round momentum tracking. {"\n"} {"\n"}
                                     Tap each side of the screen to track punches, pressure, and other meaningful moments throughout the round. {"\n"} {"\n"}
-                                    Hold the buttons to track knockdowns, deductions, and stoppages.
+                                    Hold buttons to track knockdowns, deductions, and stoppages.
                                 </Text>
                                 <View style={styles.modalActions}>
                                     <Pressable style={[styles.modalButton, styles.cancelButton]} onPress={closeScoringModal}>
@@ -697,6 +715,36 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 700,
         color: '#1976D2'
+    },
+    scoringMethodImage: {
+        width: 56,
+        height: 56,
+    },
+    scoringMethodIcon: {
+        width: 56,
+        textAlign: 'center',
+    },
+    scoringMethodText: {
+        width: 130,
+        textAlign: 'left',
+    },
+    orientationPortraitImage: {
+        width: 56,
+        height: 56,
+    },
+    orientationLandscapeImage: {
+        width: 73,
+        height: 48,
+    },
+    orientationImageSlot: {
+        width: 73,
+        height: 56,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    orientationChoiceText: {
+        width: 100,
+        textAlign: 'left',
     },
     portraitQuickModal: {
         width: '100%',

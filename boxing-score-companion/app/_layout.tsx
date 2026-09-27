@@ -34,7 +34,24 @@ export default function RootLayout() {
           <Stack.Screen name="matchInfo" options={{ animationTypeForReplace: 'push', orientation: 'default', }} />
           <Stack.Screen name="matchNotes" options={{ animationTypeForReplace: 'push', orientation: 'default', }} />
           <Stack.Screen name="modal" options={{ presentation: 'modal',  title: 'Modal' }} />
-          <Stack.Screen name="roundScoring" options={{headerShown: false, orientation: 'default', animation: 'fade', animationDuration: 200}}/>
+          <Stack.Screen
+            name="roundScoring"
+            options={({ route }) => {
+              const params = route.params as
+                | { scoringOrientation?: 'portrait' | 'landscape' }
+                | undefined;
+
+              return {
+                headerShown: false,
+                orientation:
+                  params?.scoringOrientation === 'portrait'
+                    ? 'portrait'
+                    : 'landscape',
+                animation: 'fade',
+                animationDuration: 200,
+              };
+            }}
+          />
         </Stack>
         {/* <StatusBar style="auto" /> */}
       </ThemeProvider>
