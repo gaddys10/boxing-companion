@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, StyleSheet, Modal } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Modal, Image } from 'react-native';
 import { router } from 'expo-router';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -143,6 +143,9 @@ export default function LandscapeRoundRow({
                 fightDate,
                 rating,
                 description,
+                scoringOrientation: orientationLock === ScreenOrientation.OrientationLock.PORTRAIT_UP
+                    ? 'portrait'
+                    : 'landscape',
             },
         });
     };
@@ -397,6 +400,13 @@ export default function LandscapeRoundRow({
                                         style={styles.orientationButton}
                                         onPress={() => startFullScoring(ScreenOrientation.OrientationLock.PORTRAIT_UP)}
                                     >
+                                        <View style={styles.orientationImageSlot}>
+                                            <Image
+                                                source={require('../../assets/images/portrait.png')}
+                                                style={styles.orientationPortraitImage}
+                                                resizeMode="contain"
+                                            />
+                                        </View>
                                         <Text style={styles.orientationButtonText}>Portrait</Text>
                                     </Pressable>
                                     <Pressable
@@ -405,6 +415,13 @@ export default function LandscapeRoundRow({
                                         style={styles.orientationButton}
                                         onPress={() => startFullScoring(ScreenOrientation.OrientationLock.LANDSCAPE)}
                                     >
+                                        <View style={styles.orientationImageSlot}>
+                                            <Image
+                                                source={require('../../assets/images/landscape.png')}
+                                                style={styles.orientationLandscapeImage}
+                                                resizeMode="contain"
+                                            />
+                                        </View>
                                         <Text style={styles.orientationButtonText}>Landscape</Text>
                                     </Pressable>
                                 </View>
@@ -423,8 +440,8 @@ export default function LandscapeRoundRow({
                                 <View style={styles.methodRow}>
                                     <View style={styles.methodOption}>
                                         <Pressable style={styles.scoringButton} onPress={openQuickScoring}>
-                                            <Ionicons name="flash" size={20} color="#fff" />
-                                            <Text style={styles.scoringButtonText}>Quick Scoring</Text>
+                                            <Ionicons name="flash" size={20} color="#fff" style={styles.scoringMethodIcon} />
+                                            <Text numberOfLines={1} style={[styles.scoringButtonText, styles.scoringMethodText]}>Quick Scoring</Text>
                                         </Pressable>
                                         <Text style={styles.modalText}>Score the round in just a few taps!</Text>
                                     </View>
@@ -433,8 +450,12 @@ export default function LandscapeRoundRow({
                                             style={styles.scoringButton}
                                             onPress={() => setOrientationChoiceVisible(true)}
                                         >
-                                            <Ionicons name="game-controller-outline" size={21} color="#fff" />
-                                            <Text style={styles.scoringButtonText}>Full Scoring</Text>
+                                            <Image
+                                                source={require('../../assets/images/portrait.png')}
+                                                style={styles.scoringMethodImage}
+                                                resizeMode="contain"
+                                            />
+                                            <Text style={[styles.scoringButtonText, styles.scoringMethodText]}>Full Scoring</Text>
                                         </Pressable>
                                         <Text style={styles.modalText}>Interactive live scoring with momentum tracking</Text>
                                     </View>
@@ -927,6 +948,8 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         borderWidth: 1,
         flex: 1,
+        flexDirection: 'row',
+        gap: 8,
         justifyContent: 'center',
         minHeight: 54,
         shadowColor: '#11334b',
@@ -938,6 +961,20 @@ const styles = StyleSheet.create({
         color: '#1976D2',
         fontSize: 18,
         fontWeight: '700',
+    },
+    orientationPortraitImage: {
+        width: 26,
+        height: 26,
+    },
+    orientationLandscapeImage: {
+        width: 36,
+        height: 22,
+    },
+    orientationImageSlot: {
+        width: 36,
+        height: 26,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     modalTitle: {
         color: '#333A3F',
@@ -990,6 +1027,19 @@ const styles = StyleSheet.create({
     scoringButtonText: {
         color: '#fff',
         fontSize: 18,
+    },
+    scoringMethodImage: {
+        width: 24,
+        height: 24,
+        tintColor: '#fff',
+    },
+    scoringMethodIcon: {
+        width: 24,
+        textAlign: 'center',
+    },
+    scoringMethodText: {
+        width: 125,
+        textAlign: 'left',
     },
     scoringModal: {
         backgroundColor: '#fff',

@@ -1,5 +1,6 @@
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useState, useCallback } from 'react';
+import * as ScreenOrientation from 'expo-screen-orientation'
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import LandscapeRoundRow from './components/landscapeRoundRow';
 import RoundRow from './components/roundRow';
@@ -8,6 +9,25 @@ import { normalizeMatchRating, parseMatchDescription, serializeMatchDescription 
 
 export default function MatchInfoScreen() {
     const router = useRouter();
+    useFocusEffect(
+        useCallback(() => {
+            const resetTimer = setTimeout(async () => {
+                try {
+                    await ScreenOrientation.lockAsync(
+                        ScreenOrientation.OrientationLock.PORTRAIT_UP
+                    );
+
+                    await new Promise(resolve => setTimeout(resolve, 75));
+
+                    await ScreenOrientation.unlockAsync();
+                } catch {
+                    // Leave orientation alone if iOS rejects the reset.
+                }
+            }, 250);
+
+            return () => clearTimeout(resetTimer);
+        }, [])
+    );
     const { isLandscape, insets, sx, sy, horizontalGutter } = useResponsiveLayout();
     const { 
         id,

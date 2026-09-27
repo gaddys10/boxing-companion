@@ -1,9 +1,10 @@
-import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
+import { useRouter, Stack, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { View, Text, Pressable, StyleSheet, Animated, useWindowDimensions, Image, Modal, Platform, StatusBar } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Haptics from 'expo-haptics';
+import * as ScreenOrientation from 'expo-screen-orientation';
 import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 
 const PORTRAIT_ACTION_CONTROL_HEIGHT = 60;
@@ -11,6 +12,22 @@ const PORTRAIT_ACTION_CONTROL_HEIGHT = 60;
 export default function RoundScoringScreen() {
     const router = useRouter();
     const params = useLocalSearchParams();
+    const scoringOrientation = Array.isArray(params.scoringOrientation)
+        ? params.scoringOrientation[0]
+        : params.scoringOrientation;
+
+    // useEffect(() => {
+    //     const orientationLock =
+    //         scoringOrientation === 'portrait'
+    //             ? ScreenOrientation.OrientationLock.PORTRAIT_UP
+    //             : ScreenOrientation.OrientationLock.LANDSCAPE;
+
+    //     void ScreenOrientation.lockAsync(orientationLock);
+
+    //     return () => {
+    //         void ScreenOrientation.unlockAsync();
+    //     };
+    // }, [scoringOrientation]);
     
     const round = params.roundNumber;
     const fighter1 = params.fighter1 || 'Fighter 1';
@@ -53,7 +70,8 @@ export default function RoundScoringScreen() {
     const stoppageProgress = useRef<Animated.Value>(new Animated.Value(0)).current;
 
     const { width, height } = useWindowDimensions();
-    const { isLandscape, insets, sx, scale } = useResponsiveLayout();
+    const { insets, sx, scale } = useResponsiveLayout();
+    const isLandscape = scoringOrientation === 'landscape';
     const usableHeight = height - insets.top - insets.bottom;
     const toolbarHeight = Math.max(44, Math.min(50, usableHeight * 0.14));
     const undoHeight = Math.max(38, Math.min(44, usableHeight * 0.13));
