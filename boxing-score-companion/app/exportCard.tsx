@@ -487,6 +487,12 @@ export default function ExportCardScreen() {
     const stoppage = latestResult?.score?.stoppageReason;
     const stoppageWinner = latestResult?.score?.stoppageWinner;
     const stoppageRound = latestResult?.roundNumber;
+    const scoredRoundsCount = exportRows.filter(({ score }) => (
+        score?.left !== undefined &&
+        score.left !== '' &&
+        score?.right !== undefined &&
+        score.right !== ''
+    )).length;
 
     const leftScore = Number(finalScores.left);
     const rightScore = Number(finalScores.right);
@@ -501,16 +507,16 @@ export default function ExportCardScreen() {
 
     const shareResult =
         stoppage === 'NC' || stoppageWinner === 'NC'
-            ? `No Contest (Round ${stoppageRound})`
+            ? `\n\nNo Contest (Round ${stoppageRound})`
             : stoppage && stoppageWinner
-                ? `${stoppageWinner} ${stoppage}${stoppageRound}`
+                ? `\n\n${stoppageWinner} ${stoppage}${stoppageRound}`
                 : hasScores
-                    ? `${finalScores.left}-${finalScores.right} ${winningFighter}`
-                    : 'Scorecard in progress';
+                    ? `\n\n${finalScores.left}-${finalScores.right} ${winningFighter} after ${scoredRoundsCount} ${scoredRoundsCount === 1 ? 'round' : 'rounds'}`
+                    : `\n\nScorecard in progress — ${scoredRoundsCount} ${scoredRoundsCount === 1 ? 'round' : 'rounds'} scored`;
 
     const shareMessage =
         `I scored ${fighter1} vs ${fighter2}: ${shareResult}\n\n` +
-        `using the Boxing Scoring Companion @boxingscoreapp #BoxingScore`;
+        `via the Boxing Scoring Companion @boxingscoreapp #BoxingScore`;
 
     const captureExportCard = async (result: 'tmpfile' | 'data-uri' = 'tmpfile') => {
         if (!exportCardRef.current) throw new Error('Export card is not ready yet.');
@@ -528,6 +534,13 @@ export default function ExportCardScreen() {
         void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
         try {
+            if (Platform.OS === 'ios') {
+            await Share.share({
+                message: shareMessage,
+                url: await captureExportCard('data-uri'),
+            });
+            return;
+}
             const imageUri = await captureExportCard();
             await Clipboard.setStringAsync(shareMessage);
 
@@ -547,31 +560,7 @@ export default function ExportCardScreen() {
             setBusyAction(null);
         }
     };
-    const handleShareOptions = () => {
-        Alert.alert('Share scorecard', 'Choose an option', [
-            {
-                text: 'Other apps',
-                onPress: () => { void handleShare(); },
-            },
-            {
-                text: xConnected ? 'Reconnect X' : 'Connect X',
-                onPress: () => {
-                    if (!X_CLIENT_ID || !xRequest) {
-                        Alert.alert('X unavailable', 'Check your Client ID and try again.');
-                        return;
-                    }
-
-                    Alert.alert('X callback', X_REDIRECT_URI);
-                    return;
-                    void promptXLogin().catch(() => {
-                        Alert.alert('Connection failed', 'Could not open X login.');
-                    });
-                },
-            },
-            { text: 'Cancel', style: 'cancel' },
-        ]);
-    };
-
+    
     const handleSaveImage = async () => {
         if (busyAction) return;
         setBusyAction('save');
@@ -618,7 +607,7 @@ export default function ExportCardScreen() {
         }
 
         router.replace({
-            pathname: '/matchInfo',
+            pathname: '/matchNotes',
             params: {
                 id: firstParam(params.id) ? String(firstParam(params.id)) : undefined,
                 fighter1,
@@ -627,6 +616,7 @@ export default function ExportCardScreen() {
                 savedScores: JSON.stringify(roundScores),
                 gender: genderValue,
                 weight: weightValue,
+                notesMode: 'review-before-share',
                 fightDate: firstParam(params.fightDate)
                     ? String(firstParam(params.fightDate))
                     : undefined,
@@ -640,7 +630,13 @@ export default function ExportCardScreen() {
 
     return (
         <View style={styles.screen}>
-            <Stack.Screen options={{ headerShown: false, orientation: 'portrait' }} />
+            <Stack.Screen
+                options={{
+                    headerShown: false,
+                    orientation: 'portrait',
+                    animation: 'slide_from_right',
+                }}
+            />
             <StatusBar style="light" />
 
             <View style={{ height: insets.top, backgroundColor: HEADER_BLUE }} />
@@ -928,7 +924,7 @@ export default function ExportCardScreen() {
                     <View style={[styles.brandRow, compactLayout && styles.compactBrandRow]}>
                         <View style={styles.brandIdentity}>
                             <Image
-                                source={require('../assets/images/flatwhiteicon.png')}
+                                source={require('../assets/images/flatwhiteicon-optimized.png')}
                                 resizeMode="contain"
                                 style={[styles.brandIcon, compactLayout && styles.compactBrandIcon]}
                             />
@@ -941,31 +937,36 @@ export default function ExportCardScreen() {
                             </View>
                         </View>
                         <Image
-                            source={require('../assets/images/appstore.png')}
+                            source={require('../assets/images/appstore-optimized.png')}
                             resizeMode="contain"
-                            style={[styles.appStoreBadge, compactLayout && styles.compactAppStoreBadge]}
+                            style={[styles.appStoreBadge, 
+                                // compactLayout && styles.compactAppStoreBadge
+                            ]}
                         />
                         <Image
                             source={require('../assets/images/google-play-store-badge.png')}
                             resizeMode="contain"
-                            style={[styles.googlePlayBadge, compactLayout && styles.compactGooglePlayBadge]}
+                            style={[
+                                styles.googlePlayBadge, 
+                                // compactLayout && styles.compactGooglePlayBadge
+                        ]}
                         />
                         <View style={styles.socialBox}>
                             <View style={styles.socialItem}>
-                                <Image
+                                {/* <Image
                                     source={require('../assets/images/twitter-x-jyw81k7vr85ry57c7ym2d.webp')}
                                     resizeMode="contain"
                                     style={styles.socialIcon}
-                                />
+                                /> */}
                                 <Text numberOfLines={1} style={styles.socialID}>@boxingscoreapp</Text>
                             </View>
                             <View style={styles.socialItem}>
                                 
-                                <Image
-                                    source={require('../assets/images/Instagram_logo_2022.svg.webp')}
+                                {/* <Image
+                                    source={require('../assets/images/instagram-optimized.png')}
                                     resizeMode="contain"
                                     style={styles.socialIcon}
-                                />
+                                /> */}
                                 <Text numberOfLines={1} style={styles.socialID}>#BoxingScore</Text>
                             </View>
                         </View>
@@ -983,13 +984,13 @@ export default function ExportCardScreen() {
                             pressed && styles.pressed,
                         ]}
                         accessibilityRole="button"
-                        accessibilityLabel="Back to scorecard"
+                        accessibilityLabel="Back to review match notes"
                     >
                         <Ionicons name="chevron-back" size={22} color={HEADER_BLUE} />
                         <Text style={styles.backText}>Back</Text>
                     </Pressable>
                     <Pressable
-                        onPress={handleShareOptions}
+                        onPress={handleShare}
                         disabled={busyAction !== null}
                         style={({ pressed }) => [
                             styles.actionButton,
@@ -1121,7 +1122,7 @@ const styles = StyleSheet.create({
     },
     socialID: {
         color: TEXT,
-        fontSize: 7.5,
+        fontSize: 9,
         lineHeight: 10,
     },
     socialBox: {

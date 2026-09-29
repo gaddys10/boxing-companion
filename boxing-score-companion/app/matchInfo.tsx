@@ -1,11 +1,12 @@
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState, useCallback } from 'react';
 import * as ScreenOrientation from 'expo-screen-orientation'
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import LandscapeRoundRow from './components/landscapeRoundRow';
 import RoundRow from './components/roundRow';
 import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 import { normalizeMatchRating, parseMatchDescription, serializeMatchDescription } from '../types/matchNotes';
+import { Image as ExpoImage } from 'expo-image';
 
 export default function MatchInfoScreen() {
     const router = useRouter();
@@ -327,10 +328,11 @@ export default function MatchInfoScreen() {
 
     const handleShare = () => {
         router.push({
-            pathname: '/exportCard',
+            pathname: '/createMatch',
             params: {
                 id: id ? String(id) : undefined,
-                title: 'Edit Scorecard Details',
+                detailsMode: 'review-before-share',
+                title: 'Review Scorecard Details',
                 backText: 'Menu',
                 buttonText: 'Continue',
                 isEdit: 'true',
@@ -413,10 +415,12 @@ export default function MatchInfoScreen() {
 
     return (
         <View style={styles.backgroundRoot}>
-            <Image
+            <ExpoImage
                 source={require('../assets/images/bgfbsc.jpg')}
                 resizeMode="stretch"
                 style={styles.backgroundImage}
+                cachePolicy="memory-disk"
+                transition={0}
             />
             <View style={[
                 isLandscape ? styles.landscapeContainer : styles.container,

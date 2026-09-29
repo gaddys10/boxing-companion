@@ -5,6 +5,7 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Ionicons, MaterialCommunityIcons} from '@expo/vector-icons';
+import { Image as ExpoImage } from 'expo-image';
 
 const SWIPE_ACTIONS_HEIGHT = 85;
 const SWIPE_ACTIONS_BOTTOM = 5;
@@ -105,8 +106,8 @@ export default function LandscapeRoundRow({
     const [quickRightPen, setQuickRightPen] = useState(0);
 
     const openQuickScoring = () => {
-        setQuickLeftScore(Number(leftScore ?? 10));
-        setQuickRightScore(Number(rightScore ?? 10));
+        setQuickLeftScore(Number(leftScore ?? 10) + (isQuickScore ? Number(leftPen ?? 0) + Number(rightKds ?? 0) : 0));
+        setQuickRightScore(Number(rightScore ?? 10) + (isQuickScore ? Number(rightPen ?? 0) + Number(leftKds ?? 0) : 0));
         setQuickLeftKds(Number(leftKds ?? 0));
         setQuickRightKds(Number(rightKds ?? 0));
         setQuickLeftPen(Number(leftPen ?? 0));
@@ -152,11 +153,15 @@ export default function LandscapeRoundRow({
 
     const saveQuickScore = () => {
         const hasFullScoringMomentum = !isQuickScore && plusMinus !== undefined && plusMinus !== '' && plusMinus !== '-';
+        const adjustedLeftScore = quickLeftScore - quickLeftPen - quickRightKds;
+        const adjustedRightScore = quickRightScore - quickRightPen - quickLeftKds;
+        const savedLeftScore = hasFullScoringMomentum ? quickLeftScore : adjustedLeftScore;
+        const savedRightScore = hasFullScoringMomentum ? quickRightScore : adjustedRightScore;
 
         onSaveRound(roundNumber, {
-            left: String(quickLeftScore),
-            right: String(quickRightScore),
-            plusMinus: hasFullScoringMomentum ? plusMinus : String(quickLeftScore - quickRightScore),
+            left: String(savedLeftScore),
+            right: String(savedRightScore),
+            plusMinus: hasFullScoringMomentum ? plusMinus : String(savedLeftScore - savedRightScore),
             leftDeductions: String(quickLeftPen),
             rightDeductions: String(quickRightPen),
             leftKnockdowns: String(quickLeftKds),
@@ -401,10 +406,12 @@ export default function LandscapeRoundRow({
                                         onPress={() => startFullScoring(ScreenOrientation.OrientationLock.PORTRAIT_UP)}
                                     >
                                         <View style={styles.orientationImageSlot}>
-                                            <Image
-                                                source={require('../../assets/images/portrait.png')}
+                                            <ExpoImage
+                                                source={require('../../assets/images/portrait-optimized.png')}
                                                 style={styles.orientationPortraitImage}
-                                                resizeMode="contain"
+                                                contentFit="contain"
+                                                cachePolicy="memory-disk"
+                                                transition={0}
                                             />
                                         </View>
                                         <Text style={styles.orientationButtonText}>Portrait</Text>
@@ -416,10 +423,12 @@ export default function LandscapeRoundRow({
                                         onPress={() => startFullScoring(ScreenOrientation.OrientationLock.LANDSCAPE)}
                                     >
                                         <View style={styles.orientationImageSlot}>
-                                            <Image
-                                                source={require('../../assets/images/landscape.png')}
+                                            <ExpoImage
+                                                source={require('../../assets/images/landscape-optimized.png')}
                                                 style={styles.orientationLandscapeImage}
-                                                resizeMode="contain"
+                                                contentFit="contain"
+                                                cachePolicy="memory-disk"
+                                                transition={0}
                                             />
                                         </View>
                                         <Text style={styles.orientationButtonText}>Landscape</Text>
@@ -450,10 +459,12 @@ export default function LandscapeRoundRow({
                                             style={styles.scoringButton}
                                             onPress={() => setOrientationChoiceVisible(true)}
                                         >
-                                            <Image
-                                                source={require('../../assets/images/portrait.png')}
+                                            <ExpoImage
+                                                source={require('../../assets/images/portrait-optimized.png')}
                                                 style={styles.scoringMethodImage}
-                                                resizeMode="contain"
+                                                contentFit="contain"
+                                                cachePolicy="memory-disk"
+                                                transition={0}
                                             />
                                             <Text style={[styles.scoringButtonText, styles.scoringMethodText]}>Full Scoring</Text>
                                         </Pressable>

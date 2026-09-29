@@ -1,10 +1,11 @@
 import { useRouter, Stack, useLocalSearchParams, useFocusEffect } from 'expo-router';
-import { View, Text, Pressable, StyleSheet, Animated, useWindowDimensions, Image, Modal, Platform, StatusBar } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Animated, useWindowDimensions, Modal, Platform, StatusBar } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Haptics from 'expo-haptics';
 import * as ScreenOrientation from 'expo-screen-orientation';
+import { Image as ExpoImage } from 'expo-image';
 import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 
 const PORTRAIT_ACTION_CONTROL_HEIGHT = 60;
@@ -280,12 +281,13 @@ export default function RoundScoringScreen() {
                     handleScorePress('left');
                 }}
             >
-                <Image
+                <ExpoImage
                     // source={require('../assets/images/bg1.png')}
                     source={require('../assets/images/bg1.jpg')}
-
                     style={[StyleSheet.absoluteFill, styles.leftAreaImage, { opacity: 0.8 }]}
-                    resizeMode="cover"
+                    contentFit="cover"
+                    cachePolicy="memory-disk"
+                    transition={0}
                 />
 
                 {/* Undo left deductions */}
@@ -477,12 +479,14 @@ export default function RoundScoringScreen() {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 handleScorePress('right');
             }}>
-                <Image
+                <ExpoImage
                     source={require('../assets/images/bg2.jpg')}
                     style={[StyleSheet.absoluteFill, 
                         isLandscape ? styles.rightAreaImage : styles.portraitRightAreaImage, 
                         { opacity: 0.8 }]}
-                    resizeMode="cover"
+                    contentFit="cover"
+                    cachePolicy="memory-disk"
+                    transition={0}
                 />
 
                 {/* undo right knockdowns */}
@@ -808,14 +812,12 @@ export default function RoundScoringScreen() {
                                             setSelectedStoppageWinner(undefined);
                                         }}
                                     >
-                                        <LinearGradient
-                                            colors={stoppageReason === option ? ['#5aa7df', '#1976D2'] : ['#f7e7a8', '#d7b55d', '#b78c35']}
-                                            start={{ x: 0, y: 0 }}
-                                            end={{ x: 1, y: 1 }}
-                                            pointerEvents="none"
-                                            style={StyleSheet.absoluteFill}
-                                        />
-                                        <Text style={[styles.stoppageOptionText, stoppageReason === option && styles.selectedStoppageOptionText]}>{option}</Text>
+                                        <Text
+                                            numberOfLines={1}
+                                            style={[styles.stoppageOptionText, stoppageReason === option && styles.selectedStoppageOptionText]}
+                                        >
+                                            {option}
+                                        </Text>
                                     </Pressable>
                                 ))}
                             </View>
@@ -830,13 +832,6 @@ export default function RoundScoringScreen() {
                                             style={[styles.stoppageWinnerOption, selectedStoppageWinner === fighter && styles.selectedStoppageOption]}
                                             onPress={() => setSelectedStoppageWinner(fighter)}
                                         >
-                                            <LinearGradient
-                                                colors={selectedStoppageWinner === fighter ? ['#5aa7df', '#1976D2'] : ['#f7e7a8', '#d7b55d', '#b78c35']}
-                                                start={{ x: 0, y: 0 }}
-                                                end={{ x: 1, y: 1 }}
-                                                pointerEvents="none"
-                                                style={StyleSheet.absoluteFill}
-                                            />
                                             <Text style={[styles.stoppageWinnerText, selectedStoppageWinner === fighter && styles.selectedStoppageOptionText]}>{fighter}</Text>
                                         </Pressable>
                                     ))}
@@ -845,23 +840,10 @@ export default function RoundScoringScreen() {
                         )}
                         <View style={styles.stoppageModalActions}>
                             <Pressable style={[styles.stoppageModalButton, styles.stoppageCancelButton]} onPress={() => setStoppageModalVisible(false)}>
-                                <LinearGradient
-                                    colors={['#ef6b6b', '#d32f2f']}
-                                    start={{ x: 0, y: 0 }}
-                                    end={{ x: 1, y: 1 }}
-                                    pointerEvents="none"
-                                    style={styles.modalButtonGradient}
-                                />
                                 <Text style={styles.stoppageCancelButtonText}>Cancel</Text>
                             </Pressable>
                             <Pressable style={[styles.stoppageModalButton, styles.stoppageConfirmButton]} onPress={saveStoppageAndExit}>
-                                <LinearGradient
-                                    colors={['#f7e7a8', '#d7b55d', '#b78c35']}
-                                    start={{ x: 0, y: 0 }}
-                                    end={{ x: 1, y: 1 }}
-                                    pointerEvents="none"
-                                    style={styles.modalButtonGradient}
-                                />
+                                <MaterialCommunityIcons name="human-handsup" size={20} color="#fff" />
                                 <Text style={styles.stoppageConfirmButtonText}>Confirm</Text>
                             </Pressable>
                         </View>
@@ -1329,31 +1311,47 @@ const styles = StyleSheet.create({
     stoppageModalText: { color: '#333A3F', fontSize: 15, lineHeight: 21, marginBottom: 20 },
     stoppageOptions: { gap: 15, marginTop: 4, alignItems: 'center' },
     stoppageOptionRow: { flexDirection: 'row', gap: 10 },
-    stoppageWinnerOptions: { flexDirection: 'row', gap: 15, justifyContent: 'center' },
+    stoppageWinnerOptions: { 
+        flexDirection: 'row', 
+        gap: 15, justifyContent: 'center' 
+    },
     stoppageOption: {
-        alignItems: 'center', backgroundColor: '#EEF1F3', borderRadius: 10, paddingHorizontal: 16,
-        paddingVertical: 8, borderWidth: 1, width: '20%', borderColor: 'rgba(200, 200, 200, 0.7)', justifyContent: 'center', overflow: 'hidden',
+        alignItems: 'center', 
+        backgroundColor: '#fff', 
+        borderRadius: 10, paddingHorizontal: 16,
+        paddingVertical: 8, borderWidth: 1, width: '22%', borderColor: '#B6C6D1', justifyContent: 'center',
+        shadowColor: '#11334b', shadowOffset: { width: 3, height: 3 }, shadowOpacity: 0.25, shadowRadius: 1, elevation: 2,
     },
     stoppageWinnerOption: {
-        alignItems: 'center', backgroundColor: '#EEF1F3', borderRadius: 10, paddingHorizontal: 16,
-        paddingVertical: 8, borderWidth: 1, width: '41%', borderColor: 'rgba(200, 200, 200, 0.7)', justifyContent: 'center', overflow: 'hidden',
+        alignItems: 'center', backgroundColor: '#fff', borderRadius: 10, paddingHorizontal: 16,
+        paddingVertical: 8, borderWidth: 1, width: '41%', borderColor: '#B6C6D1', justifyContent: 'center',
+        shadowColor: '#11334b', shadowOffset: { width: 3, height: 3 }, shadowOpacity: 0.25, shadowRadius: 1, elevation: 2,
     },
-    selectedStoppageOption: { backgroundColor: '#1976D2' },
+    selectedStoppageOption: { backgroundColor: '#307Fb6', borderColor: '#307Fb6' },
     stoppageOptionText: { color: '#333A3F', fontSize: 16, fontWeight: '700' },
-    selectedStoppageOptionText: { color: '#fff' },
-    stoppageWinnerText: { color: '#333A3F', fontSize: 16, fontWeight: '700', width: '100%', textAlign: 'center' },
-    stoppageModalActions: { flexDirection: 'row', justifyContent: 'space-around', marginTop: '10%', gap: 10 },
-    stoppageModalButton: { minWidth: 88, paddingVertical: 8, borderRadius: 8, alignItems: 'center', overflow: 'hidden' },
+    selectedStoppageOptionText: { 
+        color: '#fff' },
+    stoppageWinnerText: { 
+        color: '#333A3F', fontSize: 16, fontWeight: '700', width: '100%', textAlign: 'center' },
+    stoppageModalActions: { 
+        flexDirection: 'row', justifyContent: 'space-around', marginTop: '10%', gap: 10 },
+    stoppageModalButton: {
+        flex: 1, 
+        minHeight: 44, 
+        paddingHorizontal: 12, borderRadius: 10, alignItems: 'center', justifyContent: 'center',
+        shadowColor: '#11334b', shadowOffset: { width: 5, height: 5 }, shadowOpacity: 0.4, shadowRadius: 1, elevation: 2,
+    },
     stoppageCancelButton: {
-        backgroundColor: '#d32f2f', shadowColor: '#11334b', shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4, shadowRadius: 1, borderWidth: 1, borderColor: 'rgba(200, 200, 200, 0.7)',
+        backgroundColor: '#fff', borderWidth: 1, borderColor: '#B6C6D1',
     },
     stoppageConfirmButton: {
-        backgroundColor: '#fff', shadowColor: '#11334b', shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4, shadowRadius: 1, borderWidth: 1, borderColor: 'rgba(200, 200, 200, 0.7)',
+        backgroundColor: '#307Fb6', borderWidth: 0, flexDirection: 'row', gap: 6,
     },
-    stoppageCancelButtonText: { color: '#fff', fontWeight: '700' },
-    stoppageConfirmButtonText: { color: '#1976D2', fontWeight: '700' },
+    stoppageCancelButtonText: { 
+        color: '#307Fb6', fontWeight: '700' },
+    stoppageConfirmButtonText: { 
+        color: '#fff', 
+        fontWeight: '700' },
     rightkd: {
         bottom: 0,
         left: '43%',
