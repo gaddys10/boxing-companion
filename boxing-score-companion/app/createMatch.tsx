@@ -6,7 +6,6 @@ import { Modal, Pressable, Platform, ScrollView, StyleSheet, Text, TextInput, Vi
 import { StatusBar } from 'expo-status-bar';
 import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 import { normalizeMatchRating, parseMatchDescription, serializeMatchDescription } from '../types/matchNotes';
-const tIcon = require('../assets/images/flatwhitet.png');
 
 type RoundScore = {
     left?: string;
@@ -23,7 +22,9 @@ type RoundScore = {
 export default function CreateMatch() {
     const router = useRouter();
     const params = useLocalSearchParams();
-    const title = String(params.title || 'New Scorecard');
+    const detailsMode = Array.isArray(params.detailsMode) ? params.detailsMode[0] : params.detailsMode;
+    const isReviewBeforeShare = detailsMode === 'review-before-share';
+    const title = isReviewBeforeShare ? 'Review Scorecard Details' : String(params.title || 'New Scorecard');
     const fighter1 = String(params.fighter1 || '');
     const fighter2 = String(params.fighter2 || '');
     const isEditing = params.isEdit ? true : false
@@ -86,7 +87,7 @@ export default function CreateMatch() {
         : 'Select fight date';
 
 
-    const buttonText = String(params.buttonText || "Create Scorecard");
+    const buttonText = isReviewBeforeShare ? 'Continue' : String(params.buttonText || "Create Scorecard");
     const rounds = [4, 5, 6, 8, 10, 12];
     const { height, isLandscape, insets, sx, sy, scale, horizontalGutter } = useResponsiveLayout();
     const id = params.id ? String(params.id) : undefined;
@@ -101,6 +102,27 @@ export default function CreateMatch() {
 
 
     const handleStartFight = () => {
+        if (isReviewBeforeShare) {
+            router.push({
+                pathname: '/matchNotes',
+                params: {
+                    id,
+                    notesMode: 'review-before-share',
+                    isEdit: 'true',
+                    fighter1: fighter1Name || 'Fighter 1',
+                    fighter2: fighter2Name || 'Fighter 2',
+                    rounds: selectedRounds,
+                    savedScores: params.savedScores,
+                    gender: selectedGender,
+                    weight: selectedWeight,
+                    fightDate: fightDateParam,
+                    rating: normalizeMatchRating(params.rating),
+                    description: serializeMatchDescription(parseMatchDescription(params.description)),
+                },
+            });
+            return;
+        }
+
         router.replace({
             pathname: '/matchInfo',
             params: {
@@ -116,6 +138,15 @@ export default function CreateMatch() {
                 description: serializeMatchDescription(parseMatchDescription(params.description)),
             },
         });
+    };
+
+    const handleCancel = () => {
+        if (isReviewBeforeShare) {
+            router.back();
+            return;
+        }
+
+        setDiscardModalVisible(true);
     };
 
     const handleDiscardScorecard = () => {
@@ -776,16 +807,17 @@ export default function CreateMatch() {
                             styles.buttonWithIcon,
                             styles.actionButtonShadow,
                             !isEditing && styles.initialLandscapeCancelButton,
+                            isReviewBeforeShare && styles.reviewActionButton,
                         ]}
-                        onPress={() => setDiscardModalVisible(true)}
+                        onPress={handleCancel}
                     >
-                        <Ionicons name="trash-outline" size={18} color="#fff" />
+                        <Ionicons name={isReviewBeforeShare ? 'chevron-back' : 'trash-outline'} size={18} color="#fff" />
                         <Text style={styles.cancelButtonText}>Cancel</Text>
                     </Pressable>
 
 
                     {/* save and exit button  */}
-                    {isEditing && 
+                    {isEditing && !isReviewBeforeShare &&
                         <Pressable
                             style={[styles.landscapeEditSaveButton, styles.landscapeActionButton, styles.actionButtonShadow]}
                             onPress={handleSaveChangesAndExit}
@@ -802,6 +834,7 @@ export default function CreateMatch() {
                             styles.buttonWithIcon,
                             styles.actionButtonShadow,
                             !isEditing && styles.initialLandscapeCreateButton,
+                            isReviewBeforeShare && styles.reviewActionButton,
                         ]}
                         onPress={handleStartFight}
                     >
@@ -818,13 +851,19 @@ export default function CreateMatch() {
             {!isLandscape && (
                 <View style={[styles.buttonContainer, { paddingBottom: Math.max(insets.bottom, 8) }]}>
                     <Pressable
-                        style={[styles.cancelButton, styles.buttonWithIcon, styles.actionButtonShadow, !isEditing && styles.initialCancelButton]}
-                        onPress={() => setDiscardModalVisible(true)}
+                        style={[
+                            styles.cancelButton,
+                            styles.buttonWithIcon,
+                            styles.actionButtonShadow,
+                            !isEditing && styles.initialCancelButton,
+                            isReviewBeforeShare && styles.reviewActionButton,
+                        ]}
+                        onPress={handleCancel}
                     >
-                        <Ionicons name="trash-outline" size={18} color="#fff" />
+                        <Ionicons name={isReviewBeforeShare ? 'chevron-back' : 'trash-outline'} size={18} color="#fff" />
                         <Text style={styles.cancelButtonText}>Cancel</Text>
                     </Pressable>
-                    {isEditing && (
+                    {isEditing && !isReviewBeforeShare && (
                         <Pressable
                             style={[styles.editButton, styles.editingActionButton, styles.actionButtonShadow]}
                             onPress={handleSaveChangesAndExit}
@@ -838,6 +877,7 @@ export default function CreateMatch() {
                             styles.buttonWithIcon,
                             styles.actionButtonShadow,
                             isEditing ? styles.editingActionButton : styles.initialCreateButton,
+                            isReviewBeforeShare && styles.reviewActionButton,
                         ]}
                         onPress={handleStartFight}
                     >
@@ -1094,6 +1134,14 @@ portraitGenderPill: {
     
     editingActionButton: {
         width: '31%',
+        paddingHorizontal: '1%',
+    },
+
+    reviewActionButton: {
+        flex: 1,
+        width: 'auto',
+        minWidth: 0,
+        maxWidth: undefined,
         paddingHorizontal: '1%',
     },
     

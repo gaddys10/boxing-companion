@@ -3,6 +3,8 @@ import { Stack, usePathname } from 'expo-router';
 import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useEffect } from 'react';
+import { Asset } from 'expo-asset';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -10,6 +12,24 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+
+  useEffect(() => {
+    void Asset.loadAsync([
+      require('../assets/images/bgfbsc.jpg'),
+      require('../assets/images/bg1.jpg'),
+      require('../assets/images/bg2.jpg'),
+      require('../assets/images/flatwhiteicon-optimized.png'),
+      require('../assets/images/appstore-optimized.png'),
+      require('../assets/images/google-play-store-badge.png'),
+      require('../assets/images/twitter-x-jyw81k7vr85ry57c7ym2d.webp'),
+      require('../assets/images/instagram-optimized.png'),
+      require('../assets/images/portrait-optimized.png'),
+      require('../assets/images/landscape-optimized.png'),
+    ]).catch((error) => {
+      console.warn('Background preload failed:', error);
+    });
+  }, []);
+
   // const pathname = usePathname();
   // const orientationUpdate = useRef<Promise<void>>(Promise.resolve());
 

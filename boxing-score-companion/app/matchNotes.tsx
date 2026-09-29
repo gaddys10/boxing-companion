@@ -141,6 +141,8 @@ export default function MatchNotesScreen() {
     const router = useRouter();
     const params = useLocalSearchParams();
     const { isLandscape, insets, sx, sy, horizontalGutter } = useResponsiveLayout();
+    const notesMode = Array.isArray(params.notesMode) ? params.notesMode[0] : params.notesMode;
+    const isReviewBeforeShare = notesMode === 'review-before-share';
 
     const initialRating = normalizeMatchRating(params.rating);
     const [rating, setRating] = useState(
@@ -155,6 +157,7 @@ export default function MatchNotesScreen() {
     const [selectedDescriptorHeight, setSelectedDescriptorHeight] = useState(0);
 
     const sliderWidthRef = useRef(0);
+    const sliderGestureStartXRef = useRef(0);
     const lastHapticRatingRef = useRef(rating);
     const [sliderWidth, setSliderWidth] = useState(0);
 
@@ -180,8 +183,14 @@ export default function MatchNotesScreen() {
             PanResponder.create({
                 onStartShouldSetPanResponder: () => true,
                 onMoveShouldSetPanResponder: () => true,
-                onPanResponderGrant: (event) => updateRatingFromX(event.nativeEvent.locationX),
-                onPanResponderMove: (event) => updateRatingFromX(event.nativeEvent.locationX),
+                onPanResponderGrant: () => {
+                    const usableWidth = Math.max(0, sliderWidthRef.current - THUMB_SIZE);
+                    sliderGestureStartXRef.current =
+                        (THUMB_SIZE / 2) + (lastHapticRatingRef.current / MAX_RATING) * usableWidth;
+                },
+                onPanResponderMove: (_event, gestureState) => {
+                    updateRatingFromX(sliderGestureStartXRef.current + gestureState.dx);
+                },
             }),
         [],
     );
@@ -203,6 +212,9 @@ export default function MatchNotesScreen() {
 
     const toggleDescriptor = (descriptor: string) => {
         if (selectedDescriptors.includes(descriptor)) {
+            if (selectedDescriptors.length === 1) {
+                setSelectedDescriptorHeight(0);
+            }
             setSelectedDescriptors((current) => current.filter((item) => item !== descriptor));
             void Haptics.selectionAsync();
             return;
@@ -224,14 +236,21 @@ export default function MatchNotesScreen() {
     const saveNotes = () => {
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-        router.replace({
-            pathname: '/matchInfo',
+        const destination = {
+            pathname: isReviewBeforeShare ? '/exportCard' : '/matchInfo',
             params: {
                 ...params,
                 rating: rating.toFixed(1),
                 description: serializeMatchDescription(selectedDescriptors),
             },
-        });
+        } as const;
+
+        if (isReviewBeforeShare) {
+            router.push(destination);
+            return;
+        }
+
+        router.replace(destination);
     };
 
     const thumbLeft = sliderWidth > THUMB_SIZE
@@ -251,7 +270,7 @@ export default function MatchNotesScreen() {
     const descriptorScrollbarTop = descriptorContentHeight > descriptorViewportHeight
         ? (descriptorScrollOffset / (descriptorContentHeight - descriptorViewportHeight)) * descriptorScrollbarTrackHeight
         : 0;
-    const descriptorBaseMaxHeight = isLandscape ? 150 : 336;
+    const descriptorBaseMaxHeight = isLandscape ? 150 : 368;
     const descriptorScrollMaxHeight = Math.max(
         120,
         descriptorBaseMaxHeight - selectedDescriptorHeight - (selectedDescriptorHeight > 0 ? 14 : 0),
@@ -268,7 +287,7 @@ export default function MatchNotesScreen() {
             <View style={{ height: insets.top, backgroundColor: BLUE }} />
 
             <View style={[styles.titleContainer, isLandscape && styles.landscapeTitleContainer]}>
-                <Text style={styles.title}>Match Notes</Text>
+                <Text style={styles.title}>{isReviewBeforeShare ? 'Review Match Notes' : 'Match Notes'}</Text>
             </View>
 
             <View style={[!isLandscape ? styles.scrollView : styles.landscapeScrollView, isLandscape && styles.landscapeContent]}>
@@ -478,19 +497,20 @@ export default function MatchNotesScreen() {
                     onPress={goBack}
                     style={({ pressed }) => [styles.cancelButton, pressed && styles.pressed]}
                     accessibilityRole="button"
-                    accessibilityLabel="Cancel note changes"
+                    accessibilityLabel={isReviewBeforeShare ? 'Back to review match details' : 'Cancel note changes'}
                 >
-                    <Ionicons name="close" size={20} color="#fff" />
-                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                    <Ionicons name={isReviewBeforeShare ? 'chevron-back' : 'close'} size={20} color="#fff" />
+                    <Text style={styles.cancelButtonText}>{isReviewBeforeShare ? 'Back' : 'Cancel'}</Text>
                 </Pressable>
                 <Pressable
                     onPress={saveNotes}
                     style={({ pressed }) => [styles.saveButton, pressed && styles.pressed]}
                     accessibilityRole="button"
-                    accessibilityLabel="Save notes to scorecard"
+                    accessibilityLabel={isReviewBeforeShare ? 'Confirm notes and continue to export' : 'Save notes to scorecard'}
                 >
-                    <Ionicons name="checkmark" size={20} color="#fff" />
-                    <Text style={styles.saveButtonText}>Save Notes</Text>
+                    {!isReviewBeforeShare && <Ionicons name="checkmark" size={20} color="#fff" />}
+                    <Text style={styles.saveButtonText}>{isReviewBeforeShare ? 'Confirm' : 'Save Notes'}</Text>
+                    {isReviewBeforeShare && <Ionicons name="chevron-forward" size={20} color="#fff" />}
                 </Pressable>
             </View>
         </View>
@@ -752,7 +772,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     descriptorScrollWrapper: {
-        maxHeight: 336,
+        maxHeight: 368,
         position: 'relative',
     },
     landscapeDescriptorScrollWrapper: {

@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import { View, Text, Pressable, StyleSheet, Modal, Image } from 'react-native';
+import { Image as ExpoImage } from 'expo-image';
 import { router } from 'expo-router';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -98,8 +99,8 @@ export default function RoundRow({
     const [quickRightPen, setQuickRightPen] = useState(0);
 
     const openQuickScoring = () => {
-        setQuickLeftScore(Number(leftScore ?? 10));
-        setQuickRightScore(Number(rightScore ?? 10));
+        setQuickLeftScore(Number(leftScore ?? 10) + (isQuickScore ? Number(leftPen ?? 0) + Number(rightKds ?? 0) : 0));
+        setQuickRightScore(Number(rightScore ?? 10) + (isQuickScore ? Number(rightPen ?? 0) + Number(leftKds ?? 0) : 0));
         setQuickLeftKds(Number(leftKds ?? 0));
         setQuickRightKds(Number(rightKds ?? 0));
         setQuickLeftPen(Number(leftPen ?? 0));
@@ -146,11 +147,15 @@ export default function RoundRow({
 
     const saveQuickScore = () => {
         const hasFullScoringMomentum = !isQuickScore && plusMinus !== undefined && plusMinus !== '' && plusMinus !== '-';
+        const adjustedLeftScore = quickLeftScore - quickLeftPen - quickRightKds;
+        const adjustedRightScore = quickRightScore - quickRightPen - quickLeftKds;
+        const savedLeftScore = hasFullScoringMomentum ? quickLeftScore : adjustedLeftScore;
+        const savedRightScore = hasFullScoringMomentum ? quickRightScore : adjustedRightScore;
 
         onSaveRound(roundNumber, {
-            left: String(quickLeftScore),
-            right: String(quickRightScore),
-            plusMinus: hasFullScoringMomentum ? plusMinus : String(quickLeftScore - quickRightScore),
+            left: String(savedLeftScore),
+            right: String(savedRightScore),
+            plusMinus: hasFullScoringMomentum ? plusMinus : String(savedLeftScore - savedRightScore),
             leftDeductions: String(quickLeftPen),
             rightDeductions: String(quickRightPen),
             leftKnockdowns: String(quickLeftKds),
@@ -321,10 +326,12 @@ export default function RoundRow({
                                     onPress={() => startFullScoring(ScreenOrientation.OrientationLock.PORTRAIT_UP)}
                                 >
                                     <View style={styles.orientationImageSlot}>
-                                        <Image
-                                            source={require('../../assets/images/portrait.png')}
+                                        <ExpoImage
+                                            source={require('../../assets/images/portrait-optimized.png')}
                                             style={styles.orientationPortraitImage}
                                             resizeMode="contain"
+                                            cachePolicy="memory-disk"
+                                            transition={0}
                                         />
                                     </View>
                                     <Text style={[styles.quickScoringText, styles.orientationChoiceText]}>Portrait</Text>
@@ -336,10 +343,12 @@ export default function RoundRow({
                                     onPress={() => startFullScoring(ScreenOrientation.OrientationLock.LANDSCAPE)}
                                 >
                                     <View style={styles.orientationImageSlot}>
-                                        <Image
-                                            source={require('../../assets/images/landscape.png')}
+                                        <ExpoImage
+                                            source={require('../../assets/images/landscape-optimized.png')}
                                             style={styles.orientationLandscapeImage}
-                                            resizeMode="contain"
+                                            contentFit="contain"
+                                            cachePolicy="memory-disk"
+                                            transition={0}
                                         />
                                     </View>
                                     <Text style={[styles.quickScoringText, styles.orientationChoiceText]}>Landscape</Text>
@@ -387,7 +396,7 @@ export default function RoundRow({
                                     onPress={openFullScoring}
                                 >
                                     <Image
-                                        source={require('../../assets/images/portrait.png')}
+                                        source={require('../../assets/images/portrait-optimized.png')}
                                         style={styles.scoringMethodImage}
                                         resizeMode="contain"
                                     />

@@ -1,10 +1,15 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Modal, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import type { MatchDescription, MatchRating } from '../../types/matchNotes';
 import { serializeMatchDescription } from '../../types/matchNotes';
 
+const SWIPE_ACTION_HEIGHT = 44;
+const SWIPE_ACTION_GAP = 12;
+const SWIPE_REVEAL_DISTANCE = SWIPE_ACTION_HEIGHT + SWIPE_ACTION_GAP;
 
 type SavedCardProps = {
     id: number;
@@ -29,6 +34,8 @@ type SavedCardProps = {
 export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, gender, weight, savedScores, rating, description, fightDate, onDelete}: SavedCardProps) {
     const router = useRouter();
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+    const swipeOffset = useSharedValue(0);
+    const swipeStartOffset = useSharedValue(0);
     const displayedFighter1Score = fighter1Score === '' || fighter1Score === '-' || fighter1Score == null ? 0 : fighter1Score;
     const displayedFighter2Score = fighter2Score === '' || fighter2Score === '-' || fighter2Score == null ? 0 : fighter2Score;
 
@@ -62,6 +69,40 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
         });
     };
 
+    const closeSwipeAction = () => {
+        swipeOffset.value = withTiming(0);
+    };
+
+    const handleShareCard = () => {
+        closeSwipeAction();
+        router.push({
+            pathname: '/createMatch',
+            params: {
+                id: String(id),
+                detailsMode: 'review-before-share',
+                title: 'Review Scorecard Details',
+                backText: 'Menu',
+                buttonText: 'Continue',
+                isEdit: 'true',
+                fighter1,
+                fighter2,
+                fighter1Score,
+                fighter2Score,
+                fighter1KD,
+                fighter2KD,
+                fighter1Pen,
+                fighter2Pen,
+                rounds,
+                gender,
+                weight,
+                savedScores,
+                rating,
+                description: serializeMatchDescription(description ?? []),
+                fightDate,
+            },
+        });
+    };
+
     const handleConfirmDelete = () => {
         setDeleteModalVisible(false);
         onDelete(id);
@@ -85,9 +126,43 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
     const normalizedGender = typeof gender === 'string' ? gender.trim().toLowerCase() : '';
     const isUnknownGender = !normalizedGender || normalizedGender === 'idk' || normalizedGender === 'null' || normalizedGender === 'undefined';
 
+    const verticalSwipe = Gesture.Pan()
+        .activeOffsetY([-10, 10])
+        .failOffsetX([-10, 10])
+        .onStart(() => {
+            swipeStartOffset.value = swipeOffset.value;
+        })
+        .onUpdate((event) => {
+            swipeOffset.value = Math.max(
+                -SWIPE_REVEAL_DISTANCE,
+                Math.min(0, swipeStartOffset.value + event.translationY),
+            );
+        })
+        .onEnd((event) => {
+            const shouldOpen = event.velocityY < -300 || swipeOffset.value < -SWIPE_REVEAL_DISTANCE / 2;
+            swipeOffset.value = withTiming(shouldOpen ? -SWIPE_REVEAL_DISTANCE : 0);
+        });
+
+    const swipeContentStyle = useAnimatedStyle(() => ({
+        transform: [{ translateY: swipeOffset.value }],
+    }));
+
     return (
         <>
+            <GestureDetector gesture={verticalSwipe}>
             <View style={[styles.savedCardShadow, { width: width * 0.201 }]}>
+            <View style={styles.swipeViewport}>
+                <Pressable
+                    style={styles.shareAction}
+                    onPress={handleShareCard}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Share ${fighter1} versus ${fighter2} scorecard`}
+                >
+                    <Ionicons name="share-social-outline" size={20} color="#fff" />
+                    <Text style={styles.shareActionText}>Share</Text>
+                </Pressable>
+                <View pointerEvents="none" style={styles.swipeSeparation} />
+                <Animated.View style={[styles.swipeContent, swipeContentStyle]}>
                 <Pressable style={styles.savedCard}>
                     <View style={styles.savedCardInfoRows}>
                     {/* Fighter name row -- Row 1  */}
@@ -161,7 +236,7 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
                             accessibilityRole="button"
                             accessibilityLabel="Edit scorecard"
                         >
-                            <Ionicons name="pencil-outline" size={17} color="#333A3F" />
+                            <MaterialCommunityIcons name="pencil" size={20} color="#333A3F" />
                         </Pressable>
                         <Pressable
                             style={[styles.actionButton, styles.deleteActionButton]}
@@ -174,7 +249,11 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
                     </View>
                     </View>
                 </Pressable>
+                </Animated.View>
             </View>
+            <View pointerEvents="none" style={styles.swipeTopMask} />
+            </View>
+            </GestureDetector>
 
             <Modal
                 animationType="fade"
@@ -203,6 +282,62 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
 }
 
 const styles = StyleSheet.create({
+    swipeViewport: {
+        height: '100%',
+        width: '100%',
+        overflow: 'visible',
+        position: 'relative',
+    },
+    swipeContent: {
+        height: '100%',
+        width: '100%',
+        backgroundColor: 'white',
+        borderRadius: 15,
+        overflow: 'visible',
+        shadowColor: '#11334b',
+        shadowOffset: { width: 5, height: 5 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1,
+        elevation: 6,
+        zIndex: 2,
+    },
+    swipeSeparation: {
+        position: 'absolute',
+        bottom: SWIPE_ACTION_HEIGHT,
+        left: 0,
+        right: 0,
+        height: SWIPE_ACTION_GAP,
+        backgroundColor: '#f1f5f8',
+        zIndex: 1,
+    },
+    swipeTopMask: {
+        position: 'absolute',
+        top: -SWIPE_REVEAL_DISTANCE,
+        left: -8,
+        right: -8,
+        height: SWIPE_REVEAL_DISTANCE,
+        backgroundColor: '#f1f5f8',
+        zIndex: 3,
+    },
+    shareAction: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: SWIPE_ACTION_HEIGHT,
+        backgroundColor: '#307FB6',
+        borderRadius: 15,
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'row',
+        gap: 5,
+        zIndex: 0,
+    },
+    shareActionText: {
+        color: '#fff',
+        fontSize: 12,
+        fontWeight: '700',
+    },
     actionsBox: {
         backgroundColor: '#fff',
         flex: 1,
@@ -443,15 +578,11 @@ const styles = StyleSheet.create({
     savedCardShadow: {
         height: '100%',
         top: '0%',
-        backgroundColor: 'white',
-        borderRadius: 15,
+        backgroundColor: 'transparent',
         marginBottom: 17,
         marginRight: 0,
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
-        elevation: 6,
+        overflow: 'visible',
+        position: 'relative',
     },
     savedCard: {
         width: '100%',

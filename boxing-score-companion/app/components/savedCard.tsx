@@ -1,6 +1,7 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 
 import { useRouter } from 'expo-router';
 import type { MatchDescription, MatchRating } from '../../types/matchNotes';
@@ -32,6 +33,7 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
   const router = useRouter();
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [cardLayout, setCardLayout] = useState<{ y: number; height: number } | null>(null);
+  const swipeableRef = useRef<Swipeable | null>(null);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const displayedFighter1Score = fighter1Score === '' || fighter1Score === '-' || fighter1Score == null ? 0 : fighter1Score;
   const displayedFighter2Score = fighter2Score === '' || fighter2Score === '-' || fighter2Score == null ? 0 : fighter2Score;
@@ -64,6 +66,36 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
     });
   };
 
+  const handleShareCard = () => {
+    swipeableRef.current?.close();
+    router.push({
+      pathname: '/createMatch',
+      params: {
+        id: String(id),
+        detailsMode: 'review-before-share',
+        title: 'Review Scorecard Details',
+        backText: 'Menu',
+        buttonText: 'Continue',
+        isEdit: 'true',
+        fighter1,
+        fighter2,
+        fighter1Score,
+        fighter2Score,
+        fighter1KD,
+        fighter2KD,
+        fighter1Pen,
+        fighter2Pen,
+        rounds,
+        savedScores,
+        rating,
+        description: serializeMatchDescription(description ?? []),
+        gender,
+        weight,
+        fightDate,
+      },
+    });
+  };
+
   const handleConfirmDelete = () => {
     setDeleteModalVisible(false);
     onDelete(id);
@@ -86,6 +118,18 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
 
   const normalizedGender = typeof gender === 'string' ? gender.trim().toLowerCase() : '';
   const isUnknownGender = !normalizedGender || normalizedGender === 'idk' || normalizedGender === 'null' || normalizedGender === 'undefined';
+
+  const renderRightActions = () => (
+    <Pressable
+      style={styles.shareAction}
+      onPress={handleShareCard}
+      accessibilityRole="button"
+      accessibilityLabel={`Share ${fighter1} versus ${fighter2} scorecard`}
+    >
+      <Ionicons name="share-social-outline" size={23} color="#fff" />
+      <Text style={styles.shareActionText}>Share</Text>
+    </Pressable>
+  );
 
   useEffect(() => {
     const viewportStart = scrollY;
@@ -126,8 +170,16 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
             height: event.nativeEvent.layout.height,
           });
         }}
-        style={{ opacity: fadeAnim }}
+        style={[styles.swipeRow, { opacity: fadeAnim }]}
       >
+        <View style={styles.savedCardShadow}>
+        <Swipeable
+          ref={swipeableRef}
+          containerStyle={styles.swipeable}
+          renderRightActions={renderRightActions}
+          overshootRight={false}
+          rightThreshold={36}
+        >
         <Pressable style={styles.savedCard}>
           <View style={styles.savedCardInfoRows}>
             <View style={styles.savedCardInfoRow}>
@@ -194,7 +246,7 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
               accessibilityRole="button"
               accessibilityLabel="Edit scorecard"
             >
-              <Ionicons name="pencil-outline" size={20} color="#333A3F" />
+              <MaterialCommunityIcons name="pencil" size={20} color="#333A3F" />
             </Pressable>
 
             <Pressable
@@ -207,7 +259,9 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
             </Pressable>
 
           </View>
-      </Pressable>
+        </Pressable>
+        </Swipeable>
+        </View>
       </Animated.View>
       <Modal
         animationType="fade"
@@ -237,6 +291,36 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
 }
 
 const styles = StyleSheet.create({
+  swipeRow: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  savedCardShadow: {
+    width: '90%',
+    marginBottom: 15,
+    borderRadius: 15,
+  },
+  swipeable: {
+    width: '100%',
+    borderRadius: 15,
+    overflow: 'visible',
+  },
+  shareAction: {
+    width: 75,
+    height: 90,
+    marginLeft: 6,
+    backgroundColor: '#307FB6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    borderRadius: 15,
+    // borderBottomRightRadius: 15,
+  },
+  shareActionText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '700',
+  },
   editButtonIcon: {
     marginRight: 3,
   },
@@ -251,7 +335,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#d32f2f',
   },
   savedCard: {
-    width: '90%',
+    width: '100%',
     height: 90,
     backgroundColor: 'white',
     flexDirection: 'row',
@@ -262,7 +346,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 5, height: 5 },
     shadowOpacity: 0.4,
     shadowRadius: 1,
-    marginBottom: 15,
+    marginBottom: 0,
     borderWidth: 1,
     borderColor: '#B6C6D1',
     borderBottomWidth: 0
