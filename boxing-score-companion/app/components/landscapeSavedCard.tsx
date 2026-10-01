@@ -6,6 +6,8 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import type { MatchDescription, MatchRating } from '../../types/matchNotes';
 import { serializeMatchDescription } from '../../types/matchNotes';
+import CollapsibleBannerAd from './collapsibleBannerAd';
+import StableCenteredModalFrame from './stableCenteredModalFrame';
 
 const SWIPE_ACTION_HEIGHT = 44;
 const SWIPE_ACTION_GAP = 12;
@@ -263,6 +265,7 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
                 onRequestClose={() => setDeleteModalVisible(false)}
             >
                 <View style={styles.modalOverlay}>
+                    <StableCenteredModalFrame>
                     <View style={styles.deleteModal}>
                         <Text style={styles.modalTitle}>Delete scorecard?</Text>
                         <Text style={styles.modalText}>Are you sure you want to delete {fighter1} vs {fighter2}?</Text>
@@ -274,7 +277,14 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
                                 <Text style={styles.confirmDeleteText}>Delete</Text>
                             </Pressable>
                         </View>
+                        {deleteModalVisible && (
+                            <CollapsibleBannerAd
+                                containerStyle={styles.deleteAdPositioner}
+                                failureMessage="Landscape delete scorecard banner failed:"
+                            />
+                        )}
                     </View>
+                    </StableCenteredModalFrame>
                 </View>
             </Modal>
         </>
@@ -396,6 +406,11 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 8,
         elevation: 6,
+    },
+    deleteAdPositioner: {
+        alignItems: 'center',
+        marginTop: 18,
+        width: '100%',
     },
     eventBox1: {
         height: '100%',

@@ -357,24 +357,6 @@ export default function MatchInfoScreen() {
         });
     };
 
-    const handleMarkStoppage = (roundNumber: number, stoppageReason: 'KO' | 'TKO' | 'DQ' | 'NC') => {
-        setRoundScores((currentScores) => ({
-            ...currentScores,
-            [roundNumber]: {
-                ...(currentScores[roundNumber] ?? {
-                    left: '',
-                    right: '',
-                    plusMinus: '',
-                    leftDeductions: '0',
-                    rightDeductions: '0',
-                    leftKnockdowns: '0',
-                    rightKnockdowns: '0',
-                }),
-                stoppageReason,
-            },
-        }));
-    };
-
     const handleConfirmStoppage = (
         roundNumber: number,
         stoppageReason: 'KO' | 'TKO' | 'DQ' | 'NC',
@@ -588,7 +570,6 @@ export default function MatchInfoScreen() {
                                     description={serializedDescription}
                                     onClearRound={handleClearRound}
                                     onSaveRound={handleSaveRound}
-                                    onMarkStoppage={handleMarkStoppage}
                                     onConfirmStoppage={handleConfirmStoppage}
                                 />
                             );
@@ -651,7 +632,6 @@ export default function MatchInfoScreen() {
                                         description={serializedDescription}
                                         onClearRound={handleClearRound}
                                         onSaveRound={handleSaveRound}
-                                        onMarkStoppage={handleMarkStoppage}
                                         onConfirmStoppage={handleConfirmStoppage}
                                     />
                                 

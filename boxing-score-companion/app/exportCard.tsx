@@ -637,13 +637,9 @@ export default function ExportCardScreen() {
                     animation: 'slide_from_right',
                 }}
             />
-            <StatusBar style="light" />
+            <StatusBar style="dark" />
 
-            <View style={{ height: insets.top, backgroundColor: HEADER_BLUE }} />
-
-            {/* <View style={styles.header}>
-                <Text style={styles.headerTitle}>Export Scorecard</Text>
-            </View> */}
+            <View style={{ height: insets.top, backgroundColor: SCREEN }} />
 
             <ScrollView
                 style={styles.scroll}
@@ -1042,25 +1038,6 @@ const styles = StyleSheet.create({
     screen: {
         flex: 1,
         backgroundColor: SCREEN,
-    },
-    header: {
-        minHeight: 30,
-        paddingBottom: 9,
-        backgroundColor: HEADER_BLUE,
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderBottomLeftRadius: 18,
-        borderBottomRightRadius: 18,
-        shadowColor: '#11334B',
-        shadowOffset: { width: 2, height: 4 },
-        shadowOpacity: 0.22,
-        shadowRadius: 3,
-        elevation: 4,
-    },
-    headerTitle: {
-        color: '#fff',
-        fontSize: 20,
-        fontWeight: '700',
     },
     scroll: {
         flex: 1,

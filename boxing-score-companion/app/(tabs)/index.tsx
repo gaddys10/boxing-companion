@@ -1,17 +1,29 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, TextInput, Image, ScrollView } from 'react-native';
+import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { FontAwesome6, Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SavedCard from '../components/savedCard';
 import LandscapeSavedCard from '../components/landscapeSavedCard';
-import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useResponsiveLayout } from '../../hooks/use-responsive-layout';
 import type { MatchDescription, MatchRating } from '../../types/matchNotes';
+import CollapsibleBannerAd from '../components/collapsibleBannerAd';
+import StableCenteredModalFrame from '../components/stableCenteredModalFrame';
+import mobileAds, {
+  AdEventType,
+  BannerAd,
+  BannerAdSize,
+  RewardedAd,
+  RewardedAdEventType,
+  TestIds,
+} from 'react-native-google-mobile-ads';
 const tIcon = require('../../assets/images/flatwhitet.png');
 
 const SAVED_CARDS_KEY = 'savedScorecards';
+const FREE_SCORECARD_LIMIT = 25;
+const FEEDBACK_ENDPOINT = process.env.EXPO_PUBLIC_FEEDBACK_ENDPOINT ?? '';
+const FEEDBACK_RECIPIENT = 'syrus@consonant.software';
 
 type Scorecard = {
   id: number;
@@ -32,6 +44,33 @@ type Scorecard = {
   description?: MatchDescription;
 };
 
+function IndexBannerAd({ landscape = false }: { landscape?: boolean }) {
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  return (
+    <View
+      pointerEvents={isLoaded ? 'auto' : 'none'}
+      style={
+        isLoaded
+          ? landscape
+            ? styles.landscapeBannerAdContainer
+            : styles.bannerAdContainer
+          : styles.unloadedBannerAdContainer
+      }
+    >
+      <BannerAd
+        unitId={TestIds.BANNER}
+        size={BannerAdSize.BANNER}
+        onAdLoaded={() => setIsLoaded(true)}
+        onAdFailedToLoad={(error) => {
+          setIsLoaded(false);
+          console.warn('Banner ad failed:', error);
+        }}
+      />
+    </View>
+  );
+}
+
 export default function HomeScreen() {
   const router = useRouter();
   const { savedScorecard } = useLocalSearchParams();
@@ -39,9 +78,34 @@ export default function HomeScreen() {
   const [savedCards, setSavedCards] = useState<Scorecard[]>([]);
   const [searchInput, setSearchInput] = useState('');
   const [hasLoadedSavedCards, setHasLoadedSavedCards] = useState(false);
-  const [scrollY, setScrollY] = useState(0);
-  const [scrollViewportHeight, setScrollViewportHeight] = useState(0);
   const { isLandscape, insets, contentHeight, sy, scale } = useResponsiveLayout();
+  const [adsReady, setAdsReady] = useState(false);
+  const [settingsModalVisible, setSettingsModalVisible] = useState(false);
+  const [settingsModalPage, setSettingsModalPage] = useState<'menu' | 'feedback'>('menu');
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [isSendingFeedback, setIsSendingFeedback] = useState(false);
+  const [scorecardLimitModalVisible, setScorecardLimitModalVisible] = useState(false);
+  const [isRewardedAdLoading, setIsRewardedAdLoading] = useState(false);
+  const rewardedAdCleanupRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    mobileAds()
+      .initialize()
+      .then(() => {
+        if (mounted) setAdsReady(true);
+      })
+      .catch((error) => {
+        console.warn('AdMob initialization failed:', error);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => () => rewardedAdCleanupRef.current?.(), []);
 
   const portraitTitleTop = 61 * sy;
   const portraitTitleHeight = 105 * sy;
@@ -103,9 +167,144 @@ export default function HomeScreen() {
   }, [hasLoadedSavedCards, savedScorecard]);
 
   const handleStartFight = () => {
+    if (!hasLoadedSavedCards) return;
+
+    if (savedCards.length >= FREE_SCORECARD_LIMIT) {
+      setScorecardLimitModalVisible(true);
+      return;
+    }
+
     router.push({
       pathname: '/createMatch',
     });
+  };
+
+  const openNewScorecard = () => {
+    setScorecardLimitModalVisible(false);
+    router.push({ pathname: '/createMatch' });
+  };
+
+  const handleWatchAd = async () => {
+    if (isRewardedAdLoading) return;
+
+    setIsRewardedAdLoading(true);
+
+    try {
+      await mobileAds().initialize();
+
+      const rewardedAd = RewardedAd.createForAdRequest(TestIds.REWARDED);
+      let rewardEarned = false;
+      const unsubscribers: (() => void)[] = [];
+
+      const cleanup = () => {
+        unsubscribers.forEach((unsubscribe) => unsubscribe());
+        rewardedAdCleanupRef.current = null;
+      };
+
+      rewardedAdCleanupRef.current?.();
+      rewardedAdCleanupRef.current = cleanup;
+
+      unsubscribers.push(
+        rewardedAd.addAdEventListener(RewardedAdEventType.LOADED, () => {
+          void rewardedAd.show().catch((error) => {
+            cleanup();
+            setIsRewardedAdLoading(false);
+            console.warn('Rewarded scorecard ad failed to show:', error);
+            Alert.alert('Ad unavailable', 'The ad could not be shown. Please try again.');
+          });
+        }),
+        rewardedAd.addAdEventListener(RewardedAdEventType.EARNED_REWARD, () => {
+          rewardEarned = true;
+        }),
+        rewardedAd.addAdEventListener(AdEventType.CLOSED, () => {
+          cleanup();
+          setIsRewardedAdLoading(false);
+
+          if (rewardEarned) {
+            openNewScorecard();
+          }
+        }),
+        rewardedAd.addAdEventListener(AdEventType.ERROR, (error) => {
+          cleanup();
+          setIsRewardedAdLoading(false);
+          console.warn('Rewarded scorecard ad failed to load:', error);
+          Alert.alert('Ad unavailable', 'An ad is not available right now. Please try again later.');
+        }),
+      );
+
+      rewardedAd.load();
+    } catch (error) {
+      rewardedAdCleanupRef.current?.();
+      setIsRewardedAdLoading(false);
+      console.warn('Rewarded scorecard ad could not start:', error);
+      Alert.alert('Ad unavailable', 'An ad is not available right now. Please try again later.');
+    }
+  };
+
+  const handlePurchasePremium = () => {
+    Alert.alert('Premium coming soon', 'Premium purchasing is not available yet.');
+  };
+
+  const handleOpenSettings = () => {
+    setSettingsModalPage('menu');
+    setSettingsModalVisible(true);
+  };
+
+  const handleSendFeedback = async () => {
+    const message = feedbackMessage.trim();
+
+    if (!message) {
+      Alert.alert('Write a message', 'Please enter your feedback before sending.');
+      return;
+    }
+
+    if (!FEEDBACK_ENDPOINT) {
+      Alert.alert(
+        'Feedback unavailable',
+        'The secure feedback service has not been configured yet.',
+      );
+      return;
+    }
+
+    setIsSendingFeedback(true);
+
+    try {
+      const response = await fetch(FEEDBACK_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message,
+          recipient: FEEDBACK_RECIPIENT,
+          source: 'Boxing Score Companion',
+          version: '0.1',
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Feedback request failed with status ${response.status}`);
+      }
+
+      setFeedbackMessage('');
+      setSettingsModalPage('menu');
+      Alert.alert('Feedback sent', 'Thank you for your feedback.');
+    } catch (error) {
+      console.warn('Feedback submission failed:', error);
+      Alert.alert('Could not send feedback', 'Please check your connection and try again.');
+    } finally {
+      setIsSendingFeedback(false);
+    }
+  };
+
+  const handleRestorePurchase = () => {
+    Alert.alert('Restore Purchase', 'Purchase restoration is not available yet.');
+  };
+
+  const handleAbout = () => {
+    Alert.alert('About', 'Boxing Score Companion\nVersion 0.1');
+  };
+
+  const handleSpecialThanks = () => {
+    Alert.alert('Special Thanks', 'Thank you to everyone who helped make Boxing Score Companion possible.');
   };
 
   const handleDeleteCard = (cardId: number) => {
@@ -167,6 +366,16 @@ export default function HomeScreen() {
                 />
               </View>
             </View>
+            <View style={[styles.landscapeSettingsPositioner, { top: landscapeSearchTop, height: searchBoxHeight }]}>
+              <Pressable
+                style={({ pressed }) => [styles.settingsButton, pressed && styles.settingsButtonPressed]}
+                onPress={handleOpenSettings}
+                accessibilityRole="button"
+                accessibilityLabel="Open settings"
+              >
+                <Ionicons name="settings-sharp" size={20} color="#fff" />
+              </Pressable>
+            </View>
             <Pressable style={styles.landscapeButton} onPress={handleStartFight}>
               <FontAwesome6 name="plus" size={14} color="#fff" />
               <Text numberOfLines={1} style={styles.buttonText}>New Scorecard</Text>
@@ -193,6 +402,19 @@ export default function HomeScreen() {
                 <TextInput style={styles.searchInput} placeholderTextColor="rgba(0, 0, 0, 0.5)" placeholder="Search Scorecards" value={searchInput} onChangeText={setSearchInput} autoCapitalize="none" autoCorrect={false} clearButtonMode="while-editing" />
               </View>
             </View>
+            <View style={[styles.settingsPositioner, {
+              top: portraitSearchTop,
+              height: searchBoxHeight,
+            }]}>
+              <Pressable
+                style={({ pressed }) => [styles.settingsButton, pressed && styles.settingsButtonPressed]}
+                onPress={handleOpenSettings}
+                accessibilityRole="button"
+                accessibilityLabel="Open settings"
+              >
+                <Ionicons name="settings-sharp" size={20} color="#fff" />
+              </Pressable>
+            </View>
           </>
         )}
         {isLandscape && 
@@ -202,9 +424,9 @@ export default function HomeScreen() {
             horizontal
             showsHorizontalScrollIndicator={false}
           >
-            {filteredCards.map((card) => (
+            {filteredCards.map((card, index) => (
+              <React.Fragment key={card.id}>
               <LandscapeSavedCard
-                key={card.id}
                 id={card.id}
                 fighter1={card.fighter1}
                 fighter2={card.fighter2}
@@ -223,7 +445,14 @@ export default function HomeScreen() {
                 description={card.description}
                 onDelete={handleDeleteCard}
               />
+              {adsReady && filteredCards.length >= 5 && (index + 1) % 5 === 0 && (
+                <IndexBannerAd landscape />
+              )}
+              </React.Fragment>
             ))}
+            {adsReady && filteredCards.length <= 4 && (
+              <IndexBannerAd landscape />
+            )}
           </ScrollView>
         }
         {!isLandscape &&
@@ -231,14 +460,12 @@ export default function HomeScreen() {
             style={[styles.savedCardContainer, { top: portraitCardsTop, bottom: Math.max(90 * sy, insets.bottom + 56) }]}
             contentContainerStyle={styles.savedCardContent}
             showsVerticalScrollIndicator={true}
-            onScroll={(event) => setScrollY(event.nativeEvent.contentOffset.y)}
-            onLayout={(event) => setScrollViewportHeight(event.nativeEvent.layout.height)}
             bounces={false}
             alwaysBounceVertical={false}
           >
-            {filteredCards.map((card) => (
+            {filteredCards.map((card, index) => (
+              <React.Fragment key={card.id}>
               <SavedCard
-                key={card.id}
                 id={card.id}
                 fighter1={card.fighter1}
                 fighter2={card.fighter2}
@@ -256,10 +483,15 @@ export default function HomeScreen() {
                 rating={card.rating}
                 description={card.description}
                 onDelete={handleDeleteCard}
-                scrollY={scrollY}
-                viewportHeight={scrollViewportHeight}
               />
+              {adsReady && filteredCards.length >= 5 && (index + 1) % 5 === 0 && (
+                <IndexBannerAd />
+              )}
+              </React.Fragment>
             ))}
+            {adsReady && filteredCards.length <= 4 && (
+              <IndexBannerAd />
+            )}
           </ScrollView>
         }
 
@@ -269,14 +501,367 @@ export default function HomeScreen() {
             <Text style={styles.buttonText}>New Scorecard</Text>
           </Pressable>
         )}
-        
+
       </View>
+      <Modal
+        animationType="fade"
+        transparent
+        visible={settingsModalVisible}
+        supportedOrientations={['portrait', 'landscape', 'landscape-left', 'landscape-right']}
+        onRequestClose={() => {
+          if (isSendingFeedback) return;
+          if (settingsModalPage === 'feedback') {
+            setSettingsModalPage('menu');
+          } else {
+            setSettingsModalVisible(false);
+          }
+        }}
+      >
+        <KeyboardAvoidingView
+          style={styles.limitModalOverlay}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <StableCenteredModalFrame key={settingsModalPage}>
+            <View style={styles.limitModalCard}>
+              {settingsModalPage === 'menu' ? (
+                <>
+                  <Text style={styles.limitModalTitle}>Settings</Text>
+                  <View style={styles.settingsModalActions}>
+                    <Pressable
+                      style={[styles.limitModalButton, styles.limitPremiumButton]}
+                      onPress={handlePurchasePremium}
+                    >
+                      <Ionicons name="star-outline" size={19} color="#fff" style={styles.settingsButtonIcon} />
+                      <Text style={styles.limitPrimaryButtonText}>Purchase Premium: $2.99</Text>
+                    </Pressable>
+                    <View style={styles.premiumChecklist}>
+                      <View style={styles.premiumChecklistItem}>
+                        <Ionicons name="checkmark-circle" size={18} color="#D99B28" />
+                        <Text style={styles.premiumChecklistText}>Remove ads</Text>
+                      </View>
+                      <View style={styles.premiumChecklistItem}>
+                        <Ionicons name="checkmark-circle" size={18} color="#D99B28" />
+                        <Text style={styles.premiumChecklistText}>Unlimited free saved scorecards</Text>
+                      </View>
+                      <View style={styles.premiumChecklistItem}>
+                        <Ionicons name="checkmark-circle" size={18} color="#D99B28" />
+                        <Text style={styles.premiumChecklistText}>Access to ALL future premium features</Text>
+                      </View>
+                    </View>
+                    <Pressable
+                      style={[styles.limitModalButton, styles.settingsOptionButton]}
+                      onPress={handleRestorePurchase}
+                    >
+                      <Ionicons name="refresh-outline" size={19} color="#fff" style={styles.settingsButtonIcon} />
+                      <Text style={styles.settingsOptionButtonText}>Restore Purchase</Text>
+                    </Pressable>
+                    <Pressable
+                      style={[styles.limitModalButton, styles.settingsOptionButton]}
+                      onPress={() => setSettingsModalPage('feedback')}
+                    >
+                      <Ionicons name="chatbox-ellipses-outline" size={19} color="#fff" style={styles.settingsButtonIcon} />
+                      <Text style={styles.settingsOptionButtonText}>Send Feedback</Text>
+                    </Pressable>
+                    <Pressable
+                      style={[styles.limitModalButton, styles.settingsOptionButton]}
+                      onPress={handleAbout}
+                    >
+                      <Ionicons name="information-circle-outline" size={19} color="#fff" style={styles.settingsButtonIcon} />
+                      <Text style={styles.settingsOptionButtonText}>About</Text>
+                    </Pressable>
+                    <Pressable
+                      style={[styles.limitModalButton, styles.settingsOptionButton]}
+                      onPress={handleSpecialThanks}
+                    >
+                      <Ionicons name="heart-outline" size={19} color="#fff" style={styles.settingsButtonIcon} />
+                      <Text style={styles.settingsOptionButtonText}>Special Thanks</Text>
+                    </Pressable>
+                    <Pressable
+                      style={[styles.limitModalButton, styles.settingsCloseButton]}
+                      onPress={() => setSettingsModalVisible(false)}
+                    >
+                      <Ionicons name="close" size={19} color="#fff" />
+                      <Text style={styles.limitPrimaryButtonText}>Close</Text>
+                    </Pressable>
+                  </View>
+                  {settingsModalVisible && adsReady && (
+                    <CollapsibleBannerAd
+                      containerStyle={styles.settingsAdPositioner}
+                      failureMessage="Settings banner ad failed:"
+                    />
+                  )}
+                </>
+              ) : (
+                <>
+                  <Text style={styles.limitModalTitle}>Send Feedback</Text>
+                  <Text style={styles.feedbackInstructions}>
+                    Write a message below. It will be sent directly to {FEEDBACK_RECIPIENT}.
+                  </Text>
+                  <TextInput
+                    style={styles.feedbackInput}
+                    value={feedbackMessage}
+                    onChangeText={setFeedbackMessage}
+                    placeholder="How can we improve Boxing Score Companion?"
+                    placeholderTextColor="#7B8992"
+                    multiline
+                    maxLength={2000}
+                    editable={!isSendingFeedback}
+                    textAlignVertical="top"
+                    accessibilityLabel="Feedback message"
+                  />
+                  <Text style={styles.feedbackCharacterCount}>{feedbackMessage.length}/2000</Text>
+                  <View style={styles.feedbackActions}>
+                    <Pressable
+                      style={[styles.limitModalButton, styles.limitRowButton, styles.limitBackButton]}
+                      onPress={() => setSettingsModalPage('menu')}
+                      disabled={isSendingFeedback}
+                    >
+                      <Ionicons name="chevron-back" size={18} color="#307FB6" />
+                      <Text style={styles.limitBackButtonText}>Back</Text>
+                    </Pressable>
+                    <Pressable
+                      style={[styles.limitModalButton, styles.limitRowButton, styles.feedbackSendButton]}
+                      onPress={() => void handleSendFeedback()}
+                      disabled={isSendingFeedback}
+                    >
+                      {isSendingFeedback ? (
+                        <ActivityIndicator size="small" color="#fff" />
+                      ) : (
+                        <Ionicons name="send" size={18} color="#fff" />
+                      )}
+                      <Text style={styles.limitPrimaryButtonText}>
+                        {isSendingFeedback ? 'Sending…' : 'Send'}
+                      </Text>
+                    </Pressable>
+                  </View>
+                </>
+              )}
+            </View>
+          </StableCenteredModalFrame>
+        </KeyboardAvoidingView>
+      </Modal>
+      <Modal
+        animationType="fade"
+        transparent
+        visible={scorecardLimitModalVisible}
+        supportedOrientations={['portrait', 'landscape', 'landscape-left', 'landscape-right']}
+        onRequestClose={() => {
+          if (!isRewardedAdLoading) setScorecardLimitModalVisible(false);
+        }}
+      >
+        <View style={styles.limitModalOverlay}>
+          <StableCenteredModalFrame>
+            <View style={styles.limitModalCard}>
+              <Text style={styles.limitModalTitle}>Free scorecard limit reached</Text>
+              <Text style={styles.limitModalText}>
+                You’ve reached the limit of 25 free saved scorecards. {'\n'}{'\n'} Delete a saved card,
+                purchase Premium, or watch an ad to create another scorecard.
+              </Text>
+              <View style={styles.limitModalActions}>
+                <Pressable
+                  style={[styles.limitModalButton, styles.limitPremiumButton]}
+                  onPress={handlePurchasePremium}
+                  disabled={isRewardedAdLoading}
+                >
+                  <Ionicons name="star-outline" size={18} color="#fff" />
+                  <Text style={styles.limitPrimaryButtonText}>Purchase Premium: $2.99</Text>
+                </Pressable>
+                <Text style={styles.limitModalSubText}>
+                Premium removes ads, unlocks unlimited free saved cards, and includes all future premium features!
+              </Text>
+                <View style={styles.limitSecondaryActions}>
+                  <Pressable
+                    style={[styles.limitModalButton, styles.limitRowButton, styles.limitBackButton]}
+                    onPress={() => setScorecardLimitModalVisible(false)}
+                    disabled={isRewardedAdLoading}
+                  >
+                    <Ionicons name="chevron-back" size={18} color="#307FB6" />
+                    <Text style={styles.limitBackButtonText}>Back</Text>
+                  </Pressable>
+                  <Pressable
+                    style={[styles.limitModalButton, styles.limitRowButton, styles.limitWatchAdButton]}
+                    onPress={() => void handleWatchAd()}
+                    disabled={isRewardedAdLoading}
+                  >
+                    {isRewardedAdLoading ? (
+                      <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                      <Ionicons name="play-circle-outline" size={19} color="#fff" />
+                    )}
+                    <Text style={styles.limitPrimaryButtonText}>
+                      {isRewardedAdLoading ? 'Loading Ad…' : 'Watch an Ad'}
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+            </View>
+          </StableCenteredModalFrame>
+        </View>
+      </Modal>
       </>
     // </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  limitModalOverlay: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    flex: 1,
+    justifyContent: 'center',
+    padding: 24,
+  },
+  limitModalCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    elevation: 6,
+    maxWidth: 360,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    width: '100%',
+  },
+  limitModalTitle: {
+    color: '#333A3F',
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  limitModalText: {
+    color: '#333A3F',
+    fontSize: 15,
+    lineHeight: 21,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  limitModalSubText: {
+    color: '#333A3F',
+    fontSize: 10,
+    lineHeight: 21,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  limitModalActions: {
+    gap: 10,
+  },
+  limitSecondaryActions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  limitModalButton: {
+    alignItems: 'center',
+    borderRadius: 10,
+    elevation: 4,
+    flexDirection: 'row',
+    gap: 7,
+    justifyContent: 'center',
+    minHeight: 44,
+    paddingHorizontal: 16,
+    shadowColor: '#11334b',
+    shadowOffset: { width: 5, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 1,
+  },
+  limitBackButton: {
+    backgroundColor: '#fff',
+    borderColor: '#B6C6D1',
+    borderWidth: 1,
+  },
+  limitRowButton: {
+    flex: 1,
+    minWidth: 0,
+  },
+  limitWatchAdButton: {
+    backgroundColor: '#307FB6',
+  },
+  limitPremiumButton: {
+    backgroundColor: '#D99B28',
+  },
+  limitBackButtonText: {
+    color: '#307FB6',
+    fontWeight: '700',
+  },
+  limitPrimaryButtonText: {
+    color: '#fff',
+    fontWeight: '700',
+  },
+  settingsModalActions: {
+    gap: 10,
+  },
+  settingsOptionButton: {
+    backgroundColor: '#307FB6',
+  },
+  settingsOptionButtonText: {
+    color: '#fff',
+    fontWeight: '700',
+  },
+  settingsButtonIcon: {
+    left: 16,
+    position: 'absolute',
+  },
+  premiumChecklist: {
+    gap: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  premiumChecklistItem: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+  },
+  premiumChecklistText: {
+    color: '#333A3F',
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '600',
+    lineHeight: 18,
+  },
+  settingsCloseButton: {
+    alignSelf: 'center',
+    backgroundColor: '#D32F2F',
+    marginTop: 14,
+  },
+  settingsAdPositioner: {
+    alignItems: 'center',
+    marginTop: 18,
+    width: '100%',
+  },
+  feedbackInstructions: {
+    color: '#333A3F',
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 14,
+    textAlign: 'center',
+  },
+  feedbackInput: {
+    backgroundColor: '#F7FAFC',
+    borderColor: '#B6C6D1',
+    borderRadius: 10,
+    borderWidth: 1,
+    color: '#333A3F',
+    fontSize: 15,
+    height: 160,
+    lineHeight: 21,
+    padding: 12,
+    width: '100%',
+  },
+  feedbackCharacterCount: {
+    color: '#6E7C85',
+    fontSize: 11,
+    marginBottom: 14,
+    marginTop: 5,
+    textAlign: 'right',
+  },
+  feedbackActions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  feedbackSendButton: {
+    backgroundColor: '#307FB6',
+  },
   neonPageBorder: {
     flex: 1,
     padding: 4,
@@ -332,6 +917,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 0
   },
+  bannerAdContainer: {
+    alignSelf: 'center',
+    marginTop: 0,
+    marginBottom: 15,
+  },
+  unloadedBannerAdContainer: {
+    height: 50,
+    opacity: 0,
+    overflow: 'hidden',
+    position: 'absolute',
+    width: 320,
+  },
   search: {
     color: "#fff",
     fontWeight: 700,
@@ -342,6 +939,27 @@ const styles = StyleSheet.create({
     width: '45%',
     left: '5.5%',
     justifyContent: 'center',
+  },
+  settingsPositioner: {
+    position: 'absolute',
+    right: '5.5%',
+    justifyContent: 'center',
+  },
+  settingsButton: {
+    alignItems: 'center',
+    backgroundColor: '#307FB6',
+    borderRadius: 12,
+    elevation: 4,
+    height: 35,
+    justifyContent: 'center',
+    shadowColor: '#11334b',
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.35,
+    shadowRadius: 1,
+    width: 44,
+  },
+  settingsButtonPressed: {
+    opacity: 0.82,
   },
   searchIcon: {
     color: "#000",
@@ -483,10 +1101,22 @@ const styles = StyleSheet.create({
     paddingRight: 12,
     paddingBottom: 12,
   },
+  landscapeBannerAdContainer: {
+    width: 320,
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   landscapeSearchBox: {
     position: 'absolute',
     left: '.25%',
     width: '33%',
+    justifyContent: 'center',
+    zIndex: 11,
+  },
+  landscapeSettingsPositioner: {
+    position: 'absolute',
+    right: '1.25%',
     justifyContent: 'center',
     zIndex: 11,
   },

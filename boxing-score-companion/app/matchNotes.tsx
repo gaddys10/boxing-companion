@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { StatusBar } from 'expo-status-bar';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
     LayoutChangeEvent,
     NativeScrollEvent,
@@ -16,6 +16,8 @@ import {
 } from 'react-native';
 import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 import { normalizeMatchRating, parseMatchDescription, serializeMatchDescription } from '../types/matchNotes';
+import mobileAds from 'react-native-google-mobile-ads';
+import CollapsibleBannerAd from './components/collapsibleBannerAd';
 
 const MAX_RATING = 5;
 const RATING_STEP = 0.5;
@@ -30,54 +32,65 @@ const SCREEN = '#F1F5F8';
 const TEXT = '#333A3F';
 const BORDER = '#B6C6D1';
 
+//the fight..
+//the fight was..
+//the fight was a..
+//the fight had a..
+//the fighters were..
 const FIGHT_DESCRIPTORS = [
-    'Adjustments',
     'Awkward',
     'Back & Forth',
-    'Bad Coach',
-    'Bad Ref',
+    'Bad Coaching',
+    'Bad Reffing',
     'Bloody',
-    'Body Shot KO',
     'Multiple Downs',
     'Body Work',
+    'Bad Blood',
+    'FOTY',
+    'ROTY',
+    'Tense',
+    'Dramatic',
+    'Counterpunching',
+    'Phone Booth',
+    'Good Defense',
+    'Comeback KO',
+    'Shocking',
+    'Barn Burner',
+    'Mud Wrestling',
+    'Street Fight',
+    'Holy ****!',
+    'Saved by Bell',
+    'Strong Finish',
+    'Wild Punches',
     'Boring',
     'Both Hurt',
     'Brawl',
     'Brutal',
     'Chess Match',
-    'Chin',
     'Clinch Heavy',
     'Close',
-    'Combinations',
     'Comeback',
     'Competitive',
     'Controversial',
-    'Counterpunches',
     'Cuts',
     'Dead Crowd',
-    'Defensive',
     'Developmental',
     'Dirty',
-    'Durability',
     'Exciting',
     'Fast Start',
     "Fast-Paced",
-    'Feints',
     'Flash Down',
     'Foul Heavy',
-    'Gassed',
     'Good Coaching',
     'Good Referee',
-    'Headbutts',
+    'Headbutting',
     'Headhunting',
     'High Level',
     'High Volume',
-    'Hooks',
     'Hostile Crowd',
     'Injury',
     'Infighting',
-    'Heart',
-    'Jabs',
+    'Display of Heart',
     'Jab Battle',
     'Late Rally',
     'Loud Crowd',
@@ -89,9 +102,6 @@ const FIGHT_DESCRIPTORS = [
     'Mismatch',
     'One Sided',
     'Outboxing',
-    'Out Cold',
-    'Power shots',
-    'Pressure',
     'Needs Rematch',
     'Replayable',
     'Robbery',
@@ -101,15 +111,14 @@ const FIGHT_DESCRIPTORS = [
     'Showboating',
     'Showcase',
     'Shutout',
+    'Track Meet',
     'Outsized',
     'Slow-Paced',
     'Slow Start',
     'Slugfest',
-    'Smothering',
     "Stylish",
+    "Sparring Match",
     'Swelling',
-    'Swing Rounds',
-    'Switch Hitting',
     'Tactical',
     'Technical',
     'Ugly',
@@ -155,11 +164,29 @@ export default function MatchNotesScreen() {
     const [descriptorViewportHeight, setDescriptorViewportHeight] = useState(0);
     const [descriptorScrollOffset, setDescriptorScrollOffset] = useState(0);
     const [selectedDescriptorHeight, setSelectedDescriptorHeight] = useState(0);
+    const [adsReady, setAdsReady] = useState(false);
 
     const sliderWidthRef = useRef(0);
     const sliderGestureStartXRef = useRef(0);
     const lastHapticRatingRef = useRef(rating);
     const [sliderWidth, setSliderWidth] = useState(0);
+
+    useEffect(() => {
+        let mounted = true;
+
+        mobileAds()
+            .initialize()
+            .then(() => {
+                if (mounted) setAdsReady(true);
+            })
+            .catch((error) => {
+                console.warn('Match notes AdMob initialization failed:', error);
+            });
+
+        return () => {
+            mounted = false;
+        };
+    }, []);
 
     const updateRatingFromX = (x: number) => {
         const width = sliderWidthRef.current;
@@ -273,7 +300,9 @@ export default function MatchNotesScreen() {
     const descriptorBaseMaxHeight = isLandscape ? 150 : 368;
     const descriptorScrollMaxHeight = Math.max(
         120,
-        descriptorBaseMaxHeight - selectedDescriptorHeight - (selectedDescriptorHeight > 0 ? 14 : 0),
+        descriptorBaseMaxHeight
+            - selectedDescriptorHeight
+            - (selectedDescriptorHeight > 0 ? 14 : 0),
     );
     const handleDescriptorScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
         setDescriptorScrollOffset(event.nativeEvent.contentOffset.y);
@@ -359,7 +388,7 @@ export default function MatchNotesScreen() {
                                 {/* How would you  */}
                                 Describe this fight</Text>
                             <Text style={[styles.sectionDescription, isLandscape && styles.landscapeSectionDescription]}>
-                                Pick up to {MAX_DESCRIPTORS} match descriptors.
+                                Tap and select up to {MAX_DESCRIPTORS} match descriptors.
                                 {/* that tell the story of the fight. */}
                             </Text>
                         </View>
@@ -429,45 +458,52 @@ export default function MatchNotesScreen() {
                             onScroll={handleDescriptorScroll}
                             scrollEventThrottle={16}
                         >
-                            {FIGHT_DESCRIPTORS.map((descriptor) => {
+                            {FIGHT_DESCRIPTORS.map((descriptor, index) => {
                                 const selected = selectedDescriptors.includes(descriptor);
                                 const blocked = !selected && selectedDescriptors.length >= MAX_DESCRIPTORS;
+                                const shouldShowAd = (index + 1) % 30 === 0;
 
                                 return (
-                                    <Pressable
-                                        key={descriptor}
-                                        onPress={() => toggleDescriptor(descriptor)}
-                                        style={({ pressed }) => [
-                                            styles.descriptorPill,
-                                            selected && styles.descriptorPillSelected,
-                                            blocked && styles.descriptorPillBlocked,
-                                            pressed && !blocked && styles.pressed,
-                                        ]}
-                                        accessibilityRole="button"
-                                        accessibilityState={{ selected, disabled: blocked }}
-                                        accessibilityLabel={`${descriptor}${selected ? ', selected' : ''}`}
-                                    >
-                                        {selected && (
-                                            <Ionicons
-                                                name="checkmark"
-                                                size={14}
-                                                color="#fff"
-                                                style={styles.pillCheck}
+                                    <React.Fragment key={descriptor}>
+                                        <Pressable
+                                            onPress={() => toggleDescriptor(descriptor)}
+                                            style={({ pressed }) => [
+                                                styles.descriptorPill,
+                                                selected && styles.descriptorPillSelected,
+                                                blocked && styles.descriptorPillBlocked,
+                                                pressed && !blocked && styles.pressed,
+                                            ]}
+                                            accessibilityRole="button"
+                                            accessibilityState={{ selected, disabled: blocked }}
+                                            accessibilityLabel={`${descriptor}${selected ? ', selected' : ''}`}
+                                        >
+                                            {selected && (
+                                                <Ionicons
+                                                    name="checkmark"
+                                                    size={14}
+                                                    color="#fff"
+                                                    style={styles.pillCheck}
+                                                />
+                                            )}
+                                            <Text
+                                                style={[
+                                                    styles.descriptorPillText,
+                                                    selected && styles.descriptorPillTextSelected,
+                                                    blocked && styles.descriptorPillTextBlocked,
+                                                ]}
+                                            >
+                                                {descriptor}
+                                            </Text>
+                                        </Pressable>
+                                        {shouldShowAd && adsReady && (
+                                            <CollapsibleBannerAd
+                                                containerStyle={styles.descriptorListAd}
+                                                failureMessage={`Match descriptor banner after item ${index + 1} failed:`}
                                             />
                                         )}
-                                        <Text
-                                            style={[
-                                                styles.descriptorPillText,
-                                                selected && styles.descriptorPillTextSelected,
-                                                blocked && styles.descriptorPillTextBlocked,
-                                            ]}
-                                        >
-                                            {descriptor}
-                                        </Text>
-                                    </Pressable>
+                                    </React.Fragment>
                                 );
                             })}
-                            
                         </ScrollView>
                         <View pointerEvents="none" style={styles.descriptorScrollbarTrack}>
                             <View
@@ -750,23 +786,23 @@ const styles = StyleSheet.create({
     },
     selectedDescriptorChip: {
         maxWidth: '100%',
-        minHeight: 32,
+        minHeight: 30,
         flexDirection: 'row',
         alignItems: 'center',
         borderRadius: 8,
         borderWidth: 1,
         borderColor: BLUE,
         backgroundColor: '#EAF3F9',
-        paddingLeft: 8,
+        paddingLeft: 6,
         paddingRight: 0,
     },
     selectedDescriptorText: {
         color: TEXT,
-        fontSize: 10,
+        fontSize: 9,
         fontWeight: '600',
     },
     selectedDescriptorRemove: {
-        width: 24,
+        width: 22,
         height: 28,
         alignItems: 'center',
         justifyContent: 'center',
@@ -808,6 +844,12 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         gap: 9,
         paddingBottom: 18,
+    },
+    descriptorListAd: {
+        alignItems: 'center',
+        marginBottom: 4,
+        marginTop: 12,
+        width: '100%',
     },
     descriptorScroll: {
         height: '100%',
