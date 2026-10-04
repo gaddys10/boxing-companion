@@ -7,6 +7,7 @@ import { Swipeable } from 'react-native-gesture-handler';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import CollapsibleBannerAd from './collapsibleBannerAd';
 import StableCenteredModalFrame from './stableCenteredModalFrame';
+import { usePremium } from '../../contexts/PremiumContext';
 
 const SCORING_MODAL_AD_GAP = 30;
 const SCORING_MODAL_AD_FOOTPRINT = 50 + SCORING_MODAL_AD_GAP;
@@ -81,6 +82,7 @@ export default function RoundRow({
     onConfirmStoppage,
 }: RoundRowProps) {
     const { height: windowHeight } = useWindowDimensions();
+    const { isPremium } = usePremium();
     const swipeableRef = React.useRef<Swipeable | null>(null);
     const plusMinusNumber = plusMinus && plusMinus !== '-' ? Number(plusMinus) : null;
     const leftRoundScoreNumber = Number(leftScore);
@@ -106,7 +108,7 @@ export default function RoundRow({
 
     const selectScoringModalHeight = Math.max(
         400,
-        (windowHeight * 0.86) - (scoringFooterAdLoaded ? 0 : SCORING_MODAL_AD_FOOTPRINT),
+        (windowHeight * 0.86) - (isPremium ||scoringFooterAdLoaded ? 0 : SCORING_MODAL_AD_FOOTPRINT),
     );
     const scoringChoiceHeight = Math.min(110, Math.max(72, windowHeight * 0.129));
 
@@ -418,7 +420,7 @@ export default function RoundRow({
                                         <Text style={styles.cancelButtonText}>Back</Text>
                                     </Pressable>
                                 </View>
-                                {scoringModalVisible && (
+                                {scoringModalVisible && !isPremium && (
                                     <CollapsibleBannerAd
                                         containerStyle={styles.scoringMethodAdPositioner}
                                         failureMessage="Score orientation banner failed:"
@@ -477,7 +479,7 @@ export default function RoundRow({
                                         <Text style={styles.cancelButtonText}>Cancel</Text>
                                     </Pressable>
                                 </View>
-                                {scoringModalVisible && (
+                                {scoringModalVisible && !isPremium && (
                                     <CollapsibleBannerAd
                                         containerStyle={styles.scoringMethodAdPositioner}
                                         failureMessage="Scoring method banner failed:"
@@ -543,7 +545,7 @@ export default function RoundRow({
                                         <Text style={styles.saveQuickButtonText}>Save Round</Text>
                                     </Pressable>
                                 </View>
-                                {scoringModalVisible && quickScoringVisible && (
+                                {scoringModalVisible && quickScoringVisible && !isPremium && (
                                     <CollapsibleBannerAd
                                         containerStyle={styles.quickScoringAdPositioner}
                                         failureMessage="Quick scoring banner failed:"
@@ -653,7 +655,7 @@ export default function RoundRow({
                                 <Text style={styles.stoppageConfirmButtonText}>Confirm</Text>
                             </Pressable>
                         </View>
-                        {stoppageModalVisible && (
+                        {stoppageModalVisible && !isPremium && (
                             <CollapsibleBannerAd
                                 containerStyle={styles.stoppageAdPositioner}
                                 failureMessage="Match info stoppage banner failed:"

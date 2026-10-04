@@ -8,6 +8,7 @@ import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 import { normalizeMatchRating, parseMatchDescription, serializeMatchDescription } from '../types/matchNotes';
 import CollapsibleBannerAd from './components/collapsibleBannerAd';
 import StableCenteredModalFrame from './components/stableCenteredModalFrame';
+import { usePremium } from '../contexts/PremiumContext';
 
 type RoundScore = {
     left?: string;
@@ -23,6 +24,7 @@ type RoundScore = {
 
 export default function CreateMatch() {
     const router = useRouter();
+    const { isPremium } = usePremium();
     const params = useLocalSearchParams();
     const detailsMode = Array.isArray(params.detailsMode) ? params.detailsMode[0] : params.detailsMode;
     const isReviewBeforeShare = detailsMode === 'review-before-share';
@@ -920,7 +922,7 @@ export default function CreateMatch() {
                                 <Text style={styles.keepEditingButtonText}>Keep Editing</Text>
                             </Pressable>
                         </View>
-                        {discardModalVisible && (
+                        {discardModalVisible && !isPremium && (
                             <CollapsibleBannerAd
                                 containerStyle={styles.discardAdPositioner}
                                 failureMessage="Discard scorecard banner failed:"

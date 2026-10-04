@@ -18,6 +18,7 @@ import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 import { normalizeMatchRating, parseMatchDescription, serializeMatchDescription } from '../types/matchNotes';
 import mobileAds from 'react-native-google-mobile-ads';
 import CollapsibleBannerAd from './components/collapsibleBannerAd';
+import { usePremium } from '../contexts/PremiumContext';
 
 const MAX_RATING = 5;
 const RATING_STEP = 0.5;
@@ -148,6 +149,7 @@ function RatingStar({ fill }: { fill: number }) {
 
 export default function MatchNotesScreen() {
     const router = useRouter();
+    const { isPremium } = usePremium();
     const params = useLocalSearchParams();
     const { isLandscape, insets, sx, sy, horizontalGutter } = useResponsiveLayout();
     const notesMode = Array.isArray(params.notesMode) ? params.notesMode[0] : params.notesMode;
@@ -495,7 +497,7 @@ export default function MatchNotesScreen() {
                                                 {descriptor}
                                             </Text>
                                         </Pressable>
-                                        {shouldShowAd && adsReady && (
+                                        {shouldShowAd && adsReady && !isPremium &&  (
                                             <CollapsibleBannerAd
                                                 containerStyle={styles.descriptorListAd}
                                                 failureMessage={`Match descriptor banner after item ${index + 1} failed:`}

@@ -8,6 +8,7 @@ import type { MatchDescription, MatchRating } from '../../types/matchNotes';
 import { serializeMatchDescription } from '../../types/matchNotes';
 import CollapsibleBannerAd from './collapsibleBannerAd';
 import StableCenteredModalFrame from './stableCenteredModalFrame';
+import { usePremium } from '../../contexts/PremiumContext';
 
 const SWIPE_ACTION_HEIGHT = 44;
 const SWIPE_ACTION_GAP = 12;
@@ -35,6 +36,7 @@ type SavedCardProps = {
 
 export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, gender, weight, savedScores, rating, description, fightDate, onDelete}: SavedCardProps) {
     const router = useRouter();
+    const { isPremium } = usePremium();
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const swipeOffset = useSharedValue(0);
     const swipeStartOffset = useSharedValue(0);
@@ -277,7 +279,7 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
                                 <Text style={styles.confirmDeleteText}>Delete</Text>
                             </Pressable>
                         </View>
-                        {deleteModalVisible && (
+                        {deleteModalVisible && !isPremium && (
                             <CollapsibleBannerAd
                                 containerStyle={styles.deleteAdPositioner}
                                 failureMessage="Landscape delete scorecard banner failed:"

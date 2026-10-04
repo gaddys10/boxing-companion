@@ -1134,7 +1134,7 @@ const styles = StyleSheet.create({
         fontSize: 9,
         lineHeight: 11,
         fontWeight: '800',
-        marginLeft: 1.5
+        marginLeft: 2,
     },
     brandScoreBar: {
         backgroundColor: RED,

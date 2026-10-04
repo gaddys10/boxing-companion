@@ -8,6 +8,8 @@ import { Ionicons, MaterialCommunityIcons} from '@expo/vector-icons';
 import { Image as ExpoImage } from 'expo-image';
 import CollapsibleBannerAd from './collapsibleBannerAd';
 import StableCenteredModalFrame from './stableCenteredModalFrame';
+import { usePremium } from '../../contexts/PremiumContext';
+
 
 const SWIPE_ACTIONS_HEIGHT = 85;
 const SWIPE_ACTIONS_BOTTOM = 5;
@@ -83,6 +85,7 @@ export default function LandscapeRoundRow({
     onSaveRound,
     onConfirmStoppage,
 }: RoundRowProps) {
+    const { isPremium } = usePremium();
     const swipeOffset = useSharedValue(0);
     const swipeStartOffset = useSharedValue(0);
     const plusMinusNumber = plusMinus && plusMinus !== '-' ? Number(plusMinus) : null;
@@ -105,6 +108,7 @@ export default function LandscapeRoundRow({
     const [quickRightKds, setQuickRightKds] = useState(0);
     const [quickLeftPen, setQuickLeftPen] = useState(0);
     const [quickRightPen, setQuickRightPen] = useState(0);
+    
 
     const openQuickScoring = () => {
         setQuickLeftScore(Number(leftScore ?? 10) + (isQuickScore ? Number(leftPen ?? 0) + Number(rightKds ?? 0) : 0));
@@ -543,7 +547,7 @@ export default function LandscapeRoundRow({
                                         <Text style={styles.saveButtonText}>Save Round</Text>
                                     </Pressable>
                                 </View>
-                                {scoringModalVisible && quickScoringVisible && (
+                                {scoringModalVisible && quickScoringVisible && !isPremium && (
                                     <CollapsibleBannerAd
                                         containerStyle={styles.quickScoringAdPositioner}
                                         failureMessage="Landscape quick scoring banner failed:"
@@ -635,7 +639,7 @@ export default function LandscapeRoundRow({
                                 <Text style={styles.stoppageConfirmButtonText}>Confirm</Text>
                             </Pressable>
                         </View>
-                        {stoppageModalVisible && (
+                        {stoppageModalVisible && !isPremium && (
                             <CollapsibleBannerAd
                                 containerStyle={styles.stoppageAdPositioner}
                                 failureMessage="Landscape match info stoppage banner failed:"

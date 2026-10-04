@@ -8,6 +8,7 @@ import type { MatchDescription, MatchRating } from '../../types/matchNotes';
 import { serializeMatchDescription } from '../../types/matchNotes';
 import CollapsibleBannerAd from './collapsibleBannerAd';
 import StableCenteredModalFrame from './stableCenteredModalFrame';
+import { usePremium } from '../../contexts/PremiumContext';
 
 type SavedCardProps = {
   id: number;
@@ -31,6 +32,7 @@ type SavedCardProps = {
 
 export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, savedScores, rating, description, weight, gender, fightDate, onDelete}: SavedCardProps) {
   const router = useRouter();
+  const { isPremium } = usePremium();
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const swipeableRef = useRef<Swipeable | null>(null);
   const displayedFighter1Score = fighter1Score === '' || fighter1Score === '-' || fighter1Score == null ? 0 : fighter1Score;
@@ -244,7 +246,7 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
                 <Text style={styles.confirmDeleteText}>Delete</Text>
               </Pressable>
             </View>
-            {deleteModalVisible && (
+            {deleteModalVisible && !isPremium && (
               <CollapsibleBannerAd
                 containerStyle={styles.deleteAdPositioner}
                 failureMessage="Delete scorecard banner failed:"

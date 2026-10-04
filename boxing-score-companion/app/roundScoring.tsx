@@ -9,11 +9,13 @@ import { Image as ExpoImage } from 'expo-image';
 import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 import CollapsibleBannerAd from './components/collapsibleBannerAd';
 import StableCenteredModalFrame from './components/stableCenteredModalFrame';
+import { usePremium } from '../contexts/PremiumContext';
 
 const PORTRAIT_ACTION_CONTROL_HEIGHT = 60;
 
 export default function RoundScoringScreen() {
     const router = useRouter();
+    const { isPremium } = usePremium();
     const params = useLocalSearchParams();
     const scoringOrientation = Array.isArray(params.scoringOrientation)
         ? params.scoringOrientation[0]
@@ -869,7 +871,7 @@ export default function RoundScoringScreen() {
                                 <Text style={styles.stoppageConfirmButtonText}>Confirm</Text>
                             </Pressable>
                         </View>
-                        {stoppageModalVisible && (
+                        {stoppageModalVisible && !isPremium && (
                             <CollapsibleBannerAd
                                 containerStyle={styles.stoppageAdPositioner}
                                 failureMessage="Round scoring stoppage banner failed:"
