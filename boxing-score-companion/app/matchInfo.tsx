@@ -2,6 +2,7 @@ import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-rou
 import React, { useEffect, useState, useCallback } from 'react';
 import * as ScreenOrientation from 'expo-screen-orientation'
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import BlueScrollView from '../components/blue-scroll-view';
 import LandscapeRoundRow from './components/landscapeRoundRow';
 import RoundRow from './components/roundRow';
 import { useResponsiveLayout } from '../hooks/use-responsive-layout';
@@ -518,7 +519,7 @@ export default function MatchInfoScreen() {
 
                 {/* Portrait row container  */}
                 {!isLandscape ?
-                    <ScrollView style={[styles.rowContainer, { paddingHorizontal: horizontalGutter * 0.62, marginHorizontal: -horizontalGutter }]}>
+                    <BlueScrollView style={[styles.rowContainer, { paddingHorizontal: horizontalGutter * 0.62, marginHorizontal: -horizontalGutter }]}>
                         {Array.from({ length: parseInt(rounds as string) }).map((_, index) => {
                             const roundNumber = index + 1;
                             const roundScore = roundScores[roundNumber];
@@ -574,7 +575,7 @@ export default function MatchInfoScreen() {
                                 />
                             );
                         })}
-                    </ScrollView>
+                    </BlueScrollView>
                 :
                     <ScrollView
                         style={styles.landscapeRowContainer}

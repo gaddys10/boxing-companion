@@ -1,83 +1,95 @@
-import React, { useState } from 'react';
-import { Animated, Platform, StyleSheet, useAnimatedValue, View, type ScrollViewProps } from 'react-native';
+import React, { forwardRef } from 'react';
+import { Animated, Platform, StyleSheet, View, type ScrollView, type ScrollViewProps } from 'react-native';
+import BlueScrollIndicator, { useBlueScrollIndicator } from './blue-scroll-indicator';
 
-type BlueScrollViewProps = Pick<ScrollViewProps, 'children' | 'style' | 'contentContainerStyle'>;
-
-export default function BlueScrollView({ children, style, contentContainerStyle }: BlueScrollViewProps) {
-  const scrollOffset = useAnimatedValue(0);
-  const indicatorOpacity = useAnimatedValue(Platform.OS === 'web' ? 1 : 0);
-  const [viewportHeight, setViewportHeight] = useState(0);
-  const [contentHeight, setContentHeight] = useState(0);
-  const useNativeDriver = Platform.OS !== 'web';
-  const hasOverflow = viewportHeight > 0 && contentHeight > viewportHeight;
-  const thumbHeight = hasOverflow
-    ? Math.min(viewportHeight, Math.max(24, (viewportHeight * viewportHeight) / contentHeight))
-    : 0;
-  const translateY = scrollOffset.interpolate({
-    inputRange: [0, Math.max(1, contentHeight - viewportHeight)],
-    outputRange: [0, Math.max(0, viewportHeight - thumbHeight)],
-    extrapolate: 'clamp',
-  });
-
-  const showIndicator = () => {
-    indicatorOpacity.stopAnimation();
-    indicatorOpacity.setValue(1);
-  };
-
-  const hideIndicator = () => {
-    if (Platform.OS === 'web') return;
-    Animated.timing(indicatorOpacity, {
-      toValue: 0,
-      delay: 800,
-      duration: 250,
-      useNativeDriver,
-    }).start();
-  };
+const BlueScrollView = forwardRef<ScrollView, ScrollViewProps>(function BlueScrollView({
+  children,
+  style,
+  contentContainerStyle,
+  horizontal = false,
+  scrollEnabled = true,
+  showsVerticalScrollIndicator = true,
+  showsHorizontalScrollIndicator = true,
+  persistentScrollbar = false,
+  scrollEventThrottle = 16,
+  onLayout,
+  onContentSizeChange,
+  onScroll,
+  onScrollBeginDrag,
+  onScrollEndDrag,
+  onMomentumScrollBegin,
+  onMomentumScrollEnd,
+  ...scrollViewProps
+}, ref) {
+  const isHorizontal = horizontal === true;
+  const indicator = useBlueScrollIndicator({ horizontal: isHorizontal, persistent: persistentScrollbar });
+  const showIndicator = scrollEnabled && (isHorizontal ? showsHorizontalScrollIndicator : showsVerticalScrollIndicator);
+  const {
+    padding, paddingHorizontal, paddingVertical, paddingTop, paddingBottom,
+    paddingLeft, paddingRight, paddingStart, paddingEnd,
+    ...containerStyle
+  } = StyleSheet.flatten(style) ?? {};
 
   return (
-    <View style={style}>
+    <View style={[styles.container, containerStyle]}>
       <Animated.ScrollView
-        style={styles.scrollView}
+        {...scrollViewProps}
+        ref={ref}
+        style={[
+          styles.scrollView,
+          { padding, paddingHorizontal, paddingVertical, paddingTop, paddingBottom, paddingLeft, paddingRight, paddingStart, paddingEnd },
+        ]}
         contentContainerStyle={contentContainerStyle}
+        horizontal={horizontal}
+        scrollEnabled={scrollEnabled}
         showsVerticalScrollIndicator={false}
-        onLayout={(event) => setViewportHeight(event.nativeEvent.layout.height)}
-        onContentSizeChange={(_width, height) => setContentHeight(height)}
+        showsHorizontalScrollIndicator={false}
+        onLayout={(event) => {
+          indicator.onLayout(event);
+          onLayout?.(event);
+        }}
+        onContentSizeChange={(width, height) => {
+          indicator.onContentSizeChange(width, height);
+          onContentSizeChange?.(width, height);
+        }}
         onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollOffset } } }],
-          { useNativeDriver },
+          [{ nativeEvent: { contentOffset: { [isHorizontal ? 'x' : 'y']: indicator.scrollOffset } } }],
+          { useNativeDriver: Platform.OS !== 'web', listener: onScroll },
         )}
-        scrollEventThrottle={16}
-        onScrollBeginDrag={showIndicator}
-        onScrollEndDrag={hideIndicator}
-        onMomentumScrollBegin={showIndicator}
-        onMomentumScrollEnd={hideIndicator}
+        scrollEventThrottle={scrollEventThrottle}
+        onScrollBeginDrag={(event) => {
+          indicator.showIndicator();
+          onScrollBeginDrag?.(event);
+        }}
+        onScrollEndDrag={(event) => {
+          indicator.hideIndicator();
+          onScrollEndDrag?.(event);
+        }}
+        onMomentumScrollBegin={(event) => {
+          indicator.showIndicator();
+          onMomentumScrollBegin?.(event);
+        }}
+        onMomentumScrollEnd={(event) => {
+          indicator.hideIndicator();
+          onMomentumScrollEnd?.(event);
+        }}
       >
         {children}
       </Animated.ScrollView>
-      {hasOverflow && (
-        <Animated.View
-          pointerEvents="none"
-          style={[
-            styles.indicator,
-            { height: thumbHeight, opacity: indicatorOpacity, transform: [{ translateY }] },
-          ]}
-        />
-      )}
+      <BlueScrollIndicator {...indicator.indicatorProps} visible={showIndicator && indicator.indicatorProps.visible} />
     </View>
   );
-}
+});
+
+export default BlueScrollView;
 
 const styles = StyleSheet.create({
-  scrollView: {
-    flexGrow: 0,
+  container: {
+    flexGrow: 1,
     flexShrink: 1,
   },
-  indicator: {
-    backgroundColor: '#307FB6',
-    borderRadius: 2,
-    position: 'absolute',
-    right: 1,
-    top: 0,
-    width: 3,
+  scrollView: {
+    flexGrow: 1,
+    flexShrink: 1,
   },
 });

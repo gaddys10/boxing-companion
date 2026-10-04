@@ -11,6 +11,7 @@ import type { MatchDescription, MatchRating } from '../../types/matchNotes';
 import CollapsibleBannerAd from '../components/collapsibleBannerAd';
 import StableCenteredModalFrame from '../components/stableCenteredModalFrame';
 import BlueScrollView from '../../components/blue-scroll-view';
+import BlueTextInput from '../../components/blue-text-input';
 import mobileAds, {
   AdEventType,
   BannerAd,
@@ -537,7 +538,7 @@ export default function HomeScreen() {
           </ScrollView>
         }
         {!isLandscape &&
-          <ScrollView
+          <BlueScrollView
             style={[styles.savedCardContainer, { top: portraitCardsTop, bottom: Math.max(90 * sy, insets.bottom + 56) }]}
             contentContainerStyle={styles.savedCardContent}
             showsVerticalScrollIndicator={true}
@@ -573,7 +574,7 @@ export default function HomeScreen() {
             {adsReady && !isPremium &&  filteredCards.length <= 4 && (
               <IndexBannerAd />
             )}
-          </ScrollView>
+          </BlueScrollView>
         }
 
         {!isLandscape && (
@@ -679,7 +680,7 @@ export default function HomeScreen() {
                   <Text style={styles.feedbackInstructions}>
                     Write a message below. It will be sent directly to {FEEDBACK_RECIPIENT}.
                   </Text>
-                  <TextInput
+                  <BlueTextInput
                     style={styles.feedbackInput}
                     value={feedbackMessage}
                     onChangeText={setFeedbackMessage}
@@ -721,7 +722,7 @@ export default function HomeScreen() {
                 <>
                   <Text style={styles.limitModalTitle}>About</Text>
 
-                  <ScrollView
+                  <BlueScrollView
                     style={styles.settingsPageContent}
                     contentContainerStyle={styles.settingsPageContentContainer}
                   >
@@ -772,7 +773,7 @@ export default function HomeScreen() {
                         ))}
                       </View>
                     ))}
-                  </ScrollView>
+                  </BlueScrollView>
 
                   <Pressable
                     style={[styles.limitModalButton, styles.limitBackButton]}
