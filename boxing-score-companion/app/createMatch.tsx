@@ -6,6 +6,9 @@ import { Modal, Pressable, Platform, ScrollView, StyleSheet, Text, TextInput, Vi
 import { StatusBar } from 'expo-status-bar';
 import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 import { normalizeMatchRating, parseMatchDescription, serializeMatchDescription } from '../types/matchNotes';
+import CollapsibleBannerAd from './components/collapsibleBannerAd';
+import StableCenteredModalFrame from './components/stableCenteredModalFrame';
+import { usePremium } from '../contexts/PremiumContext';
 
 type RoundScore = {
     left?: string;
@@ -21,6 +24,7 @@ type RoundScore = {
 
 export default function CreateMatch() {
     const router = useRouter();
+    const { isPremium } = usePremium();
     const params = useLocalSearchParams();
     const detailsMode = Array.isArray(params.detailsMode) ? params.detailsMode[0] : params.detailsMode;
     const isReviewBeforeShare = detailsMode === 'review-before-share';
@@ -380,7 +384,10 @@ export default function CreateMatch() {
                     },
                 ]}
                 keyboardShouldPersistTaps="handled"
-                scrollEnabled={!isLandscape}
+                scrollEnabled={false}
+                bounces={false}
+                alwaysBounceVertical={false}
+                overScrollMode="never"
                 showsVerticalScrollIndicator={false}
             >
 
@@ -897,6 +904,7 @@ export default function CreateMatch() {
                 onRequestClose={() => setDiscardModalVisible(false)}
             >
                 <View style={styles.discardModalOverlay}>
+                    <StableCenteredModalFrame>
                     <View style={styles.discardModalCard}>
                         <Text style={styles.discardModalTitle}>
                             {isEditing ? 'Discard changes?' : 'Discard scorecard?'}
@@ -913,9 +921,15 @@ export default function CreateMatch() {
                             <Pressable style={[styles.discardModalButton, styles.keepEditingButton]} onPress={() => setDiscardModalVisible(false)}>
                                 <Text style={styles.keepEditingButtonText}>Keep Editing</Text>
                             </Pressable>
-                            
                         </View>
+                        {discardModalVisible && !isPremium && (
+                            <CollapsibleBannerAd
+                                containerStyle={styles.discardAdPositioner}
+                                failureMessage="Discard scorecard banner failed:"
+                            />
+                        )}
                     </View>
+                    </StableCenteredModalFrame>
                 </View>
             </Modal>
         </View>
@@ -962,6 +976,11 @@ const styles = StyleSheet.create({
     discardModalActions: {
         flexDirection: 'row',
         gap: 10,
+    },
+    discardAdPositioner: {
+        alignItems: 'center',
+        marginTop: 18,
+        width: '100%',
     },
     discardModalButton: {
         alignItems: 'center',
@@ -1685,7 +1704,8 @@ portraitGenderPill: {
     },
     titleContainer: {
         backgroundColor: '#307fb6',
-        height: '7%',
+        minHeight: 36,
+        paddingBottom: 8,
         width: '115%',
         justifyContent: 'center',
         alignItems: 'center',
@@ -1697,10 +1717,10 @@ portraitGenderPill: {
     // LANDSCAPE STYLES
     landscapeTitleContainer: {
         backgroundColor: '#307fb6',
-        height: '9.5%',
+        minHeight: 52,
         width: '100%',
-        justifyContent: 'flex-end',
-        paddingBottom: '1%',
+        justifyContent: 'center',
+        paddingBottom: 8,
         alignItems: 'center',
         borderBottomLeftRadius: 20,
         borderBottomRightRadius: 20,

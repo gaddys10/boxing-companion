@@ -1,11 +1,14 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 
 import { useRouter } from 'expo-router';
 import type { MatchDescription, MatchRating } from '../../types/matchNotes';
 import { serializeMatchDescription } from '../../types/matchNotes';
+import CollapsibleBannerAd from './collapsibleBannerAd';
+import StableCenteredModalFrame from './stableCenteredModalFrame';
+import { usePremium } from '../../contexts/PremiumContext';
 
 type SavedCardProps = {
   id: number;
@@ -22,19 +25,16 @@ type SavedCardProps = {
   rating?: MatchRating;
   description?: MatchDescription;
   onDelete: (id: number) => void;
-  scrollY?: number;
-  viewportHeight?: number;
   weight?: number | '200+';
   fightDate?: string;
   gender?: "idk" | "mens" | "womens";
 }
 
-export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, savedScores, rating, description, weight, gender, fightDate, onDelete, scrollY = 0, viewportHeight = 0}: SavedCardProps) {
+export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, savedScores, rating, description, weight, gender, fightDate, onDelete}: SavedCardProps) {
   const router = useRouter();
+  const { isPremium } = usePremium();
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-  const [cardLayout, setCardLayout] = useState<{ y: number; height: number } | null>(null);
   const swipeableRef = useRef<Swipeable | null>(null);
-  const fadeAnim = useRef(new Animated.Value(1)).current;
   const displayedFighter1Score = fighter1Score === '' || fighter1Score === '-' || fighter1Score == null ? 0 : fighter1Score;
   const displayedFighter2Score = fighter2Score === '' || fighter2Score === '-' || fighter2Score == null ? 0 : fighter2Score;
 
@@ -131,47 +131,9 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
     </Pressable>
   );
 
-  useEffect(() => {
-    const viewportStart = scrollY;
-    const viewportEnd = viewportStart + viewportHeight;
-    const cardTop = cardLayout?.y ?? 0;
-    const cardHeight = cardLayout?.height ?? 0;
-    const cardBottom = cardTop + cardHeight;
-    const fadeDistance = 70;
-
-    let nextOpacity = 1;
-
-    if (!cardHeight || !viewportHeight) {
-      nextOpacity = 1;
-    } else if (cardBottom <= viewportStart || cardTop >= viewportEnd) {
-      nextOpacity = 0;
-    } else if (cardTop < viewportStart) {
-      const progress = Math.min(1, (viewportStart - cardTop) / fadeDistance);
-      nextOpacity = 1 - progress;
-    } else if (cardBottom > viewportEnd) {
-      const progress = Math.min(1, (cardBottom - viewportEnd) / fadeDistance);
-      nextOpacity = 1 - progress;
-    }
-
-    Animated.timing(fadeAnim, {
-      toValue: nextOpacity,
-      duration: 30,
-      useNativeDriver: true,
-    }).start();
-  }, [cardLayout, fadeAnim, scrollY, viewportHeight]);
-
   return (
     <>
-    
-      <Animated.View
-        onLayout={(event) => {
-          setCardLayout({
-            y: event.nativeEvent.layout.y,
-            height: event.nativeEvent.layout.height,
-          });
-        }}
-        style={[styles.swipeRow, { opacity: fadeAnim }]}
-      >
+      <View style={styles.swipeRow}>
         <View style={styles.savedCardShadow}>
         <Swipeable
           ref={swipeableRef}
@@ -262,7 +224,7 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
         </Pressable>
         </Swipeable>
         </View>
-      </Animated.View>
+      </View>
       <Modal
         animationType="fade"
         transparent
@@ -270,6 +232,7 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
         onRequestClose={() => setDeleteModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
+          <StableCenteredModalFrame>
           <View style={styles.deleteModal}>
             <Text style={styles.modalTitle}>Delete scorecard?</Text>
             <Text style={styles.modalText}>
@@ -283,7 +246,14 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
                 <Text style={styles.confirmDeleteText}>Delete</Text>
               </Pressable>
             </View>
+            {deleteModalVisible && !isPremium && (
+              <CollapsibleBannerAd
+                containerStyle={styles.deleteAdPositioner}
+                failureMessage="Delete scorecard banner failed:"
+              />
+            )}
           </View>
+          </StableCenteredModalFrame>
         </View>
       </Modal>
     </>
@@ -601,6 +571,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     justifyContent: 'center',
+  },
+  deleteAdPositioner: {
+    alignItems: 'center',
+    marginTop: 18,
+    width: '100%',
   },
   modalButton: {
     minWidth: 88,

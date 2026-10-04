@@ -5,6 +5,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useEffect } from 'react';
 import { Asset } from 'expo-asset';
+import { PremiumProvider } from '@/contexts/PremiumContext';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -46,35 +47,37 @@ export default function RootLayout() {
   // }, [pathname]);
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack screenOptions={{ gestureEnabled: false, fullScreenGestureEnabled: false }}>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="createMatch" options={{ animationTypeForReplace: 'pop', orientation: 'default', }} />
-          <Stack.Screen name="matchInfo" options={{ animationTypeForReplace: 'push', orientation: 'default', }} />
-          <Stack.Screen name="matchNotes" options={{ animationTypeForReplace: 'push', orientation: 'default', }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal',  title: 'Modal' }} />
-          <Stack.Screen
-            name="roundScoring"
-            options={({ route }) => {
-              const params = route.params as
-                | { scoringOrientation?: 'portrait' | 'landscape' }
-                | undefined;
+    <PremiumProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Stack screenOptions={{ gestureEnabled: false, fullScreenGestureEnabled: false }}>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="createMatch" options={{ animationTypeForReplace: 'pop', orientation: 'default', }} />
+            <Stack.Screen name="matchInfo" options={{ animationTypeForReplace: 'push', orientation: 'default', }} />
+            <Stack.Screen name="matchNotes" options={{ animationTypeForReplace: 'push', orientation: 'default', }} />
+            <Stack.Screen name="modal" options={{ presentation: 'modal',  title: 'Modal' }} />
+            <Stack.Screen
+              name="roundScoring"
+              options={({ route }) => {
+                const params = route.params as
+                  | { scoringOrientation?: 'portrait' | 'landscape' }
+                  | undefined;
 
-              return {
-                headerShown: false,
-                orientation:
-                  params?.scoringOrientation === 'portrait'
-                    ? 'portrait'
-                    : 'landscape',
-                animation: 'fade',
-                animationDuration: 200,
-              };
-            }}
-          />
-        </Stack>
-        {/* <StatusBar style="auto" /> */}
-      </ThemeProvider>
-    </GestureHandlerRootView>
+                return {
+                  headerShown: false,
+                  orientation:
+                    params?.scoringOrientation === 'portrait'
+                      ? 'portrait'
+                      : 'landscape',
+                  animation: 'fade',
+                  animationDuration: 200,
+                };
+              }}
+            />
+          </Stack>
+          {/* <StatusBar style="auto" /> */}
+        </ThemeProvider>
+      </GestureHandlerRootView>
+    </PremiumProvider>
   );
 }

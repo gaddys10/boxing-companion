@@ -6,6 +6,10 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Ionicons, MaterialCommunityIcons} from '@expo/vector-icons';
 import { Image as ExpoImage } from 'expo-image';
+import CollapsibleBannerAd from './collapsibleBannerAd';
+import StableCenteredModalFrame from './stableCenteredModalFrame';
+import { usePremium } from '../../contexts/PremiumContext';
+
 
 const SWIPE_ACTIONS_HEIGHT = 85;
 const SWIPE_ACTIONS_BOTTOM = 5;
@@ -49,7 +53,6 @@ type RoundRowProps = {
         rightKnockdowns: string;
         scoringMethod: 'quick' | 'full';
     }) => void;
-    onMarkStoppage: (roundNumber: number, reason: 'KO' | 'TKO' | 'DQ' | 'NC') => void;
     onConfirmStoppage: (roundNumber: number, reason: 'KO' | 'TKO' | 'DQ' | 'NC', winner?: string) => void;
 };
 
@@ -80,9 +83,9 @@ export default function LandscapeRoundRow({
     isAfterStoppage,
     onClearRound,
     onSaveRound,
-    onMarkStoppage,
     onConfirmStoppage,
 }: RoundRowProps) {
+    const { isPremium } = usePremium();
     const swipeOffset = useSharedValue(0);
     const swipeStartOffset = useSharedValue(0);
     const plusMinusNumber = plusMinus && plusMinus !== '-' ? Number(plusMinus) : null;
@@ -97,6 +100,7 @@ export default function LandscapeRoundRow({
     const [quickScoringVisible, setQuickScoringVisible] = useState(false);
     const [orientationChoiceVisible, setOrientationChoiceVisible] = useState(false);
     const [stoppageModalVisible, setStoppageModalVisible] = useState(false);
+    const [draftStoppageReason, setDraftStoppageReason] = useState<RoundRowProps['stoppageReason']>(stoppageReason);
     const [selectedStoppageWinner, setSelectedStoppageWinner] = useState<string | undefined>(stoppageWinner);
     const [quickLeftScore, setQuickLeftScore] = useState(10);
     const [quickRightScore, setQuickRightScore] = useState(10);
@@ -104,6 +108,7 @@ export default function LandscapeRoundRow({
     const [quickRightKds, setQuickRightKds] = useState(0);
     const [quickLeftPen, setQuickLeftPen] = useState(0);
     const [quickRightPen, setQuickRightPen] = useState(0);
+    
 
     const openQuickScoring = () => {
         setQuickLeftScore(Number(leftScore ?? 10) + (isQuickScore ? Number(leftPen ?? 0) + Number(rightKds ?? 0) : 0));
@@ -119,6 +124,12 @@ export default function LandscapeRoundRow({
         setScoringModalVisible(false);
         setQuickScoringVisible(false);
         setOrientationChoiceVisible(false);
+    };
+
+    const cancelStoppageChanges = () => {
+        setDraftStoppageReason(stoppageReason);
+        setSelectedStoppageWinner(stoppageWinner);
+        setStoppageModalVisible(false);
     };
 
     const startFullScoring = async (orientationLock: ScreenOrientation.OrientationLock) => {
@@ -232,6 +243,7 @@ export default function LandscapeRoundRow({
                 style={styles.stoppageAction}
                 onPress={() => {
                     closeSwipeActions();
+                    setDraftStoppageReason(stoppageReason);
                     setSelectedStoppageWinner(stoppageWinner);
                     setStoppageModalVisible(true);
                 }}
@@ -393,6 +405,9 @@ export default function LandscapeRoundRow({
                 onRequestClose={closeScoringModal}
             >
                 <View style={styles.modalOverlay}>
+                    <StableCenteredModalFrame
+                        key={quickScoringVisible ? 'quick' : orientationChoiceVisible ? 'orientation' : 'method'}
+                    >
                     <View style={styles.scoringModal}>
                         {orientationChoiceVisible ? (
                             <>
@@ -522,16 +537,26 @@ export default function LandscapeRoundRow({
                                     ))}
                                 </View>
                                 <View style={styles.quickModalActions}>
-                                    <Pressable style={[styles.modalButton, styles.backButton]} onPress={() => setQuickScoringVisible(false)}>
+                                    <Pressable
+                                        style={[styles.modalButton, styles.backButton]}
+                                        onPress={() => setQuickScoringVisible(false)}
+                                    >
                                         <Text style={styles.backButtonText}>Back</Text>
                                     </Pressable>
                                     <Pressable style={[styles.modalButton, styles.saveButton]} onPress={saveQuickScore}>
                                         <Text style={styles.saveButtonText}>Save Round</Text>
                                     </Pressable>
                                 </View>
+                                {scoringModalVisible && quickScoringVisible && !isPremium && (
+                                    <CollapsibleBannerAd
+                                        containerStyle={styles.quickScoringAdPositioner}
+                                        failureMessage="Landscape quick scoring banner failed:"
+                                    />
+                                )}
                             </>
                         )}
                     </View>
+                    </StableCenteredModalFrame>
                 </View>
             </Modal>
             <Modal
@@ -539,9 +564,10 @@ export default function LandscapeRoundRow({
                 transparent
                 visible={stoppageModalVisible}
                 supportedOrientations={['landscape', 'landscape-left', 'landscape-right']}
-                onRequestClose={() => setStoppageModalVisible(false)}
+                onRequestClose={cancelStoppageChanges}
             >
                 <View style={styles.stoppageModalOverlay}>
+                    <StableCenteredModalFrame>
                     <View style={styles.stoppageModalCard}>
                         <Text style={styles.stoppageModalTitle}>Mark Stoppage</Text>
                         <Text style={[styles.stoppageModalText, { textAlign: 'center' }]}>Select why the fight was stopped.</Text>
@@ -550,13 +576,13 @@ export default function LandscapeRoundRow({
                                 {(['KO', 'TKO', 'DQ', 'NC'] as const).map((option) => (
                                     <Pressable
                                         key={option}
-                                        style={[styles.stoppageOption, stoppageReason === option && styles.selectedStoppageOption]}
+                                        style={[styles.stoppageOption, draftStoppageReason === option && styles.selectedStoppageOption]}
                                         onPress={() => {
-                                            onMarkStoppage(roundNumber, option);
+                                            setDraftStoppageReason(option);
                                             setSelectedStoppageWinner(undefined);
                                         }}
                                     >
-                                        <Text style={[styles.stoppageOptionText, stoppageReason === option && styles.selectedStoppageOptionText]}>{option}</Text>
+                                        <Text style={[styles.stoppageOptionText, draftStoppageReason === option && styles.selectedStoppageOptionText]}>{option}</Text>
                                     </Pressable>
                                 ))}
                             </View>
@@ -575,7 +601,7 @@ export default function LandscapeRoundRow({
                                 ))}
                             </View> */}
                         </View>
-                        {(stoppageReason === 'KO' || stoppageReason === 'TKO' || stoppageReason === 'DQ') && (
+                        {(draftStoppageReason === 'KO' || draftStoppageReason === 'TKO' || draftStoppageReason === 'DQ') && (
                             <>
                                 <Text style={[styles.stoppageModalText, { textAlign: 'center', marginTop: '10%' }]}>Who won the fight?</Text>
                                 <View style={styles.stoppageWinnerOptions}>
@@ -592,20 +618,20 @@ export default function LandscapeRoundRow({
                             </>
                         )}
                         <View style={styles.stoppageModalActions}>
-                            <Pressable style={[styles.stoppageModalButton, styles.stoppageCancelButton]} onPress={() => setStoppageModalVisible(false)}>
+                            <Pressable style={[styles.stoppageModalButton, styles.stoppageCancelButton]} onPress={cancelStoppageChanges}>
                                 <Text style={styles.stoppageCancelButtonText}>Cancel</Text>
                             </Pressable>
                             <Pressable
                                 style={[styles.stoppageModalButton, styles.stoppageConfirmButton]}
                                 onPress={() => {
-                                    if (stoppageReason === 'NC') {
-                                        onConfirmStoppage(roundNumber, stoppageReason);
+                                    if (draftStoppageReason === 'NC') {
+                                        onConfirmStoppage(roundNumber, draftStoppageReason);
                                         setStoppageModalVisible(false);
                                     } else if (
                                         selectedStoppageWinner &&
-                                        (stoppageReason === 'KO' || stoppageReason === 'TKO' || stoppageReason === 'DQ')
+                                        (draftStoppageReason === 'KO' || draftStoppageReason === 'TKO' || draftStoppageReason === 'DQ')
                                     ) {
-                                        onConfirmStoppage(roundNumber, stoppageReason, selectedStoppageWinner);
+                                        onConfirmStoppage(roundNumber, draftStoppageReason, selectedStoppageWinner);
                                         setStoppageModalVisible(false);
                                     }
                                 }}
@@ -613,7 +639,14 @@ export default function LandscapeRoundRow({
                                 <Text style={styles.stoppageConfirmButtonText}>Confirm</Text>
                             </Pressable>
                         </View>
+                        {stoppageModalVisible && !isPremium && (
+                            <CollapsibleBannerAd
+                                containerStyle={styles.stoppageAdPositioner}
+                                failureMessage="Landscape match info stoppage banner failed:"
+                            />
+                        )}
                     </View>
+                    </StableCenteredModalFrame>
                 </View>
             </Modal>
         </>
@@ -872,6 +905,11 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     stoppageModalActions: { flexDirection: 'row', justifyContent: 'space-around', marginTop: '10%', gap: 10 },
+    stoppageAdPositioner: {
+        alignItems: 'center',
+        marginTop: 18,
+        width: '100%',
+    },
     stoppageModalButton: { minWidth: 88, paddingVertical: 8, borderRadius: 8, alignItems: 'center' },
     stoppageCancelButton: {
         backgroundColor: '#d32f2f',
@@ -1063,7 +1101,6 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.5,
         shadowRadius: 8,
         width: '75%',
-        maxHeight: '90%'
     },
     quickCornerName: {
         fontSize: 13,
@@ -1108,6 +1145,11 @@ const styles = StyleSheet.create({
         gap: 10,
         justifyContent: 'center',
         marginTop: 18,
+    },
+    quickScoringAdPositioner: {
+        alignItems: 'center',
+        marginTop: 22,
+        width: '100%',
     },
     quickRightName: {
         color: '#1976D2',

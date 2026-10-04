@@ -1,10 +1,16 @@
 import React, {useState} from 'react';
-import { View, Text, Pressable, StyleSheet, Modal, Image } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Modal, Image, useWindowDimensions } from 'react-native';
 import { Image as ExpoImage } from 'expo-image';
 import { router } from 'expo-router';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { Swipeable } from 'react-native-gesture-handler';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import CollapsibleBannerAd from './collapsibleBannerAd';
+import StableCenteredModalFrame from './stableCenteredModalFrame';
+import { usePremium } from '../../contexts/PremiumContext';
+
+const SCORING_MODAL_AD_GAP = 30;
+const SCORING_MODAL_AD_FOOTPRINT = 50 + SCORING_MODAL_AD_GAP;
 
 type RoundRowProps = {
     roundNumber: number;
@@ -43,7 +49,6 @@ type RoundRowProps = {
         rightKnockdowns: string;
         scoringMethod: 'quick' | 'full';
     }) => void;
-    onMarkStoppage: (roundNumber: number, reason: 'KO' | 'TKO' | 'DQ' | 'NC') => void;
     onConfirmStoppage: (roundNumber: number, reason: 'KO' | 'TKO' | 'DQ' | 'NC', winner?: string) => void;
 };
 
@@ -74,9 +79,10 @@ export default function RoundRow({
     isAfterStoppage,
     onClearRound,
     onSaveRound,
-    onMarkStoppage,
     onConfirmStoppage,
 }: RoundRowProps) {
+    const { height: windowHeight } = useWindowDimensions();
+    const { isPremium } = usePremium();
     const swipeableRef = React.useRef<Swipeable | null>(null);
     const plusMinusNumber = plusMinus && plusMinus !== '-' ? Number(plusMinus) : null;
     const leftRoundScoreNumber = Number(leftScore);
@@ -90,6 +96,7 @@ export default function RoundRow({
     const [quickScoringVisible, setQuickScoringVisible] = useState(false);
     const [orientationChoiceVisible, setOrientationChoiceVisible] = useState(false);
     const [stoppageModalVisible, setStoppageModalVisible] = useState(false);
+    const [draftStoppageReason, setDraftStoppageReason] = useState<RoundRowProps['stoppageReason']>(stoppageReason);
     const [selectedStoppageWinner, setSelectedStoppageWinner] = useState<string | undefined>(stoppageWinner);
     const [quickLeftScore, setQuickLeftScore] = useState(10);
     const [quickRightScore, setQuickRightScore] = useState(10);
@@ -97,8 +104,16 @@ export default function RoundRow({
     const [quickRightKds, setQuickRightKds] = useState(0);
     const [quickLeftPen, setQuickLeftPen] = useState(0);
     const [quickRightPen, setQuickRightPen] = useState(0);
+    const [scoringFooterAdLoaded, setScoringFooterAdLoaded] = useState(false);
+
+    const selectScoringModalHeight = Math.max(
+        400,
+        (windowHeight * 0.86) - (isPremium ||scoringFooterAdLoaded ? 0 : SCORING_MODAL_AD_FOOTPRINT),
+    );
+    const scoringChoiceHeight = Math.min(110, Math.max(72, windowHeight * 0.129));
 
     const openQuickScoring = () => {
+        setScoringFooterAdLoaded(false);
         setQuickLeftScore(Number(leftScore ?? 10) + (isQuickScore ? Number(leftPen ?? 0) + Number(rightKds ?? 0) : 0));
         setQuickRightScore(Number(rightScore ?? 10) + (isQuickScore ? Number(rightPen ?? 0) + Number(leftKds ?? 0) : 0));
         setQuickLeftKds(Number(leftKds ?? 0));
@@ -109,7 +124,14 @@ export default function RoundRow({
     };
 
     const openFullScoring = () => {
+        setScoringFooterAdLoaded(false);
         setOrientationChoiceVisible(true);
+    };
+
+    const cancelStoppageChanges = () => {
+        setDraftStoppageReason(stoppageReason);
+        setSelectedStoppageWinner(stoppageWinner);
+        setStoppageModalVisible(false);
     };
 
     const startFullScoring = async (
@@ -140,6 +162,7 @@ export default function RoundRow({
     };
 
     const closeScoringModal = () => {
+        setScoringFooterAdLoaded(false);
         setScoringModalVisible(false);
         setQuickScoringVisible(false);
         setOrientationChoiceVisible(false);
@@ -211,6 +234,7 @@ export default function RoundRow({
                 style={styles.stoppageAction}
                 onPress={() => {
                     swipeableRef.current?.close();
+                    setDraftStoppageReason(stoppageReason);
                     setSelectedStoppageWinner(stoppageWinner);
                     setStoppageModalVisible(true);
                 }}
@@ -266,7 +290,10 @@ export default function RoundRow({
                     ) : (
                         <Pressable
                             style={styles.button}
-                            onPress={() => setScoringModalVisible(true)}
+                            onPress={() => {
+                                setScoringFooterAdLoaded(false);
+                                setScoringModalVisible(true);
+                            }}
                         >
                             <MaterialCommunityIcons name="pencil" size={20} color="#333A3F" />
                         </Pressable>
@@ -314,15 +341,24 @@ export default function RoundRow({
                 onRequestClose={closeScoringModal}
             >
                 <View style={styles.modalOverlay}>
-                    <View style={quickScoringVisible ? styles.portraitQuickModal : styles.selectScoringModal}>
+                    <StableCenteredModalFrame
+                        key={quickScoringVisible ? 'quick' : orientationChoiceVisible ? 'orientation' : 'method'}
+                    >
+                    <View
+                        style={
+                            quickScoringVisible
+                                ? styles.portraitQuickModal
+                                : [styles.selectScoringModal, { height: selectScoringModalHeight }]
+                        }
+                    >
                         {orientationChoiceVisible ? (
                             <>
                                 <Text style={styles.modalTitle}>Choose Full Scoring Orientation</Text>
-                                <Text style={[styles.modalText, styles.orientationPrompt]}>How would you like to score this round?</Text>
+                                {/* <Text style={[styles.modalText, styles.orientationPrompt]}>How would you like to score this round?</Text> */}
                                 <Pressable
                                     accessibilityRole="button"
                                     accessibilityLabel="Score in portrait mode"
-                                    style={styles.quickScoring}
+                                    style={[styles.quickScoring, { height: scoringChoiceHeight }]}
                                     onPress={() => startFullScoring(ScreenOrientation.OrientationLock.PORTRAIT_UP)}
                                 >
                                     <View style={styles.orientationImageSlot}>
@@ -336,10 +372,13 @@ export default function RoundRow({
                                     </View>
                                     <Text style={[styles.quickScoringText, styles.orientationChoiceText]}>Portrait</Text>
                                 </Pressable>
+                                <Text style={[styles.modalText, styles.orientationPrompt]}>
+                                    Score the round with momentum tracking using a single hand.
+                                </Text>
                                 <Pressable
                                     accessibilityRole="button"
                                     accessibilityLabel="Score in landscape mode"
-                                    style={styles.fullScoring}
+                                    style={[styles.fullScoring, { height: scoringChoiceHeight }]}
                                     onPress={() => startFullScoring(ScreenOrientation.OrientationLock.LANDSCAPE)}
                                 >
                                     <View style={styles.orientationImageSlot}>
@@ -354,29 +393,55 @@ export default function RoundRow({
                                     <Text style={[styles.quickScoringText, styles.orientationChoiceText]}>Landscape</Text>
                                 </Pressable>
                                 <Text style={[styles.modalText, styles.orientationPrompt]}>
-                                    Orientation lock will be active while on the round scoring screen.
+                                    Recommended way to score rounds with momentum tracking using the Boxing Score Companion.
                                 </Text>
+                                <Ionicons
+                                    name="alert-circle-outline"
+                                    size={28}
+                                    color="#D99B28"
+                                    style={styles.orientationLockIcon}
+                                    accessibilityLabel="Important note"
+                                />
+                                <Text style={[styles.modalText, styles.orientationPrompt, styles.orientationLockNotice]}>
+                                    <Text style={styles.orientationLockUnderline}>Orientation lock</Text>{' '}
+                                    will be ACTIVE while on the round scoring screen.
+                                </Text>
+                                <View style={styles.scoringModalFooter}>
                                 <View style={styles.modalActions}>
                                     <Pressable
                                         accessibilityRole="button"
                                         accessibilityLabel="Back to scoring method selection"
-                                        style={[styles.modalButton, styles.cancelButton]}
-                                        onPress={() => setOrientationChoiceVisible(false)}
+                                        style={[styles.modalButton, styles.cancelButton, styles.scoringFooterButton]}
+                                        onPress={() => {
+                                            setScoringFooterAdLoaded(false);
+                                            setOrientationChoiceVisible(false);
+                                        }}
                                     >
                                         <Text style={styles.cancelButtonText}>Back</Text>
                                     </Pressable>
+                                </View>
+                                {scoringModalVisible && !isPremium && (
+                                    <CollapsibleBannerAd
+                                        containerStyle={styles.scoringMethodAdPositioner}
+                                        failureMessage="Score orientation banner failed:"
+                                        onLoadStateChange={setScoringFooterAdLoaded}
+                                    />
+                                )}
                                 </View>
                             </>
                         ) : !quickScoringVisible ? (
                             <>
                                 <Text style={styles.modalTitle}>Select Scoring Method</Text>
-                                <Pressable style={styles.quickScoring} onPress={openQuickScoring}>
+                                <Pressable
+                                    style={[styles.quickScoring, { height: scoringChoiceHeight }]}
+                                    onPress={openQuickScoring}
+                                >
                                     <Ionicons name="flash" size={46} color="#1976D2" style={styles.scoringMethodIcon} />
                                     <Text numberOfLines={1} style={[styles.quickScoringText, styles.scoringMethodText]}>Quick Scoring</Text>
                                 </Pressable>
                                 <Text style={[styles.modalText, {textAlign: 'center'}]}>Score the round in just a few taps.</Text>
                                 <Pressable 
-                                    style={styles.fullScoring}
+                                    style={[styles.fullScoring, { height: scoringChoiceHeight }]}
                                     // onPress={() => {
                                     //     closeScoringModal();
                                     //     router.push({
@@ -407,11 +472,20 @@ export default function RoundRow({
                                     Tap each side of the screen to track punches, pressure, and other meaningful moments throughout the round. {"\n"} {"\n"}
                                     Hold buttons to track knockdowns, deductions, and stoppages.
                                 </Text>
+                                <View style={[styles.scoringModalFooter, styles.scoringMethodFooter]}>
                                 <View style={styles.modalActions}>
-                                    <Pressable style={[styles.modalButton, styles.cancelButton]} onPress={closeScoringModal}>
+                                    <Pressable style={[styles.modalButton, styles.cancelButton, styles.scoringFooterButton]} onPress={closeScoringModal}>
                                         <Ionicons name="close" size={18} color="#fff" />
                                         <Text style={styles.cancelButtonText}>Cancel</Text>
                                     </Pressable>
+                                </View>
+                                {scoringModalVisible && !isPremium && (
+                                    <CollapsibleBannerAd
+                                        containerStyle={styles.scoringMethodAdPositioner}
+                                        failureMessage="Scoring method banner failed:"
+                                        onLoadStateChange={setScoringFooterAdLoaded}
+                                    />
+                                )}
                                 </View>
                             </>
                         ) : (
@@ -458,75 +532,89 @@ export default function RoundRow({
                                     </View>
                                 ))}
                                 <View style={styles.portraitQuickActions}>
-                                    <Pressable style={[styles.modalButton, styles.cancelButton, styles.portraitQuickActionButton]} onPress={() => setQuickScoringVisible(false)}>
+                                    <Pressable
+                                        style={[styles.modalButton, styles.cancelButton, styles.portraitQuickActionButton]}
+                                        onPress={() => {
+                                            setScoringFooterAdLoaded(false);
+                                            setQuickScoringVisible(false);
+                                        }}
+                                    >
                                         <Text style={styles.cancelButtonText}>Back</Text>
                                     </Pressable>
                                     <Pressable style={[styles.modalButton, styles.saveQuickButton, styles.portraitQuickActionButton]} onPress={saveQuickScore}>
                                         <Text style={styles.saveQuickButtonText}>Save Round</Text>
                                     </Pressable>
                                 </View>
+                                {scoringModalVisible && quickScoringVisible && !isPremium && (
+                                    <CollapsibleBannerAd
+                                        containerStyle={styles.quickScoringAdPositioner}
+                                        failureMessage="Quick scoring banner failed:"
+                                    />
+                                )}
                             </>
                         )}
                     </View>
+                    </StableCenteredModalFrame>
                 </View>
             </Modal>
             <Modal
                 animationType="fade"
                 transparent
                 visible={stoppageModalVisible}
-                onRequestClose={() => setStoppageModalVisible(false)}
+                onRequestClose={cancelStoppageChanges}
             >
                 <View style={styles.stoppageModalOverlay}>
+                    <StableCenteredModalFrame>
                     <View style={styles.stoppageModalCard}>
                         <Text style={styles.stoppageModalTitle}>Mark Stoppage</Text>
                         <Text style={[styles.stoppageModalText, {textAlign: 'center'}]}>Select why the fight was stopped.</Text>
                         <View style={styles.stoppageOptions}>
                             <View style={styles.stoppageOptionTopRow}>
                                 <Pressable
-                                        style={[styles.stoppageOption, stoppageReason === 'KO' && styles.selectedStoppageOption]}
+                                        style={[styles.stoppageOption, draftStoppageReason === 'KO' && styles.selectedStoppageOption]}
                                         onPress={() => {
-                                            onMarkStoppage(roundNumber, 'KO');
+                                            setDraftStoppageReason('KO');
                                             setSelectedStoppageWinner(undefined);
                                             // setStoppageModalVisible(false);
                                         }}
                                     >
-                                        <Text style={[styles.stoppageOptionText, stoppageReason === "KO" && styles.selectedStoppageOptionText]}>KO</Text>
+                                        <Text style={[styles.stoppageOptionText, draftStoppageReason === "KO" && styles.selectedStoppageOptionText]}>KO</Text>
                                 </Pressable>
                                     <Pressable
-                                        style={[styles.stoppageOption, stoppageReason === 'TKO' && styles.selectedStoppageOption]}
+                                        style={[styles.stoppageOption, draftStoppageReason === 'TKO' && styles.selectedStoppageOption]}
                                         onPress={() => {
-                                            onMarkStoppage(roundNumber, 'TKO');
+                                            setDraftStoppageReason('TKO');
                                             setSelectedStoppageWinner(undefined);
                                             // setStoppageModalVisible(false);
                                         }}
                                     >
-                                        <Text style={[styles.stoppageOptionText, stoppageReason === "TKO" && styles.selectedStoppageOptionText]}>TKO</Text>
+                                        <Text style={[styles.stoppageOptionText, draftStoppageReason === "TKO" && styles.selectedStoppageOptionText]}>TKO</Text>
                                 </Pressable>
                             </View>
                             <View style={styles.stoppageOptionBottomRow}>
                                 <Pressable
-                                        style={[styles.stoppageOption, stoppageReason === 'DQ' && styles.selectedStoppageOption]}
+                                        style={[styles.stoppageOption, draftStoppageReason === 'DQ' && styles.selectedStoppageOption]}
                                         onPress={() => {
-                                            onMarkStoppage(roundNumber, 'DQ');
+                                            setDraftStoppageReason('DQ');
                                             setSelectedStoppageWinner(undefined);
                                             // setStoppageModalVisible(false);
                                         }}
                                     >
-                                        <Text style={[styles.stoppageOptionText, stoppageReason === "DQ" && styles.selectedStoppageOptionText]}>DQ</Text>
+                                        <Text style={[styles.stoppageOptionText, draftStoppageReason === "DQ" && styles.selectedStoppageOptionText]}>DQ</Text>
                                 </Pressable>
                                     <Pressable
-                                        style={[styles.stoppageOption, stoppageReason === 'NC' && styles.selectedStoppageOption]}
+                                        style={[styles.stoppageOption, draftStoppageReason === 'NC' && styles.selectedStoppageOption]}
                                         onPress={() => {
-                                            onMarkStoppage(roundNumber, 'NC');
+                                            setDraftStoppageReason('NC');
                                             setSelectedStoppageWinner(undefined);
                                             // setStoppageModalVisible(false);
                                         }}
                                     >
-                                        <Text style={[styles.stoppageOptionText, stoppageReason === "NC" && styles.selectedStoppageOptionText]}>NC</Text>
+                                        <Text style={[styles.stoppageOptionText, draftStoppageReason === "NC" && styles.selectedStoppageOptionText]}>NC</Text>
                                 </Pressable>
                             </View>
                         </View>
-                        {(stoppageReason === 'KO' || stoppageReason === 'TKO' || stoppageReason === 'DQ') && (
+                        {(draftStoppageReason === 'KO' || draftStoppageReason === 'TKO' || draftStoppageReason === 'DQ') && (
                             <>
                                 <Text style={[styles.stoppageModalText, {textAlign: 'center'}, {marginTop: '10%'}]}>Who won the fight?</Text>
                                 <View style={styles.stoppageWinnerOptions}>
@@ -546,20 +634,20 @@ export default function RoundRow({
                             </>
                         )}
                         <View style={styles.stoppageModalActions}>
-                            <Pressable style={[styles.stoppageModalButton, styles.stoppageCancelButton]} onPress={() => setStoppageModalVisible(false)}>
+                            <Pressable style={[styles.stoppageModalButton, styles.stoppageCancelButton]} onPress={cancelStoppageChanges}>
                                 <Text style={styles.stoppageCancelButtonText}>Cancel</Text>
                             </Pressable>
                             <Pressable
                                 style={[styles.stoppageModalButton, styles.stoppageConfirmButton]}
                                 onPress={() => {
-                                    if (stoppageReason === 'NC') {
-                                        onConfirmStoppage(roundNumber, stoppageReason);
+                                    if (draftStoppageReason === 'NC') {
+                                        onConfirmStoppage(roundNumber, draftStoppageReason);
                                         setStoppageModalVisible(false);
                                     } else if (
                                         selectedStoppageWinner &&
-                                        (stoppageReason === 'KO' || stoppageReason === 'TKO' || stoppageReason === 'DQ')
+                                        (draftStoppageReason === 'KO' || draftStoppageReason === 'TKO' || draftStoppageReason === 'DQ')
                                     ) {
-                                        onConfirmStoppage(roundNumber, stoppageReason, selectedStoppageWinner);
+                                        onConfirmStoppage(roundNumber, draftStoppageReason, selectedStoppageWinner);
                                         setStoppageModalVisible(false);
                                     }
                                 }}
@@ -567,7 +655,14 @@ export default function RoundRow({
                                 <Text style={styles.stoppageConfirmButtonText}>Confirm</Text>
                             </Pressable>
                         </View>
+                        {stoppageModalVisible && !isPremium && (
+                            <CollapsibleBannerAd
+                                containerStyle={styles.stoppageAdPositioner}
+                                failureMessage="Match info stoppage banner failed:"
+                            />
+                        )}
                     </View>
+                    </StableCenteredModalFrame>
                 </View>
             </Modal>
         </>
@@ -625,6 +720,11 @@ const styles = StyleSheet.create({
         justifyContent: 'space-around',
         marginTop: '10%',
         gap: 10
+    },
+    stoppageAdPositioner: {
+        alignItems: 'center',
+        marginTop: 18,
+        width: '100%',
     },
     stoppageModalButton: {
         minWidth: 88,
@@ -707,7 +807,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         flexDirection: 'row',
         gap: 8,
-        height: '15%',
         borderRadius: 15,
         justifyContent: 'center',
         alignItems: 'center',
@@ -758,7 +857,6 @@ const styles = StyleSheet.create({
     portraitQuickModal: {
         width: '100%',
         maxWidth: 360,
-        maxHeight: '90%',
         backgroundColor: '#fff',
         borderRadius: 12,
         padding: 20,
@@ -800,7 +898,7 @@ const styles = StyleSheet.create({
         color: '#1976D2',
     },
     portraitQuickEventSection: {
-        marginBottom: 16,
+        marginBottom: 22,
     },
     portraitQuickEventLabel: {
         color: '#333A3F',
@@ -845,11 +943,14 @@ const styles = StyleSheet.create({
         marginLeft: 0,
         width: 'auto',
     },
-
+    quickScoringAdPositioner: {
+        alignItems: 'center',
+        marginTop: 26,
+        width: '100%',
+    },
     fullScoring: {
         width: '75%',
         alignSelf: 'center',
-        height: '15%',
         backgroundColor: '#fff',
         flexDirection: 'row',
         gap: 8,
@@ -879,6 +980,25 @@ const styles = StyleSheet.create({
     cancelButtonText: {
         color: '#fff',
         fontWeight: '700',
+    },
+    scoringMethodAdPositioner: {
+        width: '100%',
+        alignItems: 'center',
+        marginTop: SCORING_MODAL_AD_GAP,
+    },
+    scoringModalFooter: {
+        position: 'absolute',
+        left: 20,
+        right: 20,
+        bottom: 20,
+        alignItems: 'center',
+    },
+    scoringMethodFooter: {
+        bottom: 26,
+    },
+    scoringFooterButton: {
+        width: 104,
+        marginLeft: 0,
     },
     saveQuickButton: {
         backgroundColor: '#1976D2',
@@ -914,8 +1034,6 @@ const styles = StyleSheet.create({
     },
     selectScoringModal: {
         width: '100%',
-        height: '73%',
-        maxHeight: '90%',
         maxWidth: 340,
         backgroundColor: '#fff',
         borderRadius: 12,
@@ -925,6 +1043,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 8,
         elevation: 6,
+        position: 'relative',
     },
     modalTitle: {
         color: '#333A3F',
@@ -941,6 +1060,17 @@ const styles = StyleSheet.create({
     },
     orientationPrompt: {
         textAlign: 'center',
+    },
+    orientationLockNotice: {
+        fontWeight: '700',
+        fontSize: 14
+    },
+    orientationLockIcon: {
+        alignSelf: 'center',
+        marginBottom: 8,
+    },
+    orientationLockUnderline: {
+        textDecorationLine: 'underline',
     },
     modalActions: {
         flexDirection: 'row',
