@@ -21,7 +21,9 @@ import {
     View,
     useWindowDimensions,
 } from 'react-native';
-import { captureRef } from 'react-native-view-shot';
+import ExportFormatModal from '../components/export-format-modal';
+import { useScorecardExport } from '../hooks/use-scorecard-export';
+import type { ExportImageFormat } from '../utils/export-image';
 import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 import { normalizeMatchRating, parseMatchDescription } from '../types/matchNotes';
 import * as Clipboard from 'expo-clipboard';
@@ -263,7 +265,10 @@ export default function ExportCardScreen() {
     const { width, height } = useWindowDimensions();
     const railWidth = Math.max(44, Math.min(52, width * 0.12));
     const exportCardRef = useRef<View>(null);
+    const { captureExportCard, exportCanvas } = useScorecardExport(exportCardRef);
     const [busyAction, setBusyAction] = useState<'share' | 'save' | null>(null);
+    const [formatAction, setFormatAction] = useState<'share' | 'save' | null>(null);
+    const exportInProgress = useRef(false);
     const [xRequest, xResponse, promptXLogin] = AuthSession.useAuthRequest({
         clientId: X_CLIENT_ID,
         redirectUri: X_REDIRECT_URI,
@@ -518,30 +523,21 @@ export default function ExportCardScreen() {
         `I scored ${fighter1} vs ${fighter2}: ${shareResult}\n\n` +
         `via the Boxing Scoring Companion @boxingscoreapp #BoxingScore`;
 
-    const captureExportCard = async (result: 'tmpfile' | 'data-uri' = 'tmpfile') => {
-        if (!exportCardRef.current) throw new Error('Export card is not ready yet.');
-
-        return captureRef(exportCardRef, {
-            format: 'png',
-            quality: 1,
-            result,
-        });
-    };
-
-    const handleShare = async () => {
-        if (busyAction) return;
+    const handleShare = async (format: ExportImageFormat) => {
+        if (exportInProgress.current) return;
+        exportInProgress.current = true;
         setBusyAction('share');
         void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
         try {
             if (Platform.OS === 'ios') {
-            await Share.share({
-                message: shareMessage,
-                url: await captureExportCard('data-uri'),
-            });
-            return;
-}
-            const imageUri = await captureExportCard();
+                await Share.share({
+                    message: shareMessage,
+                    url: await captureExportCard('data-uri', format),
+                });
+                return;
+            }
+            const imageUri = await captureExportCard('tmpfile', format);
             await Clipboard.setStringAsync(shareMessage);
 
             if (await Sharing.isAvailableAsync()) {
@@ -557,18 +553,20 @@ export default function ExportCardScreen() {
             console.error('Unable to share scorecard:', error);
             Alert.alert('Share failed', 'The scorecard image could not be shared.');
         } finally {
+            exportInProgress.current = false;
             setBusyAction(null);
         }
     };
     
-    const handleSaveImage = async () => {
-        if (busyAction) return;
+    const handleSaveImage = async (format: ExportImageFormat) => {
+        if (exportInProgress.current) return;
+        exportInProgress.current = true;
         setBusyAction('save');
         void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
         try {
             if (Platform.OS === 'web') {
-                const imageUri = await captureExportCard('data-uri');
+                const imageUri = await captureExportCard('data-uri', format);
                 const link = document.createElement('a');
                 link.href = imageUri;
                 link.download = 'boxing-scorecard.png';
@@ -588,7 +586,7 @@ export default function ExportCardScreen() {
                 return;
             }
 
-            const imageUri = await captureExportCard();
+            const imageUri = await captureExportCard('tmpfile', format);
             await MediaLibrary.Asset.create(imageUri);
             void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             Alert.alert('Scorecard Saved ✅', 'Scorecard image successfully saved.');
@@ -596,6 +594,7 @@ export default function ExportCardScreen() {
             console.error('Unable to save scorecard:', error);
             Alert.alert('Save failed', 'The scorecard image could not be saved.');
         } finally {
+            exportInProgress.current = false;
             setBusyAction(null);
         }
     };
@@ -630,6 +629,7 @@ export default function ExportCardScreen() {
 
     return (
         <View style={styles.screen}>
+            {exportCanvas}
             <Stack.Screen
                 options={{
                     headerShown: false,
@@ -986,7 +986,7 @@ export default function ExportCardScreen() {
                         <Text style={styles.backText}>Back</Text>
                     </Pressable>
                     <Pressable
-                        onPress={handleShare}
+                        onPress={() => setFormatAction('share')}
                         disabled={busyAction !== null}
                         style={({ pressed }) => [
                             styles.actionButton,
@@ -1008,7 +1008,7 @@ export default function ExportCardScreen() {
                     </Pressable>
 
                     <Pressable
-                        onPress={handleSaveImage}
+                        onPress={() => setFormatAction('save')}
                         disabled={busyAction !== null}
                         style={({ pressed }) => [
                             styles.actionButton,
@@ -1030,6 +1030,17 @@ export default function ExportCardScreen() {
                     </Pressable>
                 </View>
             </ScrollView>
+            <ExportFormatModal
+                action={formatAction}
+                onClose={() => setFormatAction(null)}
+                onSelect={(format, action) => {
+                    if (action === 'share') {
+                        void handleShare(format);
+                    } else {
+                        void handleSaveImage(format);
+                    }
+                }}
+            />
         </View>
     );
 }

@@ -773,6 +773,12 @@ export default function HomeScreen() {
                         ))}
                       </View>
                     ))}
+                    {adsReady && !isPremium && (
+                      <CollapsibleBannerAd
+                        containerStyle={styles.settingsAdPositioner}
+                        failureMessage="About banner ad failed:"
+                      />
+                    )}
                   </BlueScrollView>
 
                   <Pressable
@@ -841,6 +847,12 @@ export default function HomeScreen() {
                         )}
                       </View>
                     ))}
+                    {adsReady && !isPremium && (
+                      <CollapsibleBannerAd
+                        containerStyle={styles.settingsAdPositioner}
+                        failureMessage="Special Thanks banner ad failed:"
+                      />
+                    )}
                   </BlueScrollView>
                   <Pressable
                     style={[styles.limitModalButton, styles.limitBackButton]}
