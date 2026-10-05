@@ -486,10 +486,25 @@ export default function LandscapeRoundRow({
                                         <Text style={styles.modalText}>Interactive live scoring with momentum tracking</Text>
                                     </View>
                                 </View>
-                                <Pressable style={[styles.modalButton, styles.cancelButton]} onPress={closeScoringModal}>
-                                    <Ionicons name="close" size={18} color="#fff" />
-                                    <Text style={styles.cancelButtonText}>Cancel</Text>
-                                </Pressable>
+                                <View style={styles.scoringMethodActions}>
+                                    <Pressable
+                                        style={[styles.modalButton, styles.cancelButton, styles.scoringMethodAction]}
+                                        onPress={closeScoringModal}
+                                    >
+                                        <Ionicons name="close" size={18} color="#fff" />
+                                        <Text style={styles.cancelButtonText}>Cancel</Text>
+                                    </Pressable>
+                                    <Pressable
+                                        accessibilityRole="button"
+                                        style={[styles.modalButton, styles.clearRoundButton, styles.scoringMethodAction]}
+                                        onPress={() => {
+                                            onClearRound(roundNumber);
+                                            closeScoringModal();
+                                        }}
+                                    >
+                                        <Text style={styles.cancelButtonText}>Clear Round</Text>
+                                    </Pressable>
+                                </View>
                             </>
                         ) : (
                             <>
@@ -775,6 +790,26 @@ const styles = StyleSheet.create({
         backgroundColor: '#d32f2f',
         marginTop: 12,
         width: 180,
+        shadowColor: '#11334b',
+        shadowOffset: { width: 5, height: 5 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1,
+    },
+    scoringMethodActions: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        gap: 12,
+    },
+    scoringMethodAction: {
+        flex: 1,
+        width: 'auto',
+        maxWidth: 180,
+        marginTop: 12,
+        marginLeft: 0,
+    },
+    clearRoundButton: {
+        backgroundColor: '#000',
+        boxShadow: '4',
         shadowColor: '#11334b',
         shadowOffset: { width: 5, height: 5 },
         shadowOpacity: 0.4,

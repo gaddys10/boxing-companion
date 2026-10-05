@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Linking, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import * as Device from 'expo-device';
 import { FontAwesome6, Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SavedCard from '../components/savedCard';
@@ -343,6 +344,10 @@ export default function HomeScreen() {
       return;
     }
 
+    const deviceModel = Device.modelName ?? Device.modelId ?? 'Unknown device';
+    const softwareVersion = `${Device.osName ?? Platform.OS} ${Device.osVersion ?? 'Unknown'}`;
+    const emailMessage = `${message}\n\nDevice model: ${deviceModel}\nSoftware version: ${softwareVersion}`;
+
     setIsSendingFeedback(true);
 
     try {
@@ -350,10 +355,12 @@ export default function HomeScreen() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message,
+          message: emailMessage,
           recipient: FEEDBACK_RECIPIENT,
           source: 'Boxing Score Companion',
           version: '0.1',
+          deviceModel,
+          softwareVersion,
         }),
       });
 
@@ -773,7 +780,7 @@ export default function HomeScreen() {
                         ))}
                       </View>
                     ))}
-                    {adsReady && !isPremium && (
+                    {settingsModalVisible && adsReady && !isPremium && (
                       <CollapsibleBannerAd
                         containerStyle={styles.settingsAdPositioner}
                         failureMessage="About banner ad failed:"
