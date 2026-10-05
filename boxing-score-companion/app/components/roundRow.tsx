@@ -473,10 +473,20 @@ export default function RoundRow({
                                     Hold buttons to track knockdowns, deductions, and stoppages.
                                 </Text>
                                 <View style={[styles.scoringModalFooter, styles.scoringMethodFooter]}>
-                                <View style={styles.modalActions}>
+                                <View style={[styles.modalActions, styles.scoringMethodActions]}>
                                     <Pressable style={[styles.modalButton, styles.cancelButton, styles.scoringFooterButton]} onPress={closeScoringModal}>
                                         <Ionicons name="close" size={18} color="#fff" />
                                         <Text style={styles.cancelButtonText}>Cancel</Text>
+                                    </Pressable>
+                                    <Pressable
+                                        accessibilityRole="button"
+                                        style={[styles.modalButton, styles.clearRoundButton, styles.scoringFooterButton]}
+                                        onPress={() => {
+                                            onClearRound(roundNumber);
+                                            closeScoringModal();
+                                        }}
+                                    >
+                                        <Text style={styles.cancelButtonText}>Clear Round</Text>
                                     </Pressable>
                                 </View>
                                 {scoringModalVisible && !isPremium && (
@@ -997,8 +1007,22 @@ const styles = StyleSheet.create({
         bottom: 26,
     },
     scoringFooterButton: {
-        width: 104,
+        flex: 1,
+        width: 'auto',
+        maxWidth: 180,
         marginLeft: 0,
+    },
+    scoringMethodActions: {
+        width: '100%',
+        gap: 12,
+    },
+    clearRoundButton: {
+        backgroundColor: '#000',
+        boxShadow: '4',
+        shadowColor: '#11334b',
+        shadowOffset: { width: 5, height: 5 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1,
     },
     saveQuickButton: {
         backgroundColor: '#1976D2',
