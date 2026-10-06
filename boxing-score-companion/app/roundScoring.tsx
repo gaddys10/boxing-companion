@@ -55,6 +55,7 @@ export default function RoundScoringScreen() {
     const [rightKnockdowns, setRightKnockdowns] = useState(Number(savedRound?.rightKnockdowns ?? 0));
     const [leftScore, setLeftScore] = useState(Number(savedRound?.left ?? 10));
     const [rightScore, setRightScore] = useState(Number(savedRound?.right ?? 10));
+    const [showTapInstruction, setShowTapInstruction] = useState(true);
     const [tenEightModalVisible, setTenEightModalVisible] = useState(false);
     const [stoppageModalVisible, setStoppageModalVisible] = useState(false);
     const [stoppageReason, setStoppageReason] = useState<'KO' | 'TKO' | 'DQ' | 'NC' | undefined>(savedRound?.stoppageReason);
@@ -197,6 +198,7 @@ export default function RoundScoringScreen() {
     };
 
     const handleScorePress = (side: 'left' | 'right') => {
+        setShowTapInstruction(false);
         setScore((currentScore) => {
             if (side === 'left') { return currentScore + 1; }
             return currentScore - 1;
@@ -393,7 +395,14 @@ export default function RoundScoringScreen() {
                             },
                     ]}
                 >+</Animated.Text>
-
+                {showTapInstruction && (
+                    <Text
+                        pointerEvents="none"
+                        style={[styles.tapInstruction, { transform: [{ translateY: plusSignSize / 2 + 4 }], fontSize: Math.max(12, 14 * scale) }]}
+                    >
+                        Tap to start
+                    </Text>
+                )}
                 {/* Left PEN */}
 
                 <Pressable
@@ -591,6 +600,14 @@ export default function RoundScoringScreen() {
                             },
                     ]}
                 >+</Animated.Text>
+                {showTapInstruction && (
+                    <Text
+                        pointerEvents="none"
+                        style={[styles.tapInstruction, { transform: [{ translateY: plusSignSize / 2 + 4 }], fontSize: Math.max(12, 14 * scale) }]}
+                    >
+                        Tap to start
+                    </Text>
+                )}
 
                 {/* Right Knockdown */}
                 <Pressable
@@ -794,6 +811,7 @@ export default function RoundScoringScreen() {
                 }
             </Pressable>
 
+            {/* Stoppage Modal  */}
             <Modal
                 animationType="fade"
                 transparent
@@ -882,6 +900,7 @@ export default function RoundScoringScreen() {
                 </View>
             </Modal>
 
+            {/* 10–8 Modal */}
             <Modal
                 animationType="fade"
                 transparent
@@ -1497,6 +1516,17 @@ const styles = StyleSheet.create({
         fontSize: 96,
         color: 'white',
         fontWeight: 'bold',
+    },
+    tapInstruction: {
+        position: 'absolute',
+        top: '55%',
+        left: 0,
+        right: 0,
+        color: '#fff',
+        fontWeight: '500',
+        textAlign: 'center',
+        zIndex: 1,
+        opacity: 0.4,
     },
     rightArea: {
         backgroundColor: '#307Fb6',
