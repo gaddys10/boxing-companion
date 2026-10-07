@@ -10,6 +10,7 @@ import CollapsibleBannerAd from './collapsibleBannerAd';
 import StableCenteredModalFrame from './stableCenteredModalFrame';
 import { ModalTitleHeader } from './modalCloseButton';
 import { usePremium } from '../../contexts/PremiumContext';
+import { LANDSCAPE_CARD_MIN_HEIGHT, LANDSCAPE_CARD_MIN_WIDTH } from '../../constants/landscape-card';
 
 const SWIPE_ACTION_HEIGHT = 44;
 const SWIPE_ACTION_GAP = 12;
@@ -155,7 +156,7 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
     return (
         <>
             <GestureDetector gesture={verticalSwipe}>
-            <View style={[styles.savedCardShadow, { width: width * 0.201 }]}>
+            <View style={[styles.savedCardShadow, { width: Math.max(width * 0.201, LANDSCAPE_CARD_MIN_WIDTH) }]}>
             <View style={styles.swipeViewport}>
                 <Pressable
                     style={styles.shareAction}
@@ -602,6 +603,7 @@ const styles = StyleSheet.create({
     },
     savedCardShadow: {
         height: '100%',
+        minHeight: LANDSCAPE_CARD_MIN_HEIGHT,
         top: '0%',
         backgroundColor: 'transparent',
         marginBottom: 17,

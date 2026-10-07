@@ -903,7 +903,7 @@ const styles = StyleSheet.create({
     },
     clearActionText: {
         color: '#fff',
-        fontSize: 10,
+        fontSize: 8.5,
         fontWeight: '700',
         textAlign: 'center',
     },
