@@ -173,6 +173,7 @@ export default function MatchNotesScreen() {
     const [descriptorViewportHeight, setDescriptorViewportHeight] = useState(0);
     const [descriptorScrollOffset, setDescriptorScrollOffset] = useState(0);
     const [selectedDescriptorHeight, setSelectedDescriptorHeight] = useState(0);
+    const [descriptorHeadingHeight, setDescriptorHeadingHeight] = useState(0);
     const [adsReady, setAdsReady] = useState(false);
 
     const sliderWidthRef = useRef(0);
@@ -294,17 +295,17 @@ export default function MatchNotesScreen() {
         : THUMB_SIZE / 2;
 
     const descriptorScrollbarHeight = descriptorViewportHeight > 0 && descriptorContentHeight > 0
-        ? Math.max(
+        ? Math.min(descriptorViewportHeight, Math.max(
             28,
             (descriptorViewportHeight / descriptorContentHeight) * descriptorViewportHeight,
-        )
+        ))
         : 28;
     const descriptorScrollbarTrackHeight = Math.max(
         0,
         descriptorViewportHeight - descriptorScrollbarHeight,
     );
     const descriptorScrollbarTop = descriptorContentHeight > descriptorViewportHeight
-        ? (descriptorScrollOffset / (descriptorContentHeight - descriptorViewportHeight)) * descriptorScrollbarTrackHeight
+        ? Math.max(0, Math.min(1, descriptorScrollOffset / (descriptorContentHeight - descriptorViewportHeight))) * descriptorScrollbarTrackHeight
         : 0;
     const descriptorBaseMaxHeight = isLandscape ? 150 : 368;
     const descriptorScrollMaxHeight = Math.max(
@@ -414,7 +415,10 @@ export default function MatchNotesScreen() {
                 </View>
 
                 <View style={[styles.bottomCard, isLandscape && styles.landscapeDescriptorCard]}>
-                    <View style={styles.descriptorHeadingRow}>
+                    <View
+                        style={styles.descriptorHeadingRow}
+                        onLayout={(event) => setDescriptorHeadingHeight(event.nativeEvent.layout.height)}
+                    >
                         <View style={[styles.descriptorHeadingCopy, isLandscape && styles.landscapeHeadingCopy]}>
                             <Text style={styles.sectionTitle}>
                                 {/* How would you  */}
@@ -471,7 +475,10 @@ export default function MatchNotesScreen() {
                         style={[
                             styles.descriptorScrollWrapper,
                             isLandscape
-                                ? styles.landscapeDescriptorScrollWrapper
+                                ? [styles.landscapeDescriptorScrollWrapper, {
+                                    top: 15 + descriptorHeadingHeight + 5
+                                        + (selectedDescriptors.length > 0 ? selectedDescriptorHeight + 14 : 0),
+                                }]
                                 : { maxHeight: descriptorScrollMaxHeight },
                         ]}
                         onLayout={(event) => setDescriptorViewportHeight(event.nativeEvent.layout.height)}
@@ -645,6 +652,7 @@ const styles = StyleSheet.create({
         gap: 18,
     },
     landscapeContent: {
+        minHeight: 0,
         flexDirection: 'row',
         alignItems: 'stretch',
         gap: 16,
@@ -699,6 +707,7 @@ const styles = StyleSheet.create({
         flex: 1,
         width: 'auto',
         minWidth: 0,
+        minHeight: 0,
         overflow: 'hidden'
     },
     sectionTitle: {
@@ -861,8 +870,12 @@ const styles = StyleSheet.create({
         position: 'relative',
     },
     landscapeDescriptorScrollWrapper: {
-        flex: 1,
-        minHeight: 0,
+        position: 'absolute',
+        left: 18,
+        right: 0,
+        bottom: 1,
+        maxHeight: undefined,
+        overflow: 'hidden',
     },
     counterBadge: {
         minWidth: 48,
@@ -906,6 +919,9 @@ const styles = StyleSheet.create({
     },
     landscapeDescriptorScroll: {
         flex: 1,
+        flexBasis: 0,
+        height: 'auto',
+        minHeight: 0,
     },
     descriptorPillSpacer: {
         width: 6,
