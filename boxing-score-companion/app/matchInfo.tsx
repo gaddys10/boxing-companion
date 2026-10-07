@@ -1,6 +1,7 @@
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState, useCallback } from 'react';
 import * as ScreenOrientation from 'expo-screen-orientation'
+import { Ionicons } from '@expo/vector-icons';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import BlueScrollView from '../components/blue-scroll-view';
 import LandscapeRoundRow from './components/landscapeRoundRow';
@@ -15,12 +16,6 @@ export default function MatchInfoScreen() {
         useCallback(() => {
             const resetTimer = setTimeout(async () => {
                 try {
-                    await ScreenOrientation.lockAsync(
-                        ScreenOrientation.OrientationLock.PORTRAIT_UP
-                    );
-
-                    await new Promise(resolve => setTimeout(resolve, 75));
-
                     await ScreenOrientation.unlockAsync();
                 } catch {
                     // Leave orientation alone if iOS rejects the reset.
@@ -30,7 +25,7 @@ export default function MatchInfoScreen() {
             return () => clearTimeout(resetTimer);
         }, [])
     );
-    const { isLandscape, insets, sx, sy, horizontalGutter } = useResponsiveLayout();
+    const { width, isLandscape, insets, sx, sy, horizontalGutter } = useResponsiveLayout();
     const { 
         id,
         fighter1,
@@ -480,19 +475,35 @@ export default function MatchInfoScreen() {
                 }
 
                 {isLandscape && (
-                    <View style={[styles.landscapeButtonContainer, { gap: 8 * sx }]}>
-                        <Pressable style={[styles.actionButton, styles.primaryAction, styles.landscapeAction]} onPress={handleSaveScorecard}>
-                            <Text style={styles.primaryActionText}>Save & Exit</Text>
-                        </Pressable>
-                        <Pressable style={[styles.actionButton, styles.primaryAction, styles.landscapeAction]} onPress={handleCardDetails}>
-                            <Text style={styles.primaryActionText}>Card Info</Text>
-                        </Pressable>
-                        <Pressable style={[styles.actionButton, styles.secondaryAction, styles.landscapeAction]} onPress={handleNotes}>
-                            <Text style={styles.secondaryActionText}>Notes</Text>
-                        </Pressable>
-                        <Pressable style={[styles.actionButton, styles.secondaryAction, styles.landscapeAction]} onPress={handleShare}>
-                            <Text style={styles.secondaryActionText}>Share</Text>
-                        </Pressable>
+                    <View
+                        style={[
+                            styles.landscapeButtonContainer,
+                            {
+                                left: Math.max(insets.left, sx) + (width * 0.01),
+                                right: Math.max(insets.right, 16 * sx),
+                            },
+                        ]}
+                    >
+                        <View style={[styles.landscapeActionPair, { gap: 8 * sx, marginRight: sx }]}>
+                                <Pressable style={[styles.actionButton, styles.primaryAction, styles.landscapeAction]} onPress={handleSaveScorecard}>
+                                    <Ionicons name="save-outline" size={17} color="#307FB6" />
+                                    <Text style={[styles.primaryActionText, styles.landscapeActionText]}>Save & Exit</Text>
+                            </Pressable>
+                                <Pressable style={[styles.actionButton, styles.primaryAction, styles.landscapeAction]} onPress={handleCardDetails}>
+                                    <Ionicons name="information-circle-outline" size={17} color="#307FB6" />
+                                    <Text style={[styles.primaryActionText, styles.landscapeActionText]}>Card Info</Text>
+                            </Pressable>
+                        </View>
+                        <View style={[styles.landscapeActionPair, { gap: 8 * sx, marginLeft: sx }]}>
+                                <Pressable style={[styles.actionButton, styles.secondaryAction, styles.landscapeAction]} onPress={handleNotes}>
+                                    <Ionicons name="document-text-outline" size={17} color="#fff" />
+                                    <Text style={[styles.secondaryActionText, styles.landscapeActionText]}>Notes</Text>
+                            </Pressable>
+                                <Pressable style={[styles.actionButton, styles.secondaryAction, styles.landscapeAction]} onPress={handleShare}>
+                                    <Ionicons name="share-social-outline" size={17} color="#fff" />
+                                    <Text style={[styles.secondaryActionText, styles.landscapeActionText]}>Share</Text>
+                            </Pressable>
+                        </View>
                     </View>
                 )}
 
@@ -756,6 +767,9 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         textAlign: 'center',
     },
+        landscapeActionText: {
+            fontSize: 14,
+        },
     container: {
         flex: 1,
         backgroundColor: 'transparent',
@@ -813,11 +827,14 @@ const styles = StyleSheet.create({
     },
     landscapeButtonContainer: {
         position: 'absolute',
-        left: '38%',
-        right: '7%',
         top: 8,
         flexDirection: 'row',
+        justifyContent: 'space-between',
         height: 42,
+    },
+    landscapeActionPair: {
+        flexDirection: 'row',
+        width: '45%',
     },
     buttonContainer: {
         flexDirection: 'row',
@@ -940,7 +957,11 @@ const styles = StyleSheet.create({
     },
 
     //LANDSCAPE STYLES
-    landscapeAction: { minHeight: 42 },
+    landscapeAction: {
+        flexDirection: 'row',
+        gap: 6,
+        minHeight: 42,
+    },
     landscapeContainer: {
         flex: 1,
         backgroundColor: 'transparent',

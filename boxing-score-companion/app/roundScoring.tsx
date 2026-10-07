@@ -1,14 +1,14 @@
 import { useRouter, Stack, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { View, Text, Pressable, StyleSheet, Animated, useWindowDimensions, Modal, Platform, StatusBar } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Haptics from 'expo-haptics';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { Image as ExpoImage } from 'expo-image';
 import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 import CollapsibleBannerAd from './components/collapsibleBannerAd';
-import StableCenteredModalFrame from './components/stableCenteredModalFrame';
+import { ModalTitleHeader } from './components/modalCloseButton';
 import { usePremium } from '../contexts/PremiumContext';
 
 const PORTRAIT_ACTION_CONTROL_HEIGHT = 60;
@@ -76,7 +76,7 @@ export default function RoundScoringScreen() {
     const stoppageProgress = useRef<Animated.Value>(new Animated.Value(0)).current;
 
     const { width, height } = useWindowDimensions();
-    const { insets, sx, scale } = useResponsiveLayout();
+    const { insets, sx, scale, contentHeight } = useResponsiveLayout();
     const isLandscape = scoringOrientation === 'landscape';
     const usableHeight = height - insets.top - insets.bottom;
     const toolbarHeight = Math.max(44, Math.min(50, usableHeight * 0.14));
@@ -819,84 +819,77 @@ export default function RoundScoringScreen() {
                 supportedOrientations={['landscape', 'landscape-left', 'landscape-right']}
                 onRequestClose={() => setStoppageModalVisible(false)}
             >
-                <View style={styles.stoppageModalOverlay}>
-                    <StableCenteredModalFrame>
-                    <View style={[styles.stoppageModalCard, { padding: 20 * scale }]}>
-                        <Text style={styles.stoppageModalTitle}>Mark Stoppage</Text>
-                        <Text style={[styles.stoppageModalText, { textAlign: 'center' }]}>Select why the fight was stopped.</Text>
-                        <View style={styles.stoppageOptions}>
-                            <View style={styles.stoppageOptionTopRow}>
-                                {(['KO', 'TKO'] as const).map((option) => (
-                                    <Pressable
-                                        key={option}
-                                        style={[styles.stoppageOption, stoppageReason === option && styles.selectedStoppageOption]}
-                                        onPress={() => {
-                                            setStoppageReason(option);
-                                            setSelectedStoppageWinner(undefined);
-                                        }}
-                                    >
-                                        <Text
-                                            numberOfLines={1}
-                                            style={[styles.stoppageOptionText, stoppageReason === option && styles.selectedStoppageOptionText]}
-                                        >
-                                            {option}
-                                        </Text>
-                                    </Pressable>
-                                ))}
-                            </View>
-                            <View style={styles.stoppageOptionBottomRow}>
-                                {(['DQ', 'NC'] as const).map((option) => (
-                                    <Pressable
-                                        key={option}
-                                        style={[styles.stoppageOption, stoppageReason === option && styles.selectedStoppageOption]}
-                                        onPress={() => {
-                                            setStoppageReason(option);
-                                            setSelectedStoppageWinner(undefined);
-                                        }}
-                                    >
-                                        <Text
-                                            numberOfLines={1}
-                                            style={[styles.stoppageOptionText, stoppageReason === option && styles.selectedStoppageOptionText]}
-                                        >
-                                            {option}
-                                        </Text>
-                                    </Pressable>
-                                ))}
-                            </View>
-                        </View>
-                        {(stoppageReason === 'KO' || stoppageReason === 'TKO' || stoppageReason === 'DQ') && (
-                            <>
-                                <Text style={[styles.stoppageModalText, { textAlign: 'center', marginTop: '10%' }]}>Who won the fight?</Text>
-                                <View style={styles.stoppageWinnerOptions}>
-                                    {[String(fighter1), String(fighter2)].map((fighter) => (
+                <View style={[styles.stoppageModalOverlay, {
+                    paddingTop: insets.top + 20,
+                    paddingBottom: insets.bottom + 4,
+                    paddingLeft: insets.left + 16,
+                    paddingRight: insets.right + 16,
+                }]}>
+                    <View style={[styles.stoppageModalCard, { height: Math.max(0, Math.min(380, contentHeight - 24) - (isPremium ? 50 : 0)) }]}>
+                        <View style={styles.stoppageModalContent}>
+                            <ModalTitleHeader
+                                title="Mark Stoppage"
+                                style={{ marginBottom: 4 }}
+                                titleStyle={styles.stoppageModalTitle}
+                                accessibilityLabel="Close stoppage dialog"
+                                onClose={() => setStoppageModalVisible(false)}
+                                isLandscape
+                            />
+                            <Text style={[styles.stoppageModalText, { textAlign: 'center', marginBottom: 0 }]}>Select why the fight was stopped.</Text>
+                            <View style={styles.stoppageOptions}>
+                                <View style={styles.stoppageOptionRow}>
+                                    {(['KO', 'TKO', 'DQ', 'NC'] as const).map((option) => (
                                         <Pressable
-                                            key={fighter}
-                                            style={[styles.stoppageOption, selectedStoppageWinner === fighter && styles.selectedStoppageOption]}
-                                            onPress={() => setSelectedStoppageWinner(fighter)}
+                                            key={option}
+                                            style={[styles.stoppageOption, stoppageReason === option && styles.selectedStoppageOption]}
+                                            onPress={() => {
+                                                setStoppageReason(option);
+                                                setSelectedStoppageWinner(undefined);
+                                            }}
                                         >
-                                            <Text style={[styles.stoppageWinnerText, selectedStoppageWinner === fighter && styles.selectedStoppageOptionText]}>{fighter}</Text>
+                                            <Text style={[styles.stoppageOptionText, stoppageReason === option && styles.selectedStoppageOptionText]}>{option}</Text>
                                         </Pressable>
                                     ))}
                                 </View>
-                            </>
-                        )}
-                        <View style={styles.stoppageModalActions}>
-                            <Pressable style={[styles.stoppageModalButton, styles.stoppageCancelButton]} onPress={() => setStoppageModalVisible(false)}>
-                                <Text style={styles.stoppageCancelButtonText}>Cancel</Text>
-                            </Pressable>
-                            <Pressable style={[styles.stoppageModalButton, styles.stoppageConfirmButton]} onPress={saveStoppageAndExit}>
-                                <MaterialCommunityIcons name="human-handsup" size={20} color="#fff" />
-                                <Text style={styles.stoppageConfirmButtonText}>Confirm</Text>
-                            </Pressable>
+                            </View>
+                            {(stoppageReason === 'KO' || stoppageReason === 'TKO' || stoppageReason === 'DQ') && (
+                                <>
+                                    <Text style={[styles.stoppageModalText, { textAlign: 'center', marginTop: 0, marginBottom: 0 }]}>Who won the fight?</Text>
+                                    <View style={styles.stoppageWinnerOptions}>
+                                        {[String(fighter1), String(fighter2)].map((fighter) => (
+                                            <Pressable
+                                                key={fighter}
+                                                style={[styles.stoppageWinnerOption, selectedStoppageWinner === fighter && styles.selectedStoppageOption]}
+                                                onPress={() => setSelectedStoppageWinner(fighter)}
+                                            >
+                                                <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} style={[styles.stoppageWinnerText, selectedStoppageWinner === fighter && styles.selectedStoppageOptionText]}>{fighter}</Text>
+                                            </Pressable>
+                                        ))}
+                                    </View>
+                                </>
+                            )}
+                            <View style={[styles.stoppageModalActions, { marginTop: 0 }]}>
+                                <Pressable style={[styles.stoppageModalButton, styles.stoppageCancelButton]} onPress={() => setStoppageModalVisible(false)}>
+                                    <Text style={styles.stoppageCancelButtonText}>Cancel</Text>
+                                </Pressable>
+                                <Pressable
+                                    style={[styles.stoppageModalButton, styles.stoppageConfirmButton]}
+                                    onPress={saveStoppageAndExit}
+                                >
+                                    <Text style={styles.stoppageConfirmButtonText}>Confirm</Text>
+                                </Pressable>
+                            </View>
+                            {!isPremium && (
+                                <View style={styles.stoppageAdPositioner}>
+                                    {stoppageModalVisible && (
+                                        <CollapsibleBannerAd
+                                            failureMessage="Round scoring stoppage banner failed:"
+                                        />
+                                    )}
+                                </View>
+                            )}
                         </View>
-                        {stoppageModalVisible && !isPremium && (
-                            <CollapsibleBannerAd
-                                containerStyle={styles.stoppageAdPositioner}
-                                failureMessage="Round scoring stoppage banner failed:"
-                            />
-                        )}
                     </View>
-                    </StableCenteredModalFrame>
                 </View>
             </Modal>
 
@@ -910,7 +903,13 @@ export default function RoundScoringScreen() {
             >
                 <View style={styles.modalOverlay}>
                     <View style={[styles.tenEightModal, { padding: 22 * scale }]}>
-                        <Text style={styles.modalTitle}>Make this a 10–8 round?</Text>
+                        <ModalTitleHeader
+                            title="Make this a 10–8 round?"
+                            titleStyle={styles.modalTitle}
+                            accessibilityLabel="Close 10–8 confirmation"
+                            onClose={() => setTenEightModalVisible(false)}
+                            isLandscape
+                        />
                         <Text style={styles.modalText}>
                             This round reached {absScore} momentum points. Would you like the losing fighter to receive 8 points?
                         </Text>
@@ -970,8 +969,9 @@ const styles = StyleSheet.create({
     },
     modalTitle: {
         color: '#111',
-        fontSize: 21,
+        fontSize: 19,
         fontWeight: '700',
+        paddingHorizontal: 24,
         textAlign: 'center',
     },
     modalText: {
@@ -1350,62 +1350,103 @@ const styles = StyleSheet.create({
         maxWidth: 480,
         backgroundColor: '#fff',
         borderRadius: 12,
-        padding: 20,
+        overflow: 'hidden',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.25,
         shadowRadius: 8,
         elevation: 6,
     },
-    stoppageModalTitle: { color: '#333A3F', fontSize: 20, fontWeight: '700', marginBottom: 8, textAlign: 'center' },
-    stoppageModalText: { color: '#333A3F', fontSize: 15, lineHeight: 21, marginBottom: 20 },
-    stoppageOptions: { gap: 15, marginTop: 4, alignItems: 'center' },
-    stoppageOptionTopRow: { flexDirection: 'row', gap: 10 },
-    stoppageOptionBottomRow: { flexDirection: 'row', gap: 10 },
-    stoppageWinnerOptions: { 
-        flexDirection: 'row', 
-        gap: 10, justifyContent: 'center'
+    stoppageModalContent: {
+        flex: 1,
+        justifyContent: 'space-between',
+        padding: 20,
     },
+    stoppageModalTitle: {
+        color: '#333A3F',
+        fontSize: 18,
+        fontWeight: '700',
+        marginBottom: 8,
+        paddingHorizontal: 24,
+        textAlign: 'center',
+    },
+    stoppageModalText: {
+        color: '#333A3F',
+        fontSize: 14,
+        lineHeight: 21,
+        marginBottom: 13,
+    },
+    stoppageOptions: { alignItems: 'center' },
+    stoppageOptionRow: { flexDirection: 'row', gap: 10 },
+    stoppageWinnerOptions: { flexDirection: 'row', gap: 15, justifyContent: 'center' },
     stoppageOption: {
-        alignItems: 'center', 
-        backgroundColor: '#EEF1F3',
-        borderRadius: 10, paddingHorizontal: 16,
-        paddingVertical: 10, borderWidth: 1, width: '48%', borderColor: 'rgba(200, 200, 200, 0.7)', justifyContent: 'center',
-    },
-    selectedStoppageOption: { backgroundColor: '#1976D2' },
-    stoppageOptionText: { color: '#333A3F', fontSize: 16, fontWeight: '700' },
-    selectedStoppageOptionText: { 
-        color: '#fff' },
-    stoppageWinnerText: { 
-        color: '#333A3F', fontSize: 16, fontWeight: '700', width: '100%', textAlign: 'center' },
-    stoppageModalActions: { 
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        marginTop: '10%',
-        marginBottom: '5%',
-        gap: 10 },
-    stoppageAdPositioner: {
-        width: '100%',
         alignItems: 'center',
-        marginTop: 18,
+        backgroundColor: '#EEF1F3',
+        borderRadius: 10,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderWidth: 1,
+        width: '20%',
+        borderColor: 'rgba(200, 200, 200, 0.7)',
+        justifyContent: 'center',
     },
-    stoppageModalButton: {
-        flex: 1, 
-        minHeight: 44, 
-        paddingHorizontal: 12, borderRadius: 10, alignItems: 'center', justifyContent: 'center',
-        shadowColor: '#11334b', shadowOffset: { width: 5, height: 5 }, shadowOpacity: 0.4, shadowRadius: 1, elevation: 2,
+    stoppageWinnerOption: {
+        alignItems: 'center',
+        backgroundColor: '#EEF1F3',
+        borderRadius: 10,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderWidth: 1,
+        width: '41%',
+        borderColor: 'rgba(200, 200, 200, 0.7)',
+        justifyContent: 'center',
     },
+    selectedStoppageOption: {
+        backgroundColor: '#307FB6',
+    },
+    stoppageOptionText: {
+        color: '#333A3F',
+        fontSize: 16,
+        fontWeight: '700',
+    },
+    selectedStoppageOptionText: {
+        color: '#fff',
+    },
+    stoppageWinnerText: {
+        color: '#333A3F',
+        fontSize: 16,
+        fontWeight: '700',
+        width: '100%',
+        textAlign: 'center',
+    },
+    stoppageModalActions: { flexDirection: 'row', justifyContent: 'space-around', marginTop: 12, gap: 10 },
+    stoppageAdPositioner: {
+        alignItems: 'center',
+        height: 50,
+        flexShrink: 0,
+        width: '100%',
+    },
+    stoppageModalButton: { minWidth: 88, paddingVertical: 8, borderRadius: 8, alignItems: 'center' },
     stoppageCancelButton: {
-        backgroundColor: '#fff', borderWidth: 1, borderColor: '#B6C6D1',
+        backgroundColor: '#d32f2f',
+        shadowColor: '#11334b',
+        shadowOffset: { width: 5, height: 5 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1,
+        borderWidth: 1,
+        borderColor: 'rgba(200, 200, 200, 0.7)',
     },
     stoppageConfirmButton: {
-        backgroundColor: '#307Fb6', borderWidth: 0, flexDirection: 'row', gap: 6,
+        backgroundColor: '#fff',
+        shadowColor: '#11334b',
+        shadowOffset: { width: 5, height: 5 },
+        shadowOpacity: 0.4,
+        shadowRadius: 1,
+        borderWidth: 1,
+        borderColor: 'rgba(200, 200, 200, 0.7)',
     },
-    stoppageCancelButtonText: { 
-        color: '#307Fb6', fontWeight: '700' },
-    stoppageConfirmButtonText: { 
-        color: '#fff', 
-        fontWeight: '700' },
+    stoppageCancelButtonText: { color: '#fff', fontWeight: '700' },
+    stoppageConfirmButtonText: { color: '#1976D2', fontWeight: '700' },
     rightkd: {
         bottom: 0,
         left: '43%',

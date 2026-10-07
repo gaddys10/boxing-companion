@@ -11,6 +11,7 @@ import { useResponsiveLayout } from '../../hooks/use-responsive-layout';
 import type { MatchDescription, MatchRating } from '../../types/matchNotes';
 import CollapsibleBannerAd from '../components/collapsibleBannerAd';
 import StableCenteredModalFrame from '../components/stableCenteredModalFrame';
+import ModalCloseButton, { ModalTitleHeader } from '../components/modalCloseButton';
 import BlueScrollView from '../../components/blue-scroll-view';
 import BlueTextInput from '../../components/blue-text-input';
 import mobileAds, {
@@ -157,7 +158,8 @@ export default function HomeScreen() {
   const [scorecardLimitModalVisible, setScorecardLimitModalVisible] = useState(false);
   const [isRewardedAdLoading, setIsRewardedAdLoading] = useState(false);
   const rewardedAdCleanupRef = useRef<(() => void) | null>(null);
-  const {isPremium, purchasePremium, restorePurchases} = usePremium();
+  const {isPremium, purchasePremium, restorePurchases, removePremiumForTesting} = usePremium();
+  const hasReachedFreeScorecardLimit = !isPremium && savedCards.length >= FREE_SCORECARD_LIMIT;
   const isScrollableSettingsPage = settingsModalPage === 'about' || settingsModalPage === 'thanks';
 
   useEffect(() => {
@@ -241,11 +243,12 @@ export default function HomeScreen() {
   const handleStartFight = () => {
     if (!hasLoadedSavedCards) return;
 
-    if (!isPremium && savedCards.length >= FREE_SCORECARD_LIMIT) {
+    if (hasReachedFreeScorecardLimit) {
       setScorecardLimitModalVisible(true);
       return;
     }
 
+    setScorecardLimitModalVisible(false);
     router.push({
       pathname: '/createMatch',
     });
@@ -397,6 +400,7 @@ export default function HomeScreen() {
   };
 
   const handleDeleteCard = (cardId: number) => {
+    setScorecardLimitModalVisible(false);
     setSavedCards((currentCards) => {
       const nextCards = currentCards.filter((card) => card.id !== cardId);
       void AsyncStorage.setItem(SAVED_CARDS_KEY, JSON.stringify(nextCards));
@@ -508,7 +512,11 @@ export default function HomeScreen() {
         )}
         {isLandscape && 
           <ScrollView
-            style={[styles.landscapeSavedCardContainer, { top: landscapeCardsTop, left: Math.max(insets.left, 8) }]}
+            style={[styles.landscapeSavedCardContainer, {
+              top: landscapeCardsTop,
+              left: Math.max(insets.left, 8),
+              right: Math.max(insets.right, 8),
+            }]}
             contentContainerStyle={styles.landscapeSavedCardContent}
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -611,11 +619,23 @@ export default function HomeScreen() {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
           <StableCenteredModalFrame key={isScrollableSettingsPage ? `${settingsModalPage}-${contentWidth}-${contentHeight}` : settingsModalPage}>
-            <View style={[styles.limitModalCard, isScrollableSettingsPage && { maxHeight: Math.max(0, contentHeight - 48) }]}>
+            <View style={[isLandscape ? styles.landscapeLimitModalCard : styles.limitModalCard, isScrollableSettingsPage && { maxHeight: Math.max(0, contentHeight - 48) }]}>
               {settingsModalPage === 'menu' ? (
                 <>
-                  <Text style={styles.limitModalTitle}>Settings</Text>
-                  <View style={styles.settingsModalActions}>
+                  <View style={[styles.settingsModalHeaderRow, !isLandscape && { marginBottom: 20 }]}>
+                    <ModalCloseButton
+                      contentSpacer={false}
+                      accessibilityLabel="Close settings"
+                      onPress={() => {
+                        setSettingsModalVisible(false);
+                        setSettingsModalPage('menu');
+                      }}
+                    />
+                    <Text style={[styles.limitModalTitle, styles.settingsModalHeaderTitle]}>Settings</Text>
+                  </View>
+                  <View style={[styles.settingsModalActions, isLandscape && styles.landscapeSettingsModalActions]}>
+                    <View style={[styles.settingsModalColumns, isLandscape && styles.landscapeSettingsColumns]}>
+                    <View style={[styles.settingsModalActions, isLandscape && styles.landscapeSettingsColumn]}>
                     <Pressable
                       style={[styles.limitModalButton, styles.limitPremiumButton, isPremium && styles.premiumActiveButton]}
                       onPress={isPremium ? undefined : handlePurchasePremium}
@@ -638,12 +658,22 @@ export default function HomeScreen() {
                         <Text style={styles.premiumChecklistText}>Access to ALL future premium features</Text>
                       </View>
                     </View>
+                    </View>
+                    <View style={[styles.settingsModalActions, isLandscape && styles.landscapeSettingsColumn]}>
                     <Pressable
                       style={[styles.limitModalButton, styles.settingsOptionButton]}
                       onPress={handleRestorePurchase}
                     >
                       <Ionicons name="refresh-outline" size={19} color="#fff" style={styles.settingsButtonIcon} />
                       <Text style={styles.settingsOptionButtonText}>Restore Purchase</Text>
+                    </Pressable>
+                    <Pressable
+                      accessibilityRole="button"
+                      style={[styles.limitModalButton, styles.settingsOptionButton]}
+                      onPress={removePremiumForTesting}
+                    >
+                      <Ionicons name="flask-outline" size={19} color="#fff" style={styles.settingsButtonIcon} />
+                      <Text style={styles.settingsOptionButtonText}>Remove Premium (Test)</Text>
                     </Pressable>
                     <Pressable
                       style={[styles.limitModalButton, styles.settingsOptionButton]}
@@ -666,8 +696,10 @@ export default function HomeScreen() {
                       <Ionicons name="heart-outline" size={19} color="#fff" style={styles.settingsButtonIcon} />
                       <Text style={styles.settingsOptionButtonText}>Special Thanks</Text>
                     </Pressable>
+                    </View>
+                    </View>
                     <Pressable
-                      style={[styles.limitModalButton, styles.settingsCloseButton]}
+                      style={[styles.limitModalButton, styles.settingsCloseButton, isLandscape && styles.landscapeSettingsCloseButton]}
                       onPress={() => setSettingsModalVisible(false)}
                     >
                       <Ionicons name="close" size={19} color="#fff" />
@@ -683,7 +715,19 @@ export default function HomeScreen() {
                 </>
               ) : settingsModalPage === 'feedback' ?(
                 <>
-                  <Text style={styles.limitModalTitle}>Send Feedback</Text>
+                  <View style={[styles.settingsModalHeaderRow, !isLandscape && { marginBottom: 20 }]}>
+                    <ModalCloseButton
+                      contentSpacer={false}
+                      accessibilityLabel="Close settings"
+                      disabled={isSendingFeedback}
+                      onPress={() => {
+                        if (isSendingFeedback) return;
+                        setSettingsModalVisible(false);
+                        setSettingsModalPage('menu');
+                      }}
+                    />
+                    <Text style={[styles.limitModalTitle, styles.settingsModalHeaderTitle]}>Send Feedback</Text>
+                  </View>
                   <Text style={styles.feedbackInstructions}>
                     Write a message below. It will be sent directly to {FEEDBACK_RECIPIENT}.
                   </Text>
@@ -702,7 +746,7 @@ export default function HomeScreen() {
                   <Text style={styles.feedbackCharacterCount}>{feedbackMessage.length}/2000</Text>
                   <View style={styles.feedbackActions}>
                     <Pressable
-                      style={[styles.limitModalButton, styles.limitRowButton, styles.limitBackButton]}
+                      style={[styles.limitModalButton, styles.limitBackButton, styles.settingsSubpageActionButton]}
                       onPress={() => setSettingsModalPage('menu')}
                       disabled={isSendingFeedback}
                     >
@@ -710,7 +754,7 @@ export default function HomeScreen() {
                       <Text style={styles.limitBackButtonText}>Back</Text>
                     </Pressable>
                     <Pressable
-                      style={[styles.limitModalButton, styles.limitRowButton, styles.feedbackSendButton]}
+                      style={[styles.limitModalButton, styles.feedbackSendButton, styles.settingsSubpageActionButton]}
                       onPress={() => void handleSendFeedback()}
                       disabled={isSendingFeedback}
                     >
@@ -727,7 +771,17 @@ export default function HomeScreen() {
                 </>
               ) : settingsModalPage === 'about' ? (
                 <>
-                  <Text style={styles.limitModalTitle}>About</Text>
+                  <View style={[styles.settingsModalHeaderRow, !isLandscape && { marginBottom: 20 }]}>
+                    <ModalCloseButton
+                      contentSpacer={false}
+                      accessibilityLabel="Close settings"
+                      onPress={() => {
+                        setSettingsModalVisible(false);
+                        setSettingsModalPage('menu');
+                      }}
+                    />
+                    <Text style={[styles.limitModalTitle, styles.settingsModalHeaderTitle]}>About</Text>
+                  </View>
 
                   <BlueScrollView
                     style={styles.settingsPageContent}
@@ -789,7 +843,7 @@ export default function HomeScreen() {
                   </BlueScrollView>
 
                   <Pressable
-                    style={[styles.limitModalButton, styles.limitBackButton]}
+                    style={[styles.limitModalButton, styles.limitBackButton, styles.settingsSubpageActionButton]}
                     onPress={() => setSettingsModalPage('menu')}
                   >
                     <Ionicons name="chevron-back" size={18} color="#307FB6" />
@@ -798,7 +852,17 @@ export default function HomeScreen() {
                 </>
               ) : settingsModalPage === 'thanks' ? (
                 <>
-                  <Text style={styles.limitModalTitle}>Special Thanks</Text>
+                  <View style={[styles.settingsModalHeaderRow, !isLandscape && { marginBottom: 20 }]}>
+                    <ModalCloseButton
+                      contentSpacer={false}
+                      accessibilityLabel="Close settings"
+                      onPress={() => {
+                        setSettingsModalVisible(false);
+                        setSettingsModalPage('menu');
+                      }}
+                    />
+                    <Text style={[styles.limitModalTitle, styles.settingsModalHeaderTitle]}>Special Thanks</Text>
+                  </View>
                   <Text style={styles.limitModalText}>
                     Thank you to everyone who helped make Boxing Score Companion possible.
                   </Text>
@@ -862,7 +926,7 @@ export default function HomeScreen() {
                     )}
                   </BlueScrollView>
                   <Pressable
-                    style={[styles.limitModalButton, styles.limitBackButton]}
+                    style={[styles.limitModalButton, styles.limitBackButton, styles.settingsSubpageActionButton]}
                     onPress={() => setSettingsModalPage('menu')}
                   >
                     <Ionicons name="chevron-back" size={18} color="#307FB6" />
@@ -877,7 +941,7 @@ export default function HomeScreen() {
       <Modal
         animationType="fade"
         transparent
-        visible={scorecardLimitModalVisible}
+        visible={scorecardLimitModalVisible && hasReachedFreeScorecardLimit}
         supportedOrientations={['portrait', 'landscape', 'landscape-left', 'landscape-right']}
         onRequestClose={() => {
           if (!isRewardedAdLoading) setScorecardLimitModalVisible(false);
@@ -886,7 +950,14 @@ export default function HomeScreen() {
         <View style={styles.limitModalOverlay}>
           <StableCenteredModalFrame>
             <View style={styles.limitModalCard}>
-              <Text style={styles.limitModalTitle}>Free scorecard limit reached</Text>
+              <ModalTitleHeader
+                title="Free scorecard limit reached"
+                titleStyle={styles.limitModalTitle}
+                accessibilityLabel="Close scorecard limit dialog"
+                disabled={isRewardedAdLoading}
+                isLandscape={isLandscape}
+                onClose={() => setScorecardLimitModalVisible(false)}
+              />
               <Text style={styles.limitModalText}>
                 You’ve reached the limit of 25 free saved scorecards. {'\n'}{'\n'} 
                 Delete a saved card, purchase Premium, or watch an ad to create another scorecard.
@@ -1054,12 +1125,29 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     width: '100%',
   },
+  landscapeLimitModalCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    elevation: 6,
+    maxWidth: 680,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    marginTop: '0.75%',
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    width: '100%',
+  },
   limitModalTitle: {
     color: '#333A3F',
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     marginBottom: 10,
+    paddingHorizontal: 24,
     textAlign: 'center',
+  },
+  landscapeSettingsMenuTitle: {
+    marginBottom: 18,
   },
   limitModalText: {
     color: '#333A3F',
@@ -1067,6 +1155,19 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     marginBottom: 20,
     textAlign: 'center',
+  },
+  settingsModalHeaderRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 10,
+    marginHorizontal: -20,
+    marginTop: -20,
+    minHeight: 32,
+    position: 'relative',
+  },
+  settingsModalHeaderTitle: {
+    marginBottom: 0,
   },
   limitModalSubText: {
     color: '#333A3F',
@@ -1126,6 +1227,31 @@ const styles = StyleSheet.create({
   settingsModalActions: {
     gap: 10,
   },
+  settingsModalColumns: {
+    gap: 10,
+  },
+  landscapeSettingsModalActions: {
+    gap: 12,
+  },
+  landscapeSettingsColumns: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    gap: 20,
+  },
+  landscapeSettingsColumn: {
+    flex: 1,
+    minWidth: 0,
+  },
+  landscapeSettingsCloseButton: {
+    alignSelf: 'center',
+    marginTop: 10,
+  },
+  settingsSubpageActionButton: {
+    alignSelf: 'center',
+    minWidth: 0,
+    width: '40%',
+    maxWidth: 240,
+  },
   settingsOptionButton: {
     backgroundColor: '#307FB6',
   },
@@ -1158,6 +1284,9 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     backgroundColor: '#D32F2F',
     marginTop: 14,
+    minWidth: 0,
+    width: '40%',
+    maxWidth: 240,
   },
   settingsAdPositioner: {
     alignItems: 'center',
@@ -1191,6 +1320,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   feedbackActions: {
+    justifyContent: 'center',
     flexDirection: 'row',
     gap: 10,
   },
@@ -1421,10 +1551,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: '45%',
     bottom: 0,
-    width: '100%',
     height: '55%',
     backgroundColor: '#f1f5f8',
-    overflow: 'visible',
+    overflow: 'hidden',
     elevation: 0,
     zIndex: 1,
 

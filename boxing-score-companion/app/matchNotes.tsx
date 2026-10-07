@@ -151,7 +151,14 @@ export default function MatchNotesScreen() {
     const router = useRouter();
     const { isPremium } = usePremium();
     const params = useLocalSearchParams();
-    const { isLandscape, insets, sx, sy, horizontalGutter } = useResponsiveLayout();
+    const { width, isLandscape, insets, sx, sy, horizontalGutter } = useResponsiveLayout();
+    const landscapeHeaderHeight = Math.max(38, Math.min(42, 40 * sy));
+    const landscapeSafeLeft = Math.max(insets.left, 16 * sx);
+    const landscapeSafeRight = Math.max(insets.right, 16 * sx);
+    const landscapeSafeWidth = Math.max(0, width - landscapeSafeLeft - landscapeSafeRight);
+    const landscapeCardsWidth = landscapeSafeWidth;
+    const landscapeCardsLeft = landscapeSafeLeft;
+    const bottomBarGutter = Math.max(horizontalGutter, 18 * sx);
     const notesMode = Array.isArray(params.notesMode) ? params.notesMode[0] : params.notesMode;
     const isReviewBeforeShare = notesMode === 'review-before-share';
 
@@ -317,11 +324,34 @@ export default function MatchNotesScreen() {
 
             <View style={{ height: insets.top, backgroundColor: BLUE }} />
 
-            <View style={[styles.titleContainer, isLandscape && styles.landscapeTitleContainer]}>
-                <Text style={styles.title}>{isReviewBeforeShare ? 'Review Match Notes' : 'Match Notes'}</Text>
+            <View
+                style={[
+                    styles.titleContainer,
+                    isLandscape && styles.landscapeTitleContainer,
+                    isLandscape && {
+                        minHeight: landscapeHeaderHeight,
+                        paddingBottom: 0,
+                        marginLeft: Math.max(insets.left, 16 * sx),
+                        marginRight: Math.max(insets.right, 16 * sx),
+                    },
+                ]}
+            >
+                <Text style={[styles.title, isLandscape && styles.landscapeTitle]}>
+                    {isReviewBeforeShare ? 'Review Match Notes' : 'Match Notes'}
+                </Text>
             </View>
 
-            <View style={[!isLandscape ? styles.scrollView : styles.landscapeScrollView, isLandscape && styles.landscapeContent]}>
+            <View
+                style={[
+                    !isLandscape ? styles.scrollView : styles.landscapeScrollView,
+                    isLandscape && styles.landscapeContent,
+                    isLandscape && {
+                        width: landscapeCardsWidth,
+                        marginLeft: landscapeCardsLeft,
+                        alignSelf: 'flex-start',
+                    },
+                ]}
+            >
                 <View style={[styles.card, styles.ratingCard, isLandscape && styles.landscapeRatingCard]}>
                     <View style={isLandscape && styles.landscapeHeadingCopy}>
                         <Text style={styles.sectionTitle}>Rate this fight</Text>
@@ -331,7 +361,7 @@ export default function MatchNotesScreen() {
                     </View>
 
                     <View
-                        style={styles.starsRow}
+                        style={[styles.starsRow, isLandscape && styles.landscapeStarsRow]}
                         accessibilityRole="image"
                         accessibilityLabel={`${rating.toFixed(1)} out of 5 stars`}
                     >
@@ -390,7 +420,7 @@ export default function MatchNotesScreen() {
                                 {/* How would you  */}
                                 Describe this fight</Text>
                             <Text style={[styles.sectionDescription, isLandscape && styles.landscapeSectionDescription]}>
-                                Tap and select up to {MAX_DESCRIPTORS} match descriptors.
+                                Select up to {MAX_DESCRIPTORS} match descriptors
                                 {/* that tell the story of the fight. */}
                             </Text>
                         </View>
@@ -525,15 +555,21 @@ export default function MatchNotesScreen() {
             <View
                 style={[
                     styles.bottomBar,
+                    isLandscape && styles.landscapeBottomBar,
                     {
                         paddingBottom: Math.max(insets.bottom, 8),
-                        paddingHorizontal: Math.max(horizontalGutter, 18 * sx),
+                        paddingLeft: bottomBarGutter + (isLandscape ? insets.left : 0),
+                        paddingRight: bottomBarGutter + (isLandscape ? insets.right : 0),
                     },
                 ]}
             >
                 <Pressable
                     onPress={goBack}
-                    style={({ pressed }) => [styles.cancelButton, pressed && styles.pressed]}
+                    style={({ pressed }) => [
+                        styles.cancelButton,
+                        isLandscape && styles.landscapeActionButton,
+                        pressed && styles.pressed,
+                    ]}
                     accessibilityRole="button"
                     accessibilityLabel={isReviewBeforeShare ? 'Back to review match details' : 'Cancel note changes'}
                 >
@@ -542,7 +578,11 @@ export default function MatchNotesScreen() {
                 </Pressable>
                 <Pressable
                     onPress={saveNotes}
-                    style={({ pressed }) => [styles.saveButton, pressed && styles.pressed]}
+                    style={({ pressed }) => [
+                        styles.saveButton,
+                        isLandscape && styles.landscapeActionButton,
+                        pressed && styles.pressed,
+                    ]}
                     accessibilityRole="button"
                     accessibilityLabel={isReviewBeforeShare ? 'Confirm notes and continue to export' : 'Save notes to scorecard'}
                 >
@@ -586,7 +626,6 @@ const styles = StyleSheet.create({
         elevation: 3,
     },
     landscapeTitleContainer: {
-        minHeight: 52,
         borderBottomLeftRadius: 20,
         borderBottomRightRadius: 20,
     },
@@ -594,6 +633,9 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 18,
         fontWeight: '700',
+    },
+    landscapeTitle: {
+        fontSize: 20,
     },
     pressed: {
         opacity: 0.62,
@@ -644,9 +686,14 @@ const styles = StyleSheet.create({
         marginVertical: '3.5%'
     },
     landscapeRatingCard: {
-        width: '38%',
-        minWidth: 300,
+        width: '34%',
+        minWidth: 270,
         marginVertical: 0,
+    },
+    landscapeStarsRow: {
+        flexGrow: 1,
+        marginTop: 0,
+        marginBottom: 0,
     },
     landscapeDescriptorCard: {
         flex: 1,
@@ -662,7 +709,7 @@ const styles = StyleSheet.create({
     },
     sectionDescription: {
         color: '#6D7C86',
-        fontSize: 13,
+        fontSize: 11,
         lineHeight: 18,
         marginTop: 5,
         
@@ -919,6 +966,13 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'flex-end',
         gap: 8,
+    },
+    landscapeBottomBar: {
+        justifyContent: 'space-between',
+    },
+    landscapeActionButton: {
+        maxWidth: 200,
+        minWidth: 0,
     },
     cancelButton: {
         minHeight: 40,
