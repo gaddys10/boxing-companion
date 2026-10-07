@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, StyleSheet, Modal, Image } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Modal } from 'react-native';
 import { router } from 'expo-router';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -8,7 +8,9 @@ import { Ionicons, MaterialCommunityIcons} from '@expo/vector-icons';
 import { Image as ExpoImage } from 'expo-image';
 import CollapsibleBannerAd from './collapsibleBannerAd';
 import StableCenteredModalFrame from './stableCenteredModalFrame';
+import { ModalTitleHeader } from './modalCloseButton';
 import { usePremium } from '../../contexts/PremiumContext';
+import { useResponsiveLayout } from '../../hooks/use-responsive-layout';
 
 
 const SWIPE_ACTIONS_HEIGHT = 85;
@@ -86,6 +88,7 @@ export default function LandscapeRoundRow({
     onConfirmStoppage,
 }: RoundRowProps) {
     const { isPremium } = usePremium();
+    const { contentHeight, insets } = useResponsiveLayout();
     const swipeOffset = useSharedValue(0);
     const swipeStartOffset = useSharedValue(0);
     const plusMinusNumber = plusMinus && plusMinus !== '-' ? Number(plusMinus) : null;
@@ -99,6 +102,7 @@ export default function LandscapeRoundRow({
     const [scoringModalVisible, setScoringModalVisible] = useState(false);
     const [quickScoringVisible, setQuickScoringVisible] = useState(false);
     const [orientationChoiceVisible, setOrientationChoiceVisible] = useState(false);
+    const [scoringMethodModalHeight, setScoringMethodModalHeight] = useState<number | null>(null);
     const [stoppageModalVisible, setStoppageModalVisible] = useState(false);
     const [draftStoppageReason, setDraftStoppageReason] = useState<RoundRowProps['stoppageReason']>(stoppageReason);
     const [selectedStoppageWinner, setSelectedStoppageWinner] = useState<string | undefined>(stoppageWinner);
@@ -408,51 +412,91 @@ export default function LandscapeRoundRow({
                     <StableCenteredModalFrame
                         key={quickScoringVisible ? 'quick' : orientationChoiceVisible ? 'orientation' : 'method'}
                     >
-                    <View style={styles.scoringModal}>
+                    <View
+                        style={[
+                            styles.scoringModal,
+                            orientationChoiceVisible && scoringMethodModalHeight !== null && { height: scoringMethodModalHeight },
+                        ]}
+                        onLayout={({ nativeEvent }) => {
+                            if (!quickScoringVisible && !orientationChoiceVisible) {
+                                setScoringMethodModalHeight(nativeEvent.layout.height);
+                            }
+                        }}
+                    >
+                        {orientationChoiceVisible ? (
+                            <ModalTitleHeader
+                                title="Choose Orientation"
+                                style={{ marginBottom: 24 }}
+                                titleStyle={styles.landscapeQuickModalTitle}
+                                accessibilityLabel="Close scoring dialog"
+                                onClose={closeScoringModal}
+                                isLandscape
+                            />
+                        ) : !quickScoringVisible ? (
+                            <ModalTitleHeader
+                                title="Select Scoring Method"
+                                style={{ marginBottom: 28 }}
+                                titleStyle={styles.landscapeQuickModalTitle}
+                                accessibilityLabel="Close scoring dialog"
+                                onClose={closeScoringModal}
+                                isLandscape
+                            />
+                        ) : (
+                            <ModalTitleHeader
+                                title={`Quick Score Round ${roundNumber}`}
+                                titleStyle={styles.quickModalTitle}
+                                accessibilityLabel="Close scoring dialog"
+                                onClose={closeScoringModal}
+                                isLandscape
+                            />
+                        )}
                         {orientationChoiceVisible ? (
                             <>
-                                <Text style={styles.landscapeQuickModalTitle}>Choose Orientation</Text>
                                 <Text style={styles.orientationPrompt}>How would you like to score this round?</Text>
                                 <View style={styles.methodRow}>
-                                    <Pressable
-                                        accessibilityRole="button"
-                                        accessibilityLabel="Score in portrait mode"
-                                        style={styles.orientationButton}
-                                        onPress={() => startFullScoring(ScreenOrientation.OrientationLock.PORTRAIT_UP)}
-                                    >
-                                        <View style={styles.orientationImageSlot}>
-                                            <ExpoImage
-                                                source={require('../../assets/images/portrait-optimized.png')}
-                                                style={styles.orientationPortraitImage}
-                                                contentFit="contain"
-                                                cachePolicy="memory-disk"
-                                                transition={0}
-                                            />
-                                        </View>
-                                        <Text style={styles.orientationButtonText}>Portrait</Text>
-                                    </Pressable>
-                                    <Pressable
-                                        accessibilityRole="button"
-                                        accessibilityLabel="Score in landscape mode"
-                                        style={styles.orientationButton}
-                                        onPress={() => startFullScoring(ScreenOrientation.OrientationLock.LANDSCAPE)}
-                                    >
-                                        <View style={styles.orientationImageSlot}>
-                                            <ExpoImage
-                                                source={require('../../assets/images/landscape-optimized.png')}
-                                                style={styles.orientationLandscapeImage}
-                                                contentFit="contain"
-                                                cachePolicy="memory-disk"
-                                                transition={0}
-                                            />
-                                        </View>
-                                        <Text style={styles.orientationButtonText}>Landscape</Text>
-                                    </Pressable>
+                                    <View style={styles.methodOption}>
+                                        <Pressable
+                                            accessibilityRole="button"
+                                            accessibilityLabel="Score in portrait mode"
+                                            style={styles.scoringButton}
+                                            onPress={() => startFullScoring(ScreenOrientation.OrientationLock.PORTRAIT_UP)}
+                                        >
+                                            <View style={styles.orientationImageSlot}>
+                                                <ExpoImage
+                                                    source={require('../../assets/images/portrait-optimized.png')}
+                                                    style={styles.orientationPortraitImage}
+                                                    contentFit="contain"
+                                                    cachePolicy="memory-disk"
+                                                    transition={0}
+                                                />
+                                            </View>
+                                            <Text style={styles.orientationButtonText}>Portrait</Text>
+                                        </Pressable>
+                                    </View>
+                                    <View style={styles.methodOption}>
+                                        <Pressable
+                                            accessibilityRole="button"
+                                            accessibilityLabel="Score in landscape mode"
+                                            style={styles.scoringButton}
+                                            onPress={() => startFullScoring(ScreenOrientation.OrientationLock.LANDSCAPE)}
+                                        >
+                                            <View style={styles.orientationImageSlot}>
+                                                <ExpoImage
+                                                    source={require('../../assets/images/landscape-optimized.png')}
+                                                    style={styles.orientationLandscapeImage}
+                                                    contentFit="contain"
+                                                    cachePolicy="memory-disk"
+                                                    transition={0}
+                                                />
+                                            </View>
+                                            <Text style={styles.orientationButtonText}>Landscape</Text>
+                                        </Pressable>
+                                    </View>
                                 </View>
                                 <Pressable
                                     accessibilityRole="button"
                                     accessibilityLabel="Back to scoring method selection"
-                                    style={[styles.modalButton, styles.cancelButton]}
+                                    style={[styles.modalButton, styles.cancelButton, { marginTop: -1 }]}
                                     onPress={() => setOrientationChoiceVisible(false)}
                                 >
                                     <Text style={styles.cancelButtonText}>Back</Text>
@@ -460,18 +504,17 @@ export default function LandscapeRoundRow({
                             </>
                         ) : !quickScoringVisible ? (
                             <>
-                                <Text style={styles.landscapeQuickModalTitle}>Select Scoring Method</Text>
                                 <View style={styles.methodRow}>
                                     <View style={styles.methodOption}>
-                                        <Pressable style={styles.scoringButton} onPress={openQuickScoring}>
-                                            <Ionicons name="flash" size={20} color="#fff" style={styles.scoringMethodIcon} />
+                                        <Pressable style={[styles.scoringButton, { marginBottom: '1.25%' }]} onPress={openQuickScoring}>
+                                            <Ionicons name="flash" size={20} color="#1976D2" style={styles.scoringMethodIcon} />
                                             <Text numberOfLines={1} style={[styles.scoringButtonText, styles.scoringMethodText]}>Quick Scoring</Text>
                                         </Pressable>
                                         <Text style={styles.modalText}>Score the round in just a few taps!</Text>
                                     </View>
                                     <View style={styles.methodOption}>
                                         <Pressable
-                                            style={styles.scoringButton}
+                                            style={[styles.scoringButton, { marginBottom: '1.25%' }]}
                                             onPress={() => setOrientationChoiceVisible(true)}
                                         >
                                             <ExpoImage
@@ -508,7 +551,6 @@ export default function LandscapeRoundRow({
                             </>
                         ) : (
                             <>
-                                <Text style={styles.quickModalTitle}>Quick Score Round {roundNumber}</Text>
                                 <View style={styles.quickFieldsRow}>
                                     <View style={styles.quickCornerNameRow}>
                                         <Text numberOfLines={2} style={[styles.quickCornerName, styles.quickLeftName]}>{fighter1}</Text>
@@ -581,87 +623,88 @@ export default function LandscapeRoundRow({
                 supportedOrientations={['landscape', 'landscape-left', 'landscape-right']}
                 onRequestClose={cancelStoppageChanges}
             >
-                <View style={styles.stoppageModalOverlay}>
-                    <StableCenteredModalFrame>
-                    <View style={styles.stoppageModalCard}>
-                        <Text style={styles.stoppageModalTitle}>Mark Stoppage</Text>
-                        <Text style={[styles.stoppageModalText, { textAlign: 'center' }]}>Select why the fight was stopped.</Text>
-                        <View style={styles.stoppageOptions}>
-                            <View style={styles.stoppageOptionRow}>
-                                {(['KO', 'TKO', 'DQ', 'NC'] as const).map((option) => (
-                                    <Pressable
-                                        key={option}
-                                        style={[styles.stoppageOption, draftStoppageReason === option && styles.selectedStoppageOption]}
-                                        onPress={() => {
-                                            setDraftStoppageReason(option);
-                                            setSelectedStoppageWinner(undefined);
-                                        }}
-                                    >
-                                        <Text style={[styles.stoppageOptionText, draftStoppageReason === option && styles.selectedStoppageOptionText]}>{option}</Text>
-                                    </Pressable>
-                                ))}
-                            </View>
-                            {/* <View style={styles.stoppageOptionRow}>
-                                {(['DQ', 'NC'] as const).map((option) => (
-                                    <Pressable
-                                        key={option}
-                                        style={[styles.stoppageOption, stoppageReason === option && styles.selectedStoppageOption]}
-                                        onPress={() => {
-                                            onMarkStoppage(roundNumber, option);
-                                            setSelectedStoppageWinner(undefined);
-                                        }}
-                                    >
-                                        <Text style={[styles.stoppageOptionText, stoppageReason === option && styles.selectedStoppageOptionText]}>{option}</Text>
-                                    </Pressable>
-                                ))}
-                            </View> */}
-                        </View>
-                        {(draftStoppageReason === 'KO' || draftStoppageReason === 'TKO' || draftStoppageReason === 'DQ') && (
-                            <>
-                                <Text style={[styles.stoppageModalText, { textAlign: 'center', marginTop: '10%' }]}>Who won the fight?</Text>
-                                <View style={styles.stoppageWinnerOptions}>
-                                    {[fighter1, fighter2].map((fighter) => (
+                <View style={[styles.stoppageModalOverlay, {
+                    paddingTop: insets.top + 20,
+                    paddingBottom: insets.bottom + 4,
+                    paddingLeft: insets.left + 16,
+                    paddingRight: insets.right + 16,
+                }]}>
+                    <View style={[styles.stoppageModalCard, { height: Math.max(0, Math.min(380, contentHeight - 24) - (isPremium ? 50 : 0)) }]}>
+                        <View style={styles.stoppageModalContent}>
+                            <ModalTitleHeader
+                                title="Mark Stoppage"
+                                style={{ marginBottom: 4 }}
+                                titleStyle={styles.stoppageModalTitle}
+                                accessibilityLabel="Close stoppage dialog"
+                                onClose={cancelStoppageChanges}
+                                isLandscape
+                            />
+                            <Text style={[styles.stoppageModalText, { textAlign: 'center', marginBottom: 0 }]}>Select why the fight was stopped.</Text>
+                            <View style={styles.stoppageOptions}>
+                                <View style={styles.stoppageOptionRow}>
+                                    {(['KO', 'TKO', 'DQ', 'NC'] as const).map((option) => (
                                         <Pressable
-                                            key={fighter}
-                                            style={[styles.stoppageWinnerOption, selectedStoppageWinner === fighter && styles.selectedStoppageOption]}
-                                            onPress={() => setSelectedStoppageWinner(fighter)}
+                                            key={option}
+                                            style={[styles.stoppageOption, draftStoppageReason === option && styles.selectedStoppageOption]}
+                                            onPress={() => {
+                                                setDraftStoppageReason(option);
+                                                setSelectedStoppageWinner(undefined);
+                                            }}
                                         >
-                                            <Text style={[styles.stoppageWinnerText, selectedStoppageWinner === fighter && styles.selectedStoppageOptionText]}>{fighter}</Text>
+                                            <Text style={[styles.stoppageOptionText, draftStoppageReason === option && styles.selectedStoppageOptionText]}>{option}</Text>
                                         </Pressable>
                                     ))}
                                 </View>
-                            </>
-                        )}
-                        <View style={styles.stoppageModalActions}>
-                            <Pressable style={[styles.stoppageModalButton, styles.stoppageCancelButton]} onPress={cancelStoppageChanges}>
-                                <Text style={styles.stoppageCancelButtonText}>Cancel</Text>
-                            </Pressable>
-                            <Pressable
-                                style={[styles.stoppageModalButton, styles.stoppageConfirmButton]}
-                                onPress={() => {
-                                    if (draftStoppageReason === 'NC') {
-                                        onConfirmStoppage(roundNumber, draftStoppageReason);
-                                        setStoppageModalVisible(false);
-                                    } else if (
-                                        selectedStoppageWinner &&
-                                        (draftStoppageReason === 'KO' || draftStoppageReason === 'TKO' || draftStoppageReason === 'DQ')
-                                    ) {
-                                        onConfirmStoppage(roundNumber, draftStoppageReason, selectedStoppageWinner);
-                                        setStoppageModalVisible(false);
-                                    }
-                                }}
-                            >
-                                <Text style={styles.stoppageConfirmButtonText}>Confirm</Text>
-                            </Pressable>
+                            </View>
+                            {(draftStoppageReason === 'KO' || draftStoppageReason === 'TKO' || draftStoppageReason === 'DQ') && (
+                                <>
+                                    <Text style={[styles.stoppageModalText, { textAlign: 'center', marginTop: 0, marginBottom: 0 }]}>Who won the fight?</Text>
+                                    <View style={styles.stoppageWinnerOptions}>
+                                        {[fighter1, fighter2].map((fighter) => (
+                                            <Pressable
+                                                key={fighter}
+                                                style={[styles.stoppageWinnerOption, selectedStoppageWinner === fighter && styles.selectedStoppageOption]}
+                                                onPress={() => setSelectedStoppageWinner(fighter)}
+                                            >
+                                                <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} style={[styles.stoppageWinnerText, selectedStoppageWinner === fighter && styles.selectedStoppageOptionText]}>{fighter}</Text>
+                                            </Pressable>
+                                        ))}
+                                    </View>
+                                </>
+                            )}
+                            <View style={[styles.stoppageModalActions, { marginTop: 0 }]}>
+                                <Pressable style={[styles.stoppageModalButton, styles.stoppageCancelButton]} onPress={cancelStoppageChanges}>
+                                    <Text style={styles.stoppageCancelButtonText}>Cancel</Text>
+                                </Pressable>
+                                <Pressable
+                                    style={[styles.stoppageModalButton, styles.stoppageConfirmButton]}
+                                    onPress={() => {
+                                        if (draftStoppageReason === 'NC') {
+                                            onConfirmStoppage(roundNumber, draftStoppageReason);
+                                            setStoppageModalVisible(false);
+                                        } else if (
+                                            selectedStoppageWinner &&
+                                            (draftStoppageReason === 'KO' || draftStoppageReason === 'TKO' || draftStoppageReason === 'DQ')
+                                        ) {
+                                            onConfirmStoppage(roundNumber, draftStoppageReason, selectedStoppageWinner);
+                                            setStoppageModalVisible(false);
+                                        }
+                                    }}
+                                >
+                                    <Text style={styles.stoppageConfirmButtonText}>Confirm</Text>
+                                </Pressable>
+                            </View>
+                            {!isPremium && (
+                                <View style={styles.stoppageAdPositioner}>
+                                    {stoppageModalVisible && (
+                                        <CollapsibleBannerAd
+                                            failureMessage="Landscape match info stoppage banner failed:"
+                                        />
+                                    )}
+                                </View>
+                            )}
                         </View>
-                        {stoppageModalVisible && !isPremium && (
-                            <CollapsibleBannerAd
-                                containerStyle={styles.stoppageAdPositioner}
-                                failureMessage="Landscape match info stoppage banner failed:"
-                            />
-                        )}
                     </View>
-                    </StableCenteredModalFrame>
                 </View>
             </Modal>
         </>
@@ -804,7 +847,7 @@ const styles = StyleSheet.create({
         flex: 1,
         width: 'auto',
         maxWidth: 180,
-        marginTop: 12,
+        marginTop: 8,
         marginLeft: 0,
     },
     clearRoundButton: {
@@ -876,27 +919,33 @@ const styles = StyleSheet.create({
         maxWidth: 480,
         backgroundColor: '#fff',
         borderRadius: 12,
-        padding: 20,
+        overflow: 'hidden',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.25,
         shadowRadius: 8,
         elevation: 6,
     },
+    stoppageModalContent: {
+        flex: 1,
+        justifyContent: 'space-between',
+        padding: 20,
+    },
     stoppageModalTitle: {
         color: '#333A3F',
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: '700',
         marginBottom: 8,
+        paddingHorizontal: 24,
         textAlign: 'center',
     },
     stoppageModalText: {
         color: '#333A3F',
-        fontSize: 15,
+        fontSize: 14,
         lineHeight: 21,
-        marginBottom: 20,
+        marginBottom: 13,
     },
-    stoppageOptions: { gap: 15, marginTop: 4, alignItems: 'center' },
+    stoppageOptions: { alignItems: 'center' },
     stoppageOptionRow: { flexDirection: 'row', gap: 10 },
     stoppageWinnerOptions: { flexDirection: 'row', gap: 15, justifyContent: 'center' },
     stoppageOption: {
@@ -922,7 +971,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     selectedStoppageOption: {
-        backgroundColor: '#1976D2',
+        backgroundColor: '#307FB6',
     },
     stoppageOptionText: {
         color: '#333A3F',
@@ -939,10 +988,11 @@ const styles = StyleSheet.create({
         width: '100%',
         textAlign: 'center',
     },
-    stoppageModalActions: { flexDirection: 'row', justifyContent: 'space-around', marginTop: '10%', gap: 10 },
+    stoppageModalActions: { flexDirection: 'row', justifyContent: 'space-around', marginTop: 12, gap: 10 },
     stoppageAdPositioner: {
         alignItems: 'center',
-        marginTop: 18,
+        height: 50,
+        flexShrink: 0,
         width: '100%',
     },
     stoppageModalButton: { minWidth: 88, paddingVertical: 8, borderRadius: 8, alignItems: 'center' },
@@ -1016,7 +1066,7 @@ const styles = StyleSheet.create({
     modalText: {
         color: '#333A3F',
         fontSize: 12,
-        marginTop: 8,
+        marginTop: 6,
         textAlign: 'center',
     },
     orientationPrompt: {
@@ -1024,22 +1074,6 @@ const styles = StyleSheet.create({
         fontSize: 15,
         marginBottom: 18,
         textAlign: 'center',
-    },
-    orientationButton: {
-        alignItems: 'center',
-        backgroundColor: '#fff',
-        borderColor: 'rgba(200, 200, 200, 0.7)',
-        borderRadius: 12,
-        borderWidth: 1,
-        flex: 1,
-        flexDirection: 'row',
-        gap: 8,
-        justifyContent: 'center',
-        minHeight: 54,
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
     },
     orientationButtonText: {
         color: '#1976D2',
@@ -1065,20 +1099,23 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: '700',
         marginBottom: '7 %',
+        paddingHorizontal: 24,
         textAlign: 'center',
     },
     landscapeQuickModalTitle: {
         color: '#333A3F',
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: '700',
         marginBottom: '6%',
+        paddingHorizontal: 24,
         textAlign: 'center',
     },
     quickModalTitle: {
         color: '#333A3F',
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: '700',
         marginBottom: '2.5%',
+        paddingHorizontal: 24,
         textAlign: 'center',
     },
     redPlusMinus: {
@@ -1093,7 +1130,7 @@ const styles = StyleSheet.create({
     },
     scoringButton: {
         alignItems: 'center',
-        backgroundColor: '#1976D2',
+        backgroundColor: '#fff',
         borderRadius: 12,
         flexDirection: 'row',
         gap: 8,
@@ -1109,13 +1146,14 @@ const styles = StyleSheet.create({
         borderColor: 'rgba(200, 200, 200, 0.7)',
     },
     scoringButtonText: {
-        color: '#fff',
+        color: '#1976D2',
         fontSize: 18,
+        fontWeight: '700',
     },
     scoringMethodImage: {
         width: 24,
         height: 24,
-        tintColor: '#fff',
+        tintColor: '#1976D2',
     },
     scoringMethodIcon: {
         width: 24,

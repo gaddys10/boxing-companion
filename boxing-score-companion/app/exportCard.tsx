@@ -267,7 +267,7 @@ export default function ExportCardScreen() {
     const exportCardRef = useRef<View>(null);
     const { captureExportCard, exportCanvas } = useScorecardExport(exportCardRef);
     const [busyAction, setBusyAction] = useState<'share' | 'save' | null>(null);
-    const [formatAction, setFormatAction] = useState<'share' | 'save' | null>(null);
+    const [formatAction, setFormatAction] = useState<'share' | null>(null);
     const exportInProgress = useRef(false);
     const [xRequest, xResponse, promptXLogin] = AuthSession.useAuthRequest({
         clientId: X_CLIENT_ID,
@@ -709,7 +709,7 @@ export default function ExportCardScreen() {
                             )}
                         </View>
 
-                        <View style={styles.fighterBlock}>
+                        <View style={styles.leftFighterBlock}>
                             <View style={styles.fighterNameSlot}>
                                 <Text
                                     numberOfLines={2}
@@ -1008,7 +1008,7 @@ export default function ExportCardScreen() {
                     </Pressable>
 
                     <Pressable
-                        onPress={() => setFormatAction('save')}
+                        onPress={() => void handleSaveImage('original')}
                         disabled={busyAction !== null}
                         style={({ pressed }) => [
                             styles.actionButton,
@@ -1033,13 +1033,7 @@ export default function ExportCardScreen() {
             <ExportFormatModal
                 action={formatAction}
                 onClose={() => setFormatAction(null)}
-                onSelect={(format, action) => {
-                    if (action === 'share') {
-                        void handleShare(format);
-                    } else {
-                        void handleSaveImage(format);
-                    }
-                }}
+                onSelect={(format) => void handleShare(format)}
             />
         </View>
     );
@@ -1264,6 +1258,13 @@ const styles = StyleSheet.create({
     },
     compactMatchupRow: {
         marginBottom: -2,
+    },
+    leftFighterBlock: {
+        flex: 1,
+        minWidth: 0,
+        alignItems: 'center',
+        paddingLeft: '1%',
+        justifyContent: 'center',
     },
     fighterBlock: {
         flex: 1,

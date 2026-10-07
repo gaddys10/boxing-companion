@@ -1,6 +1,6 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useRef, useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 
 import { useRouter } from 'expo-router';
@@ -8,6 +8,7 @@ import type { MatchDescription, MatchRating } from '../../types/matchNotes';
 import { serializeMatchDescription } from '../../types/matchNotes';
 import CollapsibleBannerAd from './collapsibleBannerAd';
 import StableCenteredModalFrame from './stableCenteredModalFrame';
+import { ModalTitleHeader } from './modalCloseButton';
 import { usePremium } from '../../contexts/PremiumContext';
 
 type SavedCardProps = {
@@ -31,6 +32,8 @@ type SavedCardProps = {
 }
 
 export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighter2Score, fighter1KD, fighter2KD, fighter1Pen, fighter2Pen, rounds, savedScores, rating, description, weight, gender, fightDate, onDelete}: SavedCardProps) {
+  const { width, height } = useWindowDimensions();
+  const isLandscape = width > height;
   const router = useRouter();
   const { isPremium } = usePremium();
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
@@ -234,7 +237,13 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
         <View style={styles.modalOverlay}>
           <StableCenteredModalFrame>
           <View style={styles.deleteModal}>
-            <Text style={styles.modalTitle}>Delete scorecard?</Text>
+            <ModalTitleHeader
+              title="Delete scorecard?"
+              titleStyle={styles.modalTitle}
+              accessibilityLabel="Close delete confirmation"
+              onClose={() => setDeleteModalVisible(false)}
+              isLandscape={isLandscape}
+            />
             <Text style={styles.modalText}>
               Are you sure you want to delete {fighter1} vs {fighter2}?
             </Text>
@@ -556,9 +565,10 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     color: '#333A3F',
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     marginBottom: 8,
+    paddingHorizontal: 24,
     textAlign: 'center',
   },
   modalText: {

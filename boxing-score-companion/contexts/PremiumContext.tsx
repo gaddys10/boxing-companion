@@ -10,6 +10,7 @@ type PremiumContextType = {
     purchasePremium: () => Promise<boolean>;
     restorePurchases: () => Promise<boolean>;
     refreshPremiumStatus: () => Promise<void>;
+    removePremiumForTesting: () => void;
 };
 
 const PremiumContext = createContext<PremiumContextType | undefined>(undefined);
@@ -27,6 +28,9 @@ const hasPremiumEntitlement = (customerInfo: CustomerInfo) => {
 export function PremiumProvider({ children }: PremiumProviderProps) {
     const [isPremium, setIsPremium] = useState(false);
     const [isLoadingPremium, setIsLoadingPremium] = useState(true);
+    const [premiumDisabledForTesting, setPremiumDisabledForTesting] = useState(false);
+
+    const removePremiumForTesting = () => setPremiumDisabledForTesting(true);
 
     const refreshPremiumStatus = async () => {
         try {
@@ -60,6 +64,7 @@ export function PremiumProvider({ children }: PremiumProviderProps) {
 
             const premiumActive = hasPremiumEntitlement(customerInfo);
             setIsPremium(premiumActive);
+            if (premiumActive) setPremiumDisabledForTesting(false);
 
             return premiumActive;
         } catch (error: any) {
@@ -77,6 +82,7 @@ export function PremiumProvider({ children }: PremiumProviderProps) {
             const premiumActive = hasPremiumEntitlement(customerInfo);
 
             setIsPremium(premiumActive);
+            if (premiumActive) setPremiumDisabledForTesting(false);
 
             return premiumActive;
         } catch (error) {
@@ -115,11 +121,12 @@ export function PremiumProvider({ children }: PremiumProviderProps) {
     return (
         <PremiumContext.Provider
             value={{
-                isPremium,
+                isPremium: isPremium && !premiumDisabledForTesting,
                 isLoadingPremium,
                 purchasePremium,
                 restorePurchases,
                 refreshPremiumStatus,
+                removePremiumForTesting,
             }}
         >
         {children}

@@ -8,6 +8,7 @@ import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 import { normalizeMatchRating, parseMatchDescription, serializeMatchDescription } from '../types/matchNotes';
 import CollapsibleBannerAd from './components/collapsibleBannerAd';
 import StableCenteredModalFrame from './components/stableCenteredModalFrame';
+import { ModalTitleHeader } from './components/modalCloseButton';
 import { usePremium } from '../contexts/PremiumContext';
 
 type RoundScore = {
@@ -100,6 +101,8 @@ export default function CreateMatch() {
         36,
         Math.min(40, height * 0.05)
     );
+    const landscapeHeaderHeight = Math.max(38, Math.min(42, 40 * sy));
+    const landscapeActionLift = 5 * sy;
     const roundButtonSize = Math.max(32, Math.min(40, 32 * sx));
     const genderPillHeight = Math.max(36, Math.min(48, 36 * sy));
     const weightPillHeight = Math.max(32, Math.min(40, 36 * sy));
@@ -392,7 +395,10 @@ export default function CreateMatch() {
             >
 
             {/* Page title -- Create Scorecard  */}
-            <View style={isLandscape ? styles.landscapeTitleContainer : styles.titleContainer}>
+            <View style={isLandscape
+                ? [styles.landscapeTitleContainer, { minHeight: landscapeHeaderHeight }]
+                : styles.titleContainer}
+            >
                 <Text style={isLandscape ? styles.landscapeTitle : styles.title}>{title}</Text>
             </View>
 
@@ -607,7 +613,13 @@ export default function CreateMatch() {
                 >
                     <Pressable style={styles.datePickerOverlay} onPress={() => setShowDatePicker(false)}>
                         <Pressable style={styles.datePickerModal} onPress={(event) => event.stopPropagation()}>
-                            <Text style={styles.datePickerModalTitle}>Select Date</Text>
+                            <ModalTitleHeader
+                                title="Select Date"
+                                titleStyle={styles.datePickerModalTitle}
+                                accessibilityLabel="Close date picker"
+                                onClose={() => setShowDatePicker(false)}
+                                isLandscape={isLandscape}
+                            />
                             <DateTimePicker
                                 value={fightDate ?? new Date()}
                                 mode="date"
@@ -805,7 +817,12 @@ export default function CreateMatch() {
 
 
             {isLandscape &&
-                <View style={isEditing ? styles.landscapeEditButtonContainer: styles.landscapeButtonContainer}>
+                <View
+                    style={[
+                        isEditing ? styles.landscapeEditButtonContainer : styles.landscapeButtonContainer,
+                        { transform: [{ translateY: -landscapeActionLift }] },
+                    ]}
+                >
 
                     {/* Cancel button  */}
                     <Pressable
@@ -906,9 +923,13 @@ export default function CreateMatch() {
                 <View style={styles.discardModalOverlay}>
                     <StableCenteredModalFrame>
                     <View style={styles.discardModalCard}>
-                        <Text style={styles.discardModalTitle}>
-                            {isEditing ? 'Discard changes?' : 'Discard scorecard?'}
-                        </Text>
+                        <ModalTitleHeader
+                            title={isEditing ? 'Discard changes?' : 'Discard scorecard?'}
+                            titleStyle={styles.discardModalTitle}
+                            accessibilityLabel="Close discard confirmation"
+                            onClose={() => setDiscardModalVisible(false)}
+                            isLandscape={isLandscape}
+                        />
                         <Text style={styles.discardModalText}>
                             {isEditing
                                 ? 'Are you sure you want to discard your changes?'
@@ -961,9 +982,10 @@ const styles = StyleSheet.create({
     },
     discardModalTitle: {
         color: '#333A3F',
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: '700',
         marginBottom: 10,
+        paddingHorizontal: 24,
         textAlign: 'center',
     },
     discardModalText: {
@@ -1526,9 +1548,12 @@ portraitGenderPill: {
         alignItems: 'center',
     },
     datePickerModalTitle: {
+        alignSelf: 'stretch',
         color: '#000',
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: '700',
+        paddingHorizontal: 32,
+        textAlign: 'center',
     },
     datePickerSpinner: {
         width: '100%',
@@ -1717,19 +1742,12 @@ portraitGenderPill: {
     // LANDSCAPE STYLES
     landscapeTitleContainer: {
         backgroundColor: '#307fb6',
-        minHeight: 52,
         width: '100%',
         justifyContent: 'center',
-        paddingBottom: 8,
         alignItems: 'center',
         borderBottomLeftRadius: 20,
         borderBottomRightRadius: 20,
         marginBottom: '1.5%',
-        boxShadow: '4',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
     },
     landscapeDatePickerButton: {
         width: '100%',

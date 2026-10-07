@@ -8,6 +8,7 @@ import type { MatchDescription, MatchRating } from '../../types/matchNotes';
 import { serializeMatchDescription } from '../../types/matchNotes';
 import CollapsibleBannerAd from './collapsibleBannerAd';
 import StableCenteredModalFrame from './stableCenteredModalFrame';
+import { ModalTitleHeader } from './modalCloseButton';
 import { usePremium } from '../../contexts/PremiumContext';
 
 const SWIPE_ACTION_HEIGHT = 44;
@@ -269,7 +270,13 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
                 <View style={styles.modalOverlay}>
                     <StableCenteredModalFrame>
                     <View style={styles.deleteModal}>
-                        <Text style={styles.modalTitle}>Delete scorecard?</Text>
+                        <ModalTitleHeader
+                            title="Delete scorecard?"
+                            titleStyle={styles.modalTitle}
+                            accessibilityLabel="Close delete confirmation"
+                            onClose={() => setDeleteModalVisible(false)}
+                            isLandscape
+                        />
                         <Text style={styles.modalText}>Are you sure you want to delete {fighter1} vs {fighter2}?</Text>
                         <View style={styles.modalActions}>
                             <Pressable style={[styles.modalButton, styles.cancelButton]} onPress={() => setDeleteModalVisible(false)}>
@@ -526,9 +533,10 @@ const styles = StyleSheet.create({
     }, 
     modalTitle: {
         color: '#333A3F',
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: '700',
         marginBottom: 8,
+        paddingHorizontal: 24,
         textAlign: 'center',
     },
     genderIcon: {
@@ -618,7 +626,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         width: '100%',
-        height: '8%',
+        height: '12%',
         // paddingVertical: 2,
         backgroundColor: '#fff',
         borderBottomLeftRadius: 15,
@@ -627,7 +635,7 @@ const styles = StyleSheet.create({
     savedCardEventRow: {
         flexDirection: 'row',
         width: '100%',
-        height: '22%',
+        height: '21.5%',
         marginTop: -7,
         borderBottomWidth: 1,
         borderColor: '#767676'
@@ -636,13 +644,13 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         width: '100%',
-        height: '24.5%',
+        height: '23.5%',
     },
     savedCardScoreRow: {
         flexDirection: 'row',
         alignItems: 'center',
         width: '100%',
-        height: '22%',
+        height: '21.5%',
         // paddingTop: '3%',
         marginBottom: 0
     },
@@ -661,7 +669,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         width: '100%',
-        height: '22%',
+        height: '21.5%',
         alignSelf: 'flex-start',
         borderTopLeftRadius: 0,
         borderTopRightRadius: 0,
