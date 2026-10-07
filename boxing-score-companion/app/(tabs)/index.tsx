@@ -6,6 +6,8 @@ import { FontAwesome6, Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SavedCard from '../components/savedCard';
 import LandscapeSavedCard from '../components/landscapeSavedCard';
+import LandscapeNativeAd from '../components/landscapeNativeAd';
+import { LANDSCAPE_CARD_LIST_BOTTOM_PADDING, LANDSCAPE_CARD_MIN_HEIGHT } from '../../constants/landscape-card';
 import { StatusBar } from 'expo-status-bar';
 import { useResponsiveLayout } from '../../hooks/use-responsive-layout';
 import type { MatchDescription, MatchRating } from '../../types/matchNotes';
@@ -190,7 +192,7 @@ export default function HomeScreen() {
     + (portraitCardsTop - portraitTitleTop - portraitTitleHeight - searchBoxHeight) / 2;
 
   const landscapeHeaderHeight = contentHeight * 0.23;
-  const landscapeCardsTop = contentHeight * 0.45;
+  const landscapeCardsTop = Math.min(contentHeight * 0.45, Math.max(0, contentHeight - LANDSCAPE_CARD_MIN_HEIGHT - LANDSCAPE_CARD_LIST_BOTTOM_PADDING));
   const landscapeSearchTop = 6
     + landscapeHeaderHeight
     + (landscapeCardsTop - 10 - landscapeHeaderHeight - searchBoxHeight) / 2;
@@ -514,6 +516,7 @@ export default function HomeScreen() {
           <ScrollView
             style={[styles.landscapeSavedCardContainer, {
               top: landscapeCardsTop,
+              height: contentHeight - landscapeCardsTop,
               left: Math.max(insets.left, 8),
               right: Math.max(insets.right, 8),
             }]}
@@ -543,12 +546,12 @@ export default function HomeScreen() {
                 onDelete={handleDeleteCard}
               />
               {adsReady && !isPremium &&  filteredCards.length >= 5 && (index + 1) % 5 === 0 && (
-                <IndexBannerAd landscape />
+                <LandscapeNativeAd />
               )}
               </React.Fragment>
             ))}
             {adsReady && !isPremium &&  filteredCards.length <= 4 && (
-              <IndexBannerAd landscape />
+              <LandscapeNativeAd />
             )}
           </ScrollView>
         }
@@ -784,8 +787,8 @@ export default function HomeScreen() {
                   </View>
 
                   <BlueScrollView
-                    style={styles.settingsPageContent}
-                    contentContainerStyle={styles.settingsPageContentContainer}
+                    style={[styles.settingsPageContent, styles.settingsPageScrollGutter]}
+                    contentContainerStyle={[styles.settingsPageContentContainer, styles.settingsPageScrollGutterContainer]}
                   >
                     <View style={styles.aboutBrand}>
                       <Image source={tIcon} style={styles.aboutBrandIcon} resizeMode="contain" />
@@ -867,8 +870,8 @@ export default function HomeScreen() {
                     Thank you to everyone who helped make Boxing Score Companion possible.
                   </Text>
                   <BlueScrollView
-                    style={[styles.settingsPageContent, styles.thanksContent]}
-                    contentContainerStyle={[styles.settingsPageContentContainer, styles.thanksContentContainer]}
+                    style={[styles.settingsPageContent, styles.settingsPageScrollGutter]}
+                    contentContainerStyle={[styles.settingsPageContentContainer, styles.settingsPageScrollGutterContainer]}
                   >
                     {SPECIAL_THANKS.map((person) => (
                       <View key={person.name} style={styles.thanksPerson}>
@@ -1018,11 +1021,11 @@ const styles = StyleSheet.create({
   settingsPageContentContainer: {
     paddingBottom: 4,
   },
-  thanksContent: {
+  settingsPageScrollGutter: {
     marginRight: -14,
     width: 'auto',
   },
-  thanksContentContainer: {
+  settingsPageScrollGutterContainer: {
     paddingRight: 14,
   },
   thanksPerson: {
@@ -1564,7 +1567,7 @@ const styles = StyleSheet.create({
     paddingLeft: 0,
     gap: 13,
     paddingRight: 12,
-    paddingBottom: 12,
+    paddingBottom: LANDSCAPE_CARD_LIST_BOTTOM_PADDING,
   },
   landscapeBannerAdContainer: {
     width: 320,
