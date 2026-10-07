@@ -670,14 +670,14 @@ export default function HomeScreen() {
                       <Ionicons name="refresh-outline" size={19} color="#fff" style={styles.settingsButtonIcon} />
                       <Text style={styles.settingsOptionButtonText}>Restore Purchase</Text>
                     </Pressable>
-                    <Pressable
+                    {/* <Pressable
                       accessibilityRole="button"
                       style={[styles.limitModalButton, styles.settingsOptionButton]}
                       onPress={removePremiumForTesting}
                     >
                       <Ionicons name="flask-outline" size={19} color="#fff" style={styles.settingsButtonIcon} />
                       <Text style={styles.settingsOptionButtonText}>Remove Premium (Test)</Text>
-                    </Pressable>
+                    </Pressable> */}
                     <Pressable
                       style={[styles.limitModalButton, styles.settingsOptionButton]}
                       onPress={() => setSettingsModalPage('feedback')}
