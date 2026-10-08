@@ -654,7 +654,7 @@ export default function HomeScreen() {
                       </View>
                       <View style={styles.premiumChecklistItem}>
                         <Ionicons name="checkmark-circle" size={18} color="#D99B28" />
-                        <Text style={styles.premiumChecklistText}>Unlimited free saved scorecards</Text>
+                        <Text style={styles.premiumChecklistText}>Unlimited saved scorecards</Text>
                       </View>
                       <View style={styles.premiumChecklistItem}>
                         <Ionicons name="checkmark-circle" size={18} color="#D99B28" />
@@ -799,7 +799,7 @@ export default function HomeScreen() {
                       </View>
                     </View>
 
-                    <Text style={styles.aboutAppName}>Boxing Scoring Companion</Text>
+                    <Text style={styles.aboutAppName}>Boxing Score Companion</Text>
                     <Text style={styles.aboutVersion}>Version 0.1</Text>
 
                     <Text style={styles.aboutText}>
@@ -975,7 +975,7 @@ export default function HomeScreen() {
                   <Text style={styles.limitPrimaryButtonText}>Purchase Premium: $2.99</Text>
                 </Pressable>
                 <Text style={styles.limitModalSubText}>
-                Premium removes ads, unlocks unlimited free saved cards, and includes all future premium features!
+                Premium removes ads, unlocks unlimited saved cards, and includes all future premium features!
               </Text>
                 <View style={styles.limitSecondaryActions}>
                   <Pressable
