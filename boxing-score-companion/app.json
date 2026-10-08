@@ -1,15 +1,18 @@
 {
   "expo": {
-    "name": "Boxing Score Companion",
+    "name": "Boxing Score",
     "slug": "boxing-score-companion",
-    "version": "1.0.0",
+    "version": "0.1.0",
     "orientation": "default",
     "icon": "./assets/images/box-sc-icon--optimized.png",
     "scheme": "boxingscorecompanion",
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.gaddico.boxingscorecompanion"
+      "bundleIdentifier": "com.gaddico.boxingscorecompanion",
+      "infoPlist": {
+        "CFBundleDisplayName": "Boxing Score"
+      }
     },
     "android": {
       "softwareKeyboardLayoutMode": "pan",

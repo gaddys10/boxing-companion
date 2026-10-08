@@ -521,7 +521,7 @@ export default function ExportCardScreen() {
 
     const shareMessage =
         `I scored ${fighter1} vs ${fighter2}: ${shareResult}\n\n` +
-        `via the Boxing Scoring Companion @boxingscoreapp #BoxingScore`;
+        `via the Boxing Score Companion @boxingscoreapp #BoxingScore`;
 
     const handleShare = async (format: ExportImageFormat) => {
         if (exportInProgress.current) return;
