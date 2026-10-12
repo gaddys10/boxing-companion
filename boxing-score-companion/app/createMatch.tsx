@@ -93,7 +93,7 @@ export default function CreateMatch() {
 
 
     const buttonText = isReviewBeforeShare ? 'Continue' : String(params.buttonText || "Create Scorecard");
-    const rounds = [3, 4, 6, 8, 10, 12];
+    const rounds = [1, 3, 4, 6, 8, 10, 12, 15];
     const { height, isLandscape, insets, sx, sy, scale, horizontalGutter } = useResponsiveLayout();
     const id = params.id ? String(params.id) : undefined;
 
@@ -479,24 +479,28 @@ export default function CreateMatch() {
                         </Text>
 
                         <View style={styles.portraitRoundsGrid}>
-                            {rounds.map((round) => (
-                                <Pressable
-                                    key={round}
-                                    style={[
-                                        styles.portraitRoundButton,
-                                        selectedRounds === round && styles.roundButtonSelected,
-                                    ]}
-                                    onPress={() => setSelectedRounds(round)}
-                                >
-                                    <Text
-                                        style={[
-                                            styles.roundButtonText,
-                                            selectedRounds === round && styles.roundButtonTextSelected,
-                                        ]}
-                                    >
-                                        {round}
-                                    </Text>
-                                </Pressable>
+                            {[rounds.slice(0, 4), rounds.slice(4)].map((row, rowIndex) => (
+                                <View key={rowIndex} style={styles.portraitRoundsRow}>
+                                    {row.map((round) => (
+                                        <Pressable
+                                            key={round}
+                                            style={[
+                                                styles.portraitRoundButton,
+                                                selectedRounds === round && styles.roundButtonSelected,
+                                            ]}
+                                            onPress={() => setSelectedRounds(round)}
+                                        >
+                                            <Text
+                                                style={[
+                                                    styles.roundButtonText,
+                                                    selectedRounds === round && styles.roundButtonTextSelected,
+                                                ]}
+                                            >
+                                                {round}
+                                            </Text>
+                                        </Pressable>
+                                    ))}
+                                </View>
                             ))}
                         </View>
                     </View>
@@ -1046,16 +1050,18 @@ compactSectionLabel: {
 },
 
 portraitRoundsGrid: {
+    gap: 7,
+},
+
+portraitRoundsRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'flex-start',
-    columnGap: 8,
-    rowGap: 7,
+    gap: 8,
 },
 
 portraitRoundButton: {
     backgroundColor: '#fff',
-    width: 46,
+    width: 36,
+    flexShrink: 1,
     height: 32,
     borderWidth: 1,
     borderColor: '#B6C6D1',

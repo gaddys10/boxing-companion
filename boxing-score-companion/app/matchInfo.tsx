@@ -103,6 +103,14 @@ export default function MatchInfoScreen() {
     const scorecardId = id ? Number(String(id)) : undefined;
     const isEditingScorecard = scorecardId !== undefined && !Number.isNaN(scorecardId);
     const selectedRoundCount = Number(rounds || 3);
+    const [portraitRowsHeight, setPortraitRowsHeight] = useState(0);
+    const [landscapeRowsWidth, setLandscapeRowsWidth] = useState(0);
+    const compactColumnWidth = selectedRoundCount === 15 && landscapeRowsWidth > 0
+        ? (landscapeRowsWidth - 4) / selectedRoundCount
+        : undefined;
+    const compactRowHeight = selectedRoundCount === 15 && portraitRowsHeight > 0
+        ? Math.min(40, Math.floor((portraitRowsHeight - 4) / selectedRoundCount) - 2)
+        : undefined;
 
     useEffect(() => {
         let currentScores: Record<number, RoundScore> = {};
@@ -530,7 +538,11 @@ export default function MatchInfoScreen() {
 
                 {/* Portrait row container  */}
                 {!isLandscape ?
-                    <BlueScrollView style={[styles.rowContainer, { paddingHorizontal: horizontalGutter * 0.62, marginHorizontal: -horizontalGutter }]}>
+                    <BlueScrollView
+                        style={[styles.rowContainer, { paddingHorizontal: horizontalGutter * 0.62, marginHorizontal: -horizontalGutter }]}
+                        onLayout={(event) => setPortraitRowsHeight(event.nativeEvent.layout.height)}
+                        scrollEnabled={selectedRoundCount !== 15}
+                    >
                         {Array.from({ length: parseInt(rounds as string) }).map((_, index) => {
                             const roundNumber = index + 1;
                             const roundScore = roundScores[roundNumber];
@@ -540,6 +552,7 @@ export default function MatchInfoScreen() {
                                 <RoundRow
                                     key={roundNumber}
                                     roundNumber={roundNumber}
+                                    compactRowHeight={compactRowHeight}
                                         
                                     leftScore={isStoppedRound || isAfterStoppage ? '' : roundScore?.left}
                                     rightScore={isStoppedRound || isAfterStoppage ? '' : roundScore?.right}
@@ -589,8 +602,12 @@ export default function MatchInfoScreen() {
                     </BlueScrollView>
                 :
                     <ScrollView
-                        style={styles.landscapeRowContainer}
+                        style={[styles.landscapeRowContainer, selectedRoundCount === 15 && {
+                            marginRight: Math.max(insets.right, 16 * sx) - Math.max(insets.right, 3 * sx) - 4,
+                        }]}
                         contentContainerStyle={styles.landscapeRowContent}
+                        onLayout={(event) => setLandscapeRowsWidth(event.nativeEvent.layout.width)}
+                        scrollEnabled={selectedRoundCount !== 15}
                         horizontal={true}
                         showsHorizontalScrollIndicator={false}
                     >
@@ -604,6 +621,7 @@ export default function MatchInfoScreen() {
                                     <LandscapeRoundRow
                                         key={roundNumber}
                                         roundNumber={roundNumber}
+                                        compactColumnWidth={compactColumnWidth}
                                         leftScore={isStoppedRound || isAfterStoppage ? '' : roundScore?.left}
                                         rightScore={isStoppedRound || isAfterStoppage ? '' : roundScore?.right}
                                         leftTotal={isAfterStoppage ? '' : roundScore?.stoppageWinner === 'NC'
@@ -847,7 +865,7 @@ const styles = StyleSheet.create({
     },
     swipeInstruction: {
         position: 'absolute',
-        top: -18,
+        top: -12,
         left: 0,
         right: 0,
         fontSize: 10,

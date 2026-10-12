@@ -15,6 +15,7 @@ const SCORING_MODAL_AD_FOOTPRINT = 50 + SCORING_MODAL_AD_GAP;
 
 type RoundRowProps = {
     roundNumber: number;
+    compactRowHeight?: number;
     leftScore?: string;
     rightScore?: string;
     leftTotal?: string;
@@ -55,6 +56,7 @@ type RoundRowProps = {
 
 export default function RoundRow({
     roundNumber,
+    compactRowHeight,
     leftScore,
     rightScore,
     leftTotal,
@@ -278,7 +280,11 @@ export default function RoundRow({
     return (
         <>
             <Swipeable ref={swipeableRef} renderRightActions={renderRightActions} overshootRight={false}>
-                <View style={styles.row}>
+                <View style={[styles.row, compactRowHeight !== undefined && {
+                    height: compactRowHeight,
+                    minHeight: compactRowHeight,
+                    marginBottom: 2,
+                }]}>
                     <View style={[styles.roundLabelContainer, { backgroundColor: roundLabelColor }]}> 
                         <Text style={styles.roundLabel}>R{roundNumber}</Text>
                     </View>
@@ -308,10 +314,15 @@ export default function RoundRow({
                         <Text style={[styles.scoreText, styles.rightTotalScore, stoppageWinner === 'NC' && styles.noContestTotalScore]}>{rightTotal ?? '-'}</Text>
                     </View>
                     {isAfterStoppage ? (
-                        <View style={styles.buttonSpacer} />
+                        <View style={[styles.buttonSpacer, compactRowHeight !== undefined && { height: compactRowHeight - 2 }]} />
                     ) : (
                         <Pressable
-                            style={styles.button}
+                            style={[styles.button, compactRowHeight !== undefined && {
+                                height: compactRowHeight - 2,
+                                marginTop: 0,
+                                paddingVertical: 0,
+                                justifyContent: 'center',
+                            }]}
                             onPress={() => {
                                 setScoringModalVisible(true);
                             }}
