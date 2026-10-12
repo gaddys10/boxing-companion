@@ -11,7 +11,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.gaddico.boxingscorecompanion",
       "infoPlist": {
-        "CFBundleDisplayName": "Boxing Score"
+        "CFBundleDisplayName": "Boxing Score",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -28,7 +29,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/flatwhiteicon-optimized.png",
+          "image": "./assets/images/bsc-splash-image.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
@@ -55,6 +56,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "d2b14683-f778-449a-9f03-389e6822ccbb"
+      }
     }
   }
 }

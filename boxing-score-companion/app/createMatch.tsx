@@ -93,7 +93,7 @@ export default function CreateMatch() {
 
 
     const buttonText = isReviewBeforeShare ? 'Continue' : String(params.buttonText || "Create Scorecard");
-    const rounds = [4, 5, 6, 8, 10, 12];
+    const rounds = [3, 4, 6, 8, 10, 12];
     const { height, isLandscape, insets, sx, sy, scale, horizontalGutter } = useResponsiveLayout();
     const id = params.id ? String(params.id) : undefined;
 

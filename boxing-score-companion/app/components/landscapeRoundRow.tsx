@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, StyleSheet, Modal } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Modal, Platform } from 'react-native';
 import { router } from 'expo-router';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -104,6 +104,7 @@ export default function LandscapeRoundRow({
     const [orientationChoiceVisible, setOrientationChoiceVisible] = useState(false);
     const [scoringMethodModalHeight, setScoringMethodModalHeight] = useState<number | null>(null);
     const [stoppageModalVisible, setStoppageModalVisible] = useState(false);
+    const pendingStoppageModal = React.useRef(false);
     const [draftStoppageReason, setDraftStoppageReason] = useState<RoundRowProps['stoppageReason']>(stoppageReason);
     const [selectedStoppageWinner, setSelectedStoppageWinner] = useState<string | undefined>(stoppageWinner);
     const [quickLeftScore, setQuickLeftScore] = useState(10);
@@ -115,8 +116,8 @@ export default function LandscapeRoundRow({
     
 
     const openQuickScoring = () => {
-        setQuickLeftScore(Number(leftScore ?? 10) + (isQuickScore ? Number(leftPen ?? 0) + Number(rightKds ?? 0) : 0));
-        setQuickRightScore(Number(rightScore ?? 10) + (isQuickScore ? Number(rightPen ?? 0) + Number(leftKds ?? 0) : 0));
+        setQuickLeftScore(Number(leftScore ?? 10) + (Number(leftPen ?? 0) + Number(rightKds ?? 0)));
+        setQuickRightScore(Number(rightScore ?? 10) + (Number(rightPen ?? 0) + Number(leftKds ?? 0)));
         setQuickLeftKds(Number(leftKds ?? 0));
         setQuickRightKds(Number(rightKds ?? 0));
         setQuickLeftPen(Number(leftPen ?? 0));
@@ -128,6 +129,28 @@ export default function LandscapeRoundRow({
         setScoringModalVisible(false);
         setQuickScoringVisible(false);
         setOrientationChoiceVisible(false);
+    };
+
+    const openStoppageModal = () => {
+        setDraftStoppageReason(stoppageReason);
+        setSelectedStoppageWinner(stoppageWinner);
+        setStoppageModalVisible(true);
+    };
+
+    const markStoppageFromScoring = () => {
+        closeScoringModal();
+        if (Platform.OS === 'ios') {
+            pendingStoppageModal.current = true;
+        } else {
+            openStoppageModal();
+        }
+    };
+
+    const handleScoringModalDismiss = () => {
+        if (pendingStoppageModal.current) {
+            pendingStoppageModal.current = false;
+            openStoppageModal();
+        }
     };
 
     const cancelStoppageChanges = () => {
@@ -167,21 +190,18 @@ export default function LandscapeRoundRow({
     };
 
     const saveQuickScore = () => {
-        const hasFullScoringMomentum = !isQuickScore && plusMinus !== undefined && plusMinus !== '' && plusMinus !== '-';
         const adjustedLeftScore = quickLeftScore - quickLeftPen - quickRightKds;
         const adjustedRightScore = quickRightScore - quickRightPen - quickLeftKds;
-        const savedLeftScore = hasFullScoringMomentum ? quickLeftScore : adjustedLeftScore;
-        const savedRightScore = hasFullScoringMomentum ? quickRightScore : adjustedRightScore;
 
         onSaveRound(roundNumber, {
-            left: String(savedLeftScore),
-            right: String(savedRightScore),
-            plusMinus: hasFullScoringMomentum ? plusMinus : String(savedLeftScore - savedRightScore),
+            left: String(adjustedLeftScore),
+            right: String(adjustedRightScore),
+            plusMinus: String(adjustedLeftScore - adjustedRightScore),
             leftDeductions: String(quickLeftPen),
             rightDeductions: String(quickRightPen),
             leftKnockdowns: String(quickLeftKds),
             rightKnockdowns: String(quickRightKds),
-            scoringMethod: hasFullScoringMomentum ? 'full' : 'quick',
+            scoringMethod: 'quick',
         });
         closeScoringModal();
     };
@@ -247,9 +267,7 @@ export default function LandscapeRoundRow({
                 style={styles.stoppageAction}
                 onPress={() => {
                     closeSwipeActions();
-                    setDraftStoppageReason(stoppageReason);
-                    setSelectedStoppageWinner(stoppageWinner);
-                    setStoppageModalVisible(true);
+                    openStoppageModal();
                 }}
             >
                 <Text style={styles.stoppageActionText}>Stop{"\n"}Fight</Text>
@@ -407,6 +425,7 @@ export default function LandscapeRoundRow({
                 visible={scoringModalVisible}
                 supportedOrientations={['landscape', 'landscape-left', 'landscape-right']}
                 onRequestClose={closeScoringModal}
+                onDismiss={handleScoringModalDismiss}
             >
                 <View style={styles.modalOverlay}>
                     <StableCenteredModalFrame
@@ -546,6 +565,13 @@ export default function LandscapeRoundRow({
                                         }}
                                     >
                                         <Text style={styles.cancelButtonText}>Clear Round</Text>
+                                    </Pressable>
+                                    <Pressable
+                                        accessibilityRole="button"
+                                        style={[styles.modalButton, styles.clearRoundButton, styles.scoringMethodAction]}
+                                        onPress={markStoppageFromScoring}
+                                    >
+                                        <Text style={[styles.cancelButtonText, styles.markStoppageButtonText]}>Mark Stoppage</Text>
                                     </Pressable>
                                 </View>
                             </>
@@ -844,11 +870,16 @@ const styles = StyleSheet.create({
         gap: 12,
     },
     scoringMethodAction: {
+        paddingHorizontal: 6,
         flex: 1,
         width: 'auto',
         maxWidth: 180,
         marginTop: 8,
         marginLeft: 0,
+    },
+    markStoppageButtonText: {
+        fontSize: 12,
+        textAlign: 'center',
     },
     clearRoundButton: {
         backgroundColor: '#000',

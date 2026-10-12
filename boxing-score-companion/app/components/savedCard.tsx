@@ -38,8 +38,12 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
   const { isPremium } = usePremium();
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const swipeableRef = useRef<Swipeable | null>(null);
-  const displayedFighter1Score = fighter1Score === '' || fighter1Score === '-' || fighter1Score == null ? 0 : fighter1Score;
-  const displayedFighter2Score = fighter2Score === '' || fighter2Score === '-' || fighter2Score == null ? 0 : fighter2Score;
+  const displayedFighter1Score = ['KO', 'TKO', 'DQ'].includes(String(fighter2Score))
+        ? ''
+        : fighter1Score === '' || fighter1Score === '-' || fighter1Score == null ? 0 : fighter1Score;
+  const displayedFighter2Score = ['KO', 'TKO', 'DQ'].includes(String(fighter1Score))
+        ? ''
+        : fighter2Score === '' || fighter2Score === '-' || fighter2Score == null ? 0 : fighter2Score;
 
   const handleEditCard = () => {
       router.push({

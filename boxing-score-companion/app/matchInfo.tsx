@@ -654,6 +654,9 @@ export default function MatchInfoScreen() {
                 }
                 {!isLandscape &&
                     <View style={[styles.buttonContainer, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+                        <Text pointerEvents="none" style={styles.swipeInstruction}>
+                            Swipe row for more options
+                        </Text>
 
 {/* save button  */}
                         <Pressable
@@ -841,6 +844,18 @@ const styles = StyleSheet.create({
         gap: 8,
         paddingTop: 8,
         paddingHorizontal: 4,
+    },
+    swipeInstruction: {
+        position: 'absolute',
+        top: -18,
+        left: 0,
+        right: 0,
+        fontSize: 10,
+        lineHeight: 16,
+        fontWeight: '400',
+        textAlign: 'center',
+        color: '#333',
+        opacity: 0.4,
     },
     headerText: {
         textAlign: 'center',
