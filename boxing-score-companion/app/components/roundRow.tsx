@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { View, Text, Pressable, StyleSheet, Modal, Image, useWindowDimensions } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Modal, Platform, Image, useWindowDimensions } from 'react-native';
 import { Image as ExpoImage } from 'expo-image';
 import { router } from 'expo-router';
 import * as ScreenOrientation from 'expo-screen-orientation';
@@ -98,6 +98,7 @@ export default function RoundRow({
     const [quickScoringVisible, setQuickScoringVisible] = useState(false);
     const [orientationChoiceVisible, setOrientationChoiceVisible] = useState(false);
     const [stoppageModalVisible, setStoppageModalVisible] = useState(false);
+    const pendingStoppageModal = React.useRef(false);
     const [draftStoppageReason, setDraftStoppageReason] = useState<RoundRowProps['stoppageReason']>(stoppageReason);
     const [selectedStoppageWinner, setSelectedStoppageWinner] = useState<string | undefined>(stoppageWinner);
     const [quickLeftScore, setQuickLeftScore] = useState(10);
@@ -120,8 +121,8 @@ export default function RoundRow({
             : [styles.modalTitle, styles.scoringMethodTitle];
 
     const openQuickScoring = () => {
-        setQuickLeftScore(Number(leftScore ?? 10) + (isQuickScore ? Number(leftPen ?? 0) + Number(rightKds ?? 0) : 0));
-        setQuickRightScore(Number(rightScore ?? 10) + (isQuickScore ? Number(rightPen ?? 0) + Number(leftKds ?? 0) : 0));
+        setQuickLeftScore(Number(leftScore ?? 10) + (Number(leftPen ?? 0) + Number(rightKds ?? 0)));
+        setQuickRightScore(Number(rightScore ?? 10) + (Number(rightPen ?? 0) + Number(leftKds ?? 0)));
         setQuickLeftKds(Number(leftKds ?? 0));
         setQuickRightKds(Number(rightKds ?? 0));
         setQuickLeftPen(Number(leftPen ?? 0));
@@ -131,6 +132,28 @@ export default function RoundRow({
 
     const openFullScoring = () => {
         setOrientationChoiceVisible(true);
+    };
+
+    const openStoppageModal = () => {
+        setDraftStoppageReason(stoppageReason);
+        setSelectedStoppageWinner(stoppageWinner);
+        setStoppageModalVisible(true);
+    };
+
+    const markStoppageFromScoring = () => {
+        closeScoringModal();
+        if (Platform.OS === 'ios') {
+            pendingStoppageModal.current = true;
+        } else {
+            openStoppageModal();
+        }
+    };
+
+    const handleScoringModalDismiss = () => {
+        if (pendingStoppageModal.current) {
+            pendingStoppageModal.current = false;
+            openStoppageModal();
+        }
     };
 
     const cancelStoppageChanges = () => {
@@ -173,21 +196,18 @@ export default function RoundRow({
     };
 
     const saveQuickScore = () => {
-        const hasFullScoringMomentum = !isQuickScore && plusMinus !== undefined && plusMinus !== '' && plusMinus !== '-';
         const adjustedLeftScore = quickLeftScore - quickLeftPen - quickRightKds;
         const adjustedRightScore = quickRightScore - quickRightPen - quickLeftKds;
-        const savedLeftScore = hasFullScoringMomentum ? quickLeftScore : adjustedLeftScore;
-        const savedRightScore = hasFullScoringMomentum ? quickRightScore : adjustedRightScore;
 
         onSaveRound(roundNumber, {
-            left: String(savedLeftScore),
-            right: String(savedRightScore),
-            plusMinus: hasFullScoringMomentum ? plusMinus : String(savedLeftScore - savedRightScore),
+            left: String(adjustedLeftScore),
+            right: String(adjustedRightScore),
+            plusMinus: String(adjustedLeftScore - adjustedRightScore),
             leftDeductions: String(quickLeftPen),
             rightDeductions: String(quickRightPen),
             leftKnockdowns: String(quickLeftKds),
             rightKnockdowns: String(quickRightKds),
-            scoringMethod: hasFullScoringMomentum ? 'full' : 'quick',
+            scoringMethod: 'quick',
         });
         closeScoringModal();
     };
@@ -238,9 +258,7 @@ export default function RoundRow({
                 style={styles.stoppageAction}
                 onPress={() => {
                     swipeableRef.current?.close();
-                    setDraftStoppageReason(stoppageReason);
-                    setSelectedStoppageWinner(stoppageWinner);
-                    setStoppageModalVisible(true);
+                    openStoppageModal();
                 }}
             >
                 <Text style={styles.clearActionText}>{'Mark'+'\n'+'Stoppage'}</Text>
@@ -342,6 +360,7 @@ export default function RoundRow({
                     'landscape-right',
                 ]}
                 onRequestClose={closeScoringModal}
+                onDismiss={handleScoringModalDismiss}
             >
                 <View style={styles.modalOverlay}>
                     <StableCenteredModalFrame
@@ -490,7 +509,7 @@ export default function RoundRow({
                                 <View style={[styles.modalActions, styles.scoringMethodActions]}>
                                     <Pressable style={[styles.modalButton, styles.cancelButton, styles.scoringFooterButton]} onPress={closeScoringModal}>
                                         <Ionicons name="close" size={18} color="#fff" />
-                                        <Text style={styles.cancelButtonText}>Cancel</Text>
+                                        <Text style={[styles.cancelButtonText, styles.markStoppageButtonText]}>Cancel</Text>
                                     </Pressable>
                                     <Pressable
                                         accessibilityRole="button"
@@ -500,7 +519,14 @@ export default function RoundRow({
                                             closeScoringModal();
                                         }}
                                     >
-                                        <Text style={styles.cancelButtonText}>Clear Round</Text>
+                                        <Text style={[styles.cancelButtonText, styles.markStoppageButtonText]}>Clear Round</Text>
+                                    </Pressable>
+                                    <Pressable
+                                        accessibilityRole="button"
+                                        style={[styles.modalButton, styles.clearRoundButton, styles.scoringFooterButton]}
+                                        onPress={markStoppageFromScoring}
+                                    >
+                                        <Text style={[styles.cancelButtonText, styles.markStoppageButtonText]}>Mark Stoppage</Text>
                                     </Pressable>
                                 </View>
                                 {scoringModalVisible && !isPremium && (
@@ -1049,6 +1075,7 @@ const styles = StyleSheet.create({
         marginTop: 12,
     },
     scoringFooterButton: {
+        paddingHorizontal: 6,
         flex: 1,
         width: 'auto',
         maxWidth: 180,
@@ -1058,6 +1085,10 @@ const styles = StyleSheet.create({
     scoringMethodActions: {
         width: '100%',
         gap: 12,
+    },
+    markStoppageButtonText: {
+        fontSize: 12,
+        textAlign: 'center',
     },
     clearRoundButton: {
         backgroundColor: '#000',

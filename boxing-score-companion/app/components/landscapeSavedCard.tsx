@@ -42,8 +42,12 @@ export default function LandscapeSavedCard({id, fighter1, fighter2, fighter1Scor
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const swipeOffset = useSharedValue(0);
     const swipeStartOffset = useSharedValue(0);
-    const displayedFighter1Score = fighter1Score === '' || fighter1Score === '-' || fighter1Score == null ? 0 : fighter1Score;
-    const displayedFighter2Score = fighter2Score === '' || fighter2Score === '-' || fighter2Score == null ? 0 : fighter2Score;
+    const displayedFighter1Score = ['KO', 'TKO', 'DQ'].includes(String(fighter2Score))
+        ? ''
+        : fighter1Score === '' || fighter1Score === '-' || fighter1Score == null ? 0 : fighter1Score;
+    const displayedFighter2Score = ['KO', 'TKO', 'DQ'].includes(String(fighter1Score))
+        ? ''
+        : fighter2Score === '' || fighter2Score === '-' || fighter2Score == null ? 0 : fighter2Score;
 
     const { width } = useWindowDimensions();
 
