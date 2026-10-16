@@ -1,3 +1,4 @@
+import { BUTTON_SHADOW } from '../constants/button-shadow';
 import { useRouter, Stack, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { View, Text, Pressable, StyleSheet, Animated, useWindowDimensions, Modal, Platform, StatusBar } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -1428,20 +1429,14 @@ const styles = StyleSheet.create({
     },
     stoppageModalButton: { minWidth: 88, paddingVertical: 8, borderRadius: 8, alignItems: 'center' },
     stoppageCancelButton: {
+        ...BUTTON_SHADOW,
         backgroundColor: '#d32f2f',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
     },
     stoppageConfirmButton: {
+        ...BUTTON_SHADOW,
         backgroundColor: '#fff',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
     },

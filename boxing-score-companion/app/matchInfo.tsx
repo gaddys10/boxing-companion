@@ -1,3 +1,4 @@
+import { BUTTON_SHADOW } from '../constants/button-shadow';
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState, useCallback } from 'react';
 import * as ScreenOrientation from 'expo-screen-orientation'
@@ -9,6 +10,7 @@ import RoundRow from './components/roundRow';
 import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 import { normalizeMatchRating, parseMatchDescription, serializeMatchDescription } from '../types/matchNotes';
 import { Image as ExpoImage } from 'expo-image';
+import { useScorecardDraft } from '../hooks/use-scorecard-draft';
 
 export default function MatchInfoScreen() {
     const router = useRouter();
@@ -26,6 +28,7 @@ export default function MatchInfoScreen() {
         }, [])
     );
     const { width, isLandscape, insets, sx, sy, horizontalGutter } = useResponsiveLayout();
+    const routeParams = useLocalSearchParams();
     const { 
         id,
         fighter1,
@@ -47,7 +50,7 @@ export default function MatchInfoScreen() {
         fightDate,
         rating,
         description,
-    } = useLocalSearchParams();
+    } = routeParams;
 
     const matchRating = normalizeMatchRating(rating);
     const matchDescription = parseMatchDescription(description);
@@ -82,37 +85,7 @@ export default function MatchInfoScreen() {
         stoppageWinner?: string;
     };
 
-    const [roundScores, setRoundScores] = useState<Record<number, RoundScore>>({});
-
-    const shareDescriptions = ['bloody', 'boring', 'chess match', 'competitive', 'one sided',
-        'exciting', 'headbutts', 'ugly', 'replayable', 'low blows', 'slugfest', 'brutal', 'showcase', 'war',
-        'robbery', 'debut', 'upset', 'high level', 'shut out', 'holding', 'brawl', 'clean', 'competitive early',
-        'height difference', 'reach difference', 'home fight', 'adjustments', 'jabs', 'hooks', 'uppercuts',
-        'overhands', 'crosses', 'high volume', 'low volume', 'counterpunches', 'crowd engagement', 'showboating',
-        'walkouts', 'bad ref', 'good ref', 'bad commentary', 'good commentary', 'small ring', 'big ring', 
-        'inside fighting', 'injury', 'quitter', 'towel', 'ref stoppage', 'close fight', 'out cold', 'rematch needed',
-        'bad coaching', 'good coaching', 'funny moment', 'street fight', 'sparring', 'slow start', 'fast start', 
-        'technical', 'tactical', 'high paced', 'slow paced', 'methodical', 'scrappy', 'rough', 'dirty fight', 'clinic',
-        'masterclass', 'mismatch', 'body work', 'combinations', 'power punching', 'pressure', 'volume punching', 'jab heavy',
-        'defensive', 'cuts', 'swelling', 'flash knockdown', 'controversial', 'gassed', 'power difference', 'speed differene',
-        'short notice', 'hostile crowd', 'dead crowd', 'loud crowd', 'experience difference', 'gassed', 'chin', 'distance management',
-        'switch hitting', 'feints', 'late rally', 'back and forth', 'favorite', "Sweet Carolina", "There's only one! ", 
-    ]
-
-
-    const scorecardId = id ? Number(String(id)) : undefined;
-    const isEditingScorecard = scorecardId !== undefined && !Number.isNaN(scorecardId);
-    const selectedRoundCount = Number(rounds || 3);
-    const [portraitRowsHeight, setPortraitRowsHeight] = useState(0);
-    const [landscapeRowsWidth, setLandscapeRowsWidth] = useState(0);
-    const compactColumnWidth = selectedRoundCount === 15 && landscapeRowsWidth > 0
-        ? (landscapeRowsWidth - 4) / selectedRoundCount
-        : undefined;
-    const compactRowHeight = selectedRoundCount === 15 && portraitRowsHeight > 0
-        ? Math.min(40, Math.floor((portraitRowsHeight - 4) / selectedRoundCount) - 2)
-        : undefined;
-
-    useEffect(() => {
+    const getInitialRoundScores = useCallback(() => {
         let currentScores: Record<number, RoundScore> = {};
 
         if (savedScores) {
@@ -151,7 +124,7 @@ export default function MatchInfoScreen() {
             };
         }
 
-        setRoundScores(currentScores);
+        return currentScores;
     }, [
         savedScores,
         savedRound,
@@ -165,6 +138,50 @@ export default function MatchInfoScreen() {
         savedStoppageReason,
         savedStoppageWinner,
     ]);
+
+    const [roundScores, setRoundScores] = useState<Record<number, RoundScore>>(getInitialRoundScores);
+
+    const shareDescriptions = ['bloody', 'boring', 'chess match', 'competitive', 'one sided',
+        'exciting', 'headbutts', 'ugly', 'replayable', 'low blows', 'slugfest', 'brutal', 'showcase', 'war',
+        'robbery', 'debut', 'upset', 'high level', 'shut out', 'holding', 'brawl', 'clean', 'competitive early',
+        'height difference', 'reach difference', 'home fight', 'adjustments', 'jabs', 'hooks', 'uppercuts',
+        'overhands', 'crosses', 'high volume', 'low volume', 'counterpunches', 'crowd engagement', 'showboating',
+        'walkouts', 'bad ref', 'good ref', 'bad commentary', 'good commentary', 'small ring', 'big ring',
+        'inside fighting', 'injury', 'quitter', 'towel', 'ref stoppage', 'close fight', 'out cold', 'rematch needed',
+        'bad coaching', 'good coaching', 'funny moment', 'street fight', 'sparring', 'slow start', 'fast start',
+        'technical', 'tactical', 'high paced', 'slow paced', 'methodical', 'scrappy', 'rough', 'dirty fight', 'clinic',
+        'masterclass', 'mismatch', 'body work', 'combinations', 'power punching', 'pressure', 'volume punching', 'jab heavy',
+        'defensive', 'cuts', 'swelling', 'flash knockdown', 'controversial', 'gassed', 'power difference', 'speed differene',
+        'short notice', 'hostile crowd', 'dead crowd', 'loud crowd', 'experience difference', 'gassed', 'chin', 'distance management',
+        'switch hitting', 'feints', 'late rally', 'back and forth', 'favorite', "Sweet Carolina", "There's only one! ",
+    ]
+
+
+    const scorecardId = id ? Number(String(id)) : undefined;
+    const isEditingScorecard = scorecardId !== undefined && !Number.isNaN(scorecardId);
+    const selectedRoundCount = Number(rounds || 3);
+    const [portraitRowsHeight, setPortraitRowsHeight] = useState(0);
+    const [landscapeRowsWidth, setLandscapeRowsWidth] = useState(0);
+    const compactColumnWidth = selectedRoundCount === 15 && landscapeRowsWidth > 0
+        ? (landscapeRowsWidth - 4) / selectedRoundCount
+        : undefined;
+    const compactRowHeight = selectedRoundCount === 15 && portraitRowsHeight > 0
+        ? Math.min(40, Math.floor((portraitRowsHeight - 4) / selectedRoundCount) - 2)
+        : undefined;
+
+    useEffect(() => {
+        setRoundScores(getInitialRoundScores());
+    }, [getInitialRoundScores]);
+
+
+    const draftParams: Record<string, string | string[] | undefined> = { ...routeParams, savedScores: JSON.stringify(roundScores) };
+    // The merged score map is authoritative; replaying a savedRound can undo a later clear.
+    for (const key of [
+        'savedRound', 'savedLeftScore', 'savedRightScore', 'savedPlusMinus',
+        'savedLeftDeductions', 'savedRightDeductions', 'savedLeftKnockdowns',
+        'savedRightKnockdowns', 'savedStoppageReason', 'savedStoppageWinner',
+    ]) delete draftParams[key];
+    useScorecardDraft('/matchInfo', draftParams);
 
     const isRoundScored = (roundNumber: number) => {
         return !!roundScores[roundNumber]?.left && !!roundScores[roundNumber]?.right;
@@ -752,6 +769,7 @@ const styles = StyleSheet.create({
         fontWeight: '700',
     },
     actionButton: {
+        ...BUTTON_SHADOW,
         flex: 1,
         minWidth: 0,
         minHeight: 42,
@@ -759,11 +777,6 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '4',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
     },

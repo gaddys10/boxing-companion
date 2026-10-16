@@ -1,3 +1,4 @@
+import { BUTTON_SHADOW } from '../../constants/button-shadow';
 import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, Modal, Platform } from 'react-native';
 import { router } from 'expo-router';
@@ -867,14 +868,11 @@ const styles = StyleSheet.create({
         color: '#333',
     },
     cancelButton: {
+        ...BUTTON_SHADOW,
         alignSelf: 'center',
         backgroundColor: '#d32f2f',
         marginTop: 12,
         width: 180,
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
     },
     scoringMethodActions: {
         flexDirection: 'row',
@@ -894,12 +892,8 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     clearRoundButton: {
+        ...BUTTON_SHADOW,
         backgroundColor: '#000',
-        boxShadow: '4',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
     },
     cancelButtonText: {
         color: '#fff',
@@ -1040,20 +1034,14 @@ const styles = StyleSheet.create({
     },
     stoppageModalButton: { minWidth: 88, paddingVertical: 8, borderRadius: 8, alignItems: 'center' },
     stoppageCancelButton: {
+        ...BUTTON_SHADOW,
         backgroundColor: '#d32f2f',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
     },
     stoppageConfirmButton: {
+        ...BUTTON_SHADOW,
         backgroundColor: '#fff',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
     },
@@ -1172,6 +1160,7 @@ const styles = StyleSheet.create({
         fontWeight: '700',
     },
     scoringButton: {
+        ...BUTTON_SHADOW,
         alignItems: 'center',
         backgroundColor: '#fff',
         borderRadius: 12,
@@ -1181,10 +1170,6 @@ const styles = StyleSheet.create({
         minHeight: 50,
         width: '75%',
         marginBottom: '2.5%',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
     },
