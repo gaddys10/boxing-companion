@@ -162,10 +162,14 @@ export default function MatchInfoScreen() {
     const selectedRoundCount = Number(rounds || 3);
     const [portraitRowsHeight, setPortraitRowsHeight] = useState(0);
     const [landscapeRowsWidth, setLandscapeRowsWidth] = useState(0);
-    const compactColumnWidth = selectedRoundCount === 15 && landscapeRowsWidth > 0
+    const compactColumnWidth = landscapeRowsWidth > 0 && (
+        selectedRoundCount === 15 || landscapeRowsWidth < selectedRoundCount * 44
+    )
         ? (landscapeRowsWidth - 4) / selectedRoundCount
         : undefined;
-    const compactRowHeight = selectedRoundCount === 15 && portraitRowsHeight > 0
+    const compactRowHeight = portraitRowsHeight > 0 && (
+        selectedRoundCount === 15 || portraitRowsHeight < selectedRoundCount * 44.5
+    )
         ? Math.min(40, Math.floor((portraitRowsHeight - 4) / selectedRoundCount) - 2)
         : undefined;
 
@@ -558,7 +562,7 @@ export default function MatchInfoScreen() {
                     <BlueScrollView
                         style={[styles.rowContainer, { paddingHorizontal: horizontalGutter * 0.62, marginHorizontal: -horizontalGutter }]}
                         onLayout={(event) => setPortraitRowsHeight(event.nativeEvent.layout.height)}
-                        scrollEnabled={selectedRoundCount !== 15}
+                        scrollEnabled={selectedRoundCount !== 15 && compactRowHeight === undefined}
                     >
                         {Array.from({ length: parseInt(rounds as string) }).map((_, index) => {
                             const roundNumber = index + 1;
@@ -624,7 +628,7 @@ export default function MatchInfoScreen() {
                         }]}
                         contentContainerStyle={styles.landscapeRowContent}
                         onLayout={(event) => setLandscapeRowsWidth(event.nativeEvent.layout.width)}
-                        scrollEnabled={selectedRoundCount !== 15}
+                        scrollEnabled={selectedRoundCount !== 15 && compactColumnWidth === undefined}
                         horizontal={true}
                         showsHorizontalScrollIndicator={false}
                     >

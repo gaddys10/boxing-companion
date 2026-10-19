@@ -92,6 +92,7 @@ export default function LandscapeRoundRow({
 }: RoundRowProps) {
     const { isPremium } = usePremium();
     const { contentHeight, insets } = useResponsiveLayout();
+    const isLastRound = roundNumber === Number(rounds);
     const swipeOffset = useSharedValue(0);
     const swipeStartOffset = useSharedValue(0);
     const plusMinusNumber = plusMinus && plusMinus !== '-' ? Number(plusMinus) : null;
@@ -293,7 +294,7 @@ export default function LandscapeRoundRow({
                 <View style={[
                     styles.swipeViewport,
                     compactColumnWidth !== undefined && { width: compactColumnWidth },
-                    compactColumnWidth !== undefined && roundNumber === 15 && {
+                    compactColumnWidth !== undefined && isLastRound && {
                         width: compactColumnWidth + 4,
                         paddingRight: 4,
                     },
@@ -301,8 +302,8 @@ export default function LandscapeRoundRow({
                     {renderSwipeActions()}
                     <Animated.View style={[styles.swipeContent, swipeContentStyle]}>
                     <View style={[styles.row, compactColumnWidth !== undefined && {
-                        width: roundNumber === 15 ? '100%' : '96%',
-                        borderRightWidth: roundNumber === 15 ? 1 : 0,
+                        width: isLastRound ? '100%' : '96%',
+                        borderRightWidth: isLastRound ? 1 : 0,
                     }]}>
                         <View style={[styles.roundLabelContainer, { backgroundColor: roundLabelColor }]}>
                             <Text style={styles.roundLabel}>R{roundNumber}</Text>

@@ -1,6 +1,6 @@
 import { BUTTON_SHADOW } from '../constants/button-shadow';
 import { useRouter, Stack, useLocalSearchParams, useFocusEffect } from 'expo-router';
-import { View, Text, Pressable, StyleSheet, Animated, useWindowDimensions, Modal, Platform, StatusBar } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Animated, Modal, Platform, StatusBar } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -11,6 +11,7 @@ import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 import CollapsibleBannerAd from './components/collapsibleBannerAd';
 import { ModalTitleHeader } from './components/modalCloseButton';
 import { usePremium } from '../contexts/PremiumContext';
+import { SafeAreaView } from 'react-native-screens/experimental';
 
 const PORTRAIT_ACTION_CONTROL_HEIGHT = 60;
 
@@ -76,19 +77,35 @@ export default function RoundScoringScreen() {
     const exitProgress = useRef<Animated.Value>(new Animated.Value(0)).current;
     const stoppageProgress = useRef<Animated.Value>(new Animated.Value(0)).current;
 
-    const { width, height } = useWindowDimensions();
-    const { insets, sx, scale, contentHeight } = useResponsiveLayout();
+    const { insets, sx, scale, contentWidth, contentHeight } = useResponsiveLayout();
+    const [scoringAreaSize, setScoringAreaSize] = useState<{ width: number; height: number } | null>(null);
+    const width = scoringAreaSize?.width ?? contentWidth;
+    const height = scoringAreaSize?.height ?? contentHeight;
     const isLandscape = scoringOrientation === 'landscape';
-    const usableHeight = height - insets.top - insets.bottom;
+    const useNativeScoringInsets = Platform.OS === 'android' && isLandscape;
+    const ScoringSafeAreaView = useNativeScoringInsets ? SafeAreaView : View;
+    const usableHeight = height;
     const toolbarHeight = Math.max(44, Math.min(50, usableHeight * 0.14));
-    const undoHeight = Math.max(38, Math.min(44, usableHeight * 0.13));
     const portraitActionControlHeight = PORTRAIT_ACTION_CONTROL_HEIGHT;
     const portraitSafeInsetFallback = Platform.OS === 'android'
         ? StatusBar.currentHeight ?? 24
         : height >= 812 ? 47 : 20;
-    const portraitSafeAreaTop = Math.max(insets.top, portraitSafeInsetFallback);
-    const topControlTop = isLandscape ? insets.top : portraitSafeAreaTop;
-    const topControlHeight = Math.max(toolbarHeight, undoHeight);
+    const portraitSafeAreaTop = Math.max(0, portraitSafeInsetFallback - insets.top);
+    const topControlTop = isLandscape ? 8 : portraitSafeAreaTop;
+    const topControlHeight = toolbarHeight;
+    const landscapeControlCenter = width / 2;
+    const landscapeUndoWidth = width * 0.14;
+    const landscapeExitWidth = Math.min(230 * sx, width * 0.3);
+    const landscapeTopRowInset = width * 0.05;
+    const landscapeTopControlGap = Math.max(0, (
+        width
+        - (2 * landscapeTopRowInset)
+        - (4 * landscapeUndoWidth)
+        - landscapeExitWidth
+    ) / 4);
+    const landscapeKnockdownUndoInset = landscapeTopRowInset
+        + landscapeUndoWidth
+        + landscapeTopControlGap;
     const portraitExitWidth = Math.min(230 * sx, width * 0.32);
     const portraitRibbonHeight = portraitActionControlHeight;
     const portraitTopGap = Math.max(6, Math.min(10, usableHeight * 0.014));
@@ -106,16 +123,24 @@ export default function RoundScoringScreen() {
     const landscapeInteriorBottomControlWidth = Math.min(180, width * 0.19);
     const landscapeStoppageBottomControlWidth = Math.min(200, width * 0.21);
     const portraitStoppageWidth = Math.min(180 * sx, width * 0.35);
-    const landscapeBottomControlGap = Math.max(0, (
+    const landscapeBottomControlGap = landscapeTopControlGap;
+    const landscapeBottomRowInset = Math.max(0, (
         width
         - (2 * landscapeEdgeBottomControlWidth)
         - (2 * landscapeInteriorBottomControlWidth)
         - landscapeStoppageBottomControlWidth
-    ) / 4);
-    const landscapeLeftKnockdownCenter = landscapeEdgeBottomControlWidth
+        - (4 * landscapeBottomControlGap)
+    ) / 2);
+    const landscapeLeftKnockdownCenter = landscapeBottomRowInset
+        + landscapeEdgeBottomControlWidth
         + landscapeBottomControlGap
         + (landscapeInteriorBottomControlWidth / 2);
-    const landscapeRightKnockdownCenter = (width / 2) - landscapeLeftKnockdownCenter;
+    // The right fighter's controls use coordinates relative to its half of the screen.
+    const landscapeRightKnockdownCenter = landscapeControlCenter
+        + landscapeStoppageBottomControlWidth / 2
+        + landscapeBottomControlGap
+        + landscapeInteriorBottomControlWidth / 2
+        - width / 2;
     const landscapeBottomControlStyle = {
         bottom: 0,
         width: landscapeInteriorBottomControlWidth,
@@ -124,6 +149,7 @@ export default function RoundScoringScreen() {
     };
     const landscapeStoppageBottomControlStyle = {
         bottom: 0,
+        left: landscapeControlCenter,
         width: landscapeStoppageBottomControlWidth,
         height: landscapeBottomControlHeight,
         transform: [{ translateX: -landscapeStoppageBottomControlWidth / 2 }],
@@ -135,12 +161,18 @@ export default function RoundScoringScreen() {
         transform: [{ translateX: 0 }],
     };
     const activeBottomControlHeight = isLandscape ? landscapeBottomControlHeight : portraitActionControlHeight;
-    const centerHeight = Math.max(120, height - topContentOffset - insets.bottom - activeBottomControlHeight);
+    const centerHeight = Math.max(120, height - topContentOffset - activeBottomControlHeight);
     const scoreBottom = activeBottomControlHeight + Math.max(10, centerHeight * 0.3);
     const landscapeScoreBottom = activeBottomControlHeight + Math.max(10, centerHeight * 0.08);
-    const fighterNameTop = isLandscape ? topContentOffset : Math.max(width * 0.5, topContentOffset);
+    const fighterNameContainerTop = isLandscape
+        ? topControlTop + topControlHeight
+        : portraitControlsBottom;
 
     const plusSignSize = 96 * scale;
+    const fighterNameBounds = {
+        top: fighterNameContainerTop,
+        height: Math.max(0, (height - plusSignSize) / 2 - fighterNameContainerTop),
+    };
     const compact = usableHeight < 370;
 
     const startLongPressFill = (progress: Animated.Value, duration: number) => {
@@ -277,8 +309,38 @@ export default function RoundScoringScreen() {
 
     return (
         
-        <View style={[styles.container]}>
-            <Stack.Screen options={{ headerShown: false }} />
+        <View style={styles.screen}>
+        <ScoringSafeAreaView
+            style={[styles.screen, {
+                paddingTop: useNativeScoringInsets ? 0 : insets.top,
+                ...(useNativeScoringInsets && { backgroundColor: '#d7b55d' }),
+                ...(!useNativeScoringInsets && {
+                    paddingBottom: insets.bottom,
+                    paddingLeft: insets.left,
+                    paddingRight: insets.right,
+                }),
+            }]}
+            {...(useNativeScoringInsets && {
+                edges: { top: true, bottom: true, left: true, right: true },
+                insetType: 'system' as const,
+            })}
+        >
+        <View
+            style={styles.container}
+            onLayout={({ nativeEvent: { layout } }) => {
+                setScoringAreaSize((current) => current?.width === layout.width && current.height === layout.height
+                    ? current
+                    : { width: layout.width, height: layout.height });
+            }}
+        >
+            <Stack.Screen
+                options={{
+                    headerShown: false,
+                    navigationBarHidden: Platform.OS === 'android',
+                    statusBarHidden: useNativeScoringInsets,
+                    statusBarStyle: useNativeScoringInsets ? 'dark' : undefined,
+                }}
+            />
 
             <Pressable 
                 style={styles.leftArea}
@@ -313,11 +375,12 @@ export default function RoundScoringScreen() {
                     }}
                     delayLongPress={800}
                     style={[
-                        isLandscape ? styles.undoDeductLeft : styles.portraitUndoRibbonLeft,
+                        isLandscape ? [styles.undoDeductLeft, styles.landscapeUndoRibbon] : styles.portraitUndoRibbonLeft,
                         {
                             top: isLandscape ? topControlTop : portraitDeductionTop,
-                            height: isLandscape ? undoHeight : portraitRibbonHeight,
+                            height: isLandscape ? toolbarHeight : portraitRibbonHeight,
                         },
+                        isLandscape && { left: landscapeTopRowInset, width: landscapeUndoWidth },
                     ]}
                 >
                     <LinearGradient
@@ -328,8 +391,8 @@ export default function RoundScoringScreen() {
                         style={StyleSheet.absoluteFill}
                     />
                     <Animated.View pointerEvents="none" style={[styles.fillOverlayTopLeft, { width: leftDeductUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '150%'] }) }]} />
-                    <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.78} style={isLandscape ? styles.leftEvents : styles.portraitUndoEvent}>Deductions: {leftDeductions}</Text>
-                    <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={isLandscape ? styles.leftDedUndo : styles.portraitUndoInstruction}>Hold to Undo</Text>
+                    <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={isLandscape ? 0.72 : 0.78} style={isLandscape ? styles.landscapeUndoEvent : styles.portraitUndoEvent}>Deductions: {leftDeductions}</Text>
+                    <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={isLandscape ? styles.landscapeUndoInstruction : styles.portraitUndoInstruction}>Hold to Undo</Text>
                 </Pressable>
 
                 {/* undo left knockdowns  */}
@@ -353,11 +416,12 @@ export default function RoundScoringScreen() {
                         resetLongPressFill(leftKDUndoProgress);
                     }}
                     style={[
-                        isLandscape ? styles.undoKDLeft : styles.portraitUndoRibbonLeft,
+                        isLandscape ? [styles.undoKDLeft, styles.landscapeUndoRibbon] : styles.portraitUndoRibbonLeft,
                         {
-                            height: isLandscape ? undoHeight : portraitRibbonHeight,
+                            height: isLandscape ? toolbarHeight : portraitRibbonHeight,
                             top: isLandscape ? topControlTop : portraitKnockdownTop,
                         },
+                        isLandscape && { left: landscapeKnockdownUndoInset, width: landscapeUndoWidth },
                     ]}
                     delayLongPress={800}
                 >
@@ -369,14 +433,16 @@ export default function RoundScoringScreen() {
                             style={StyleSheet.absoluteFill}
                         />
                         <Animated.View pointerEvents="none" style={[styles.fillOverlayTopLeft, { width: leftKDUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '150%'] }) }]} />
-                        <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72} style={isLandscape ? styles.leftEvents2 : styles.portraitUndoEvent}>Knockdowns: {leftKnockdowns}</Text>
-                        <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={isLandscape ? styles.leftKdUndo : styles.portraitUndoInstruction}>Hold to Undo</Text>
+                        <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72} style={isLandscape ? styles.landscapeUndoEvent : styles.portraitUndoEvent}>Knockdowns: {leftKnockdowns}</Text>
+                        <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={isLandscape ? styles.landscapeUndoInstruction : styles.portraitUndoInstruction}>Hold to Undo</Text>
                 </Pressable>
                         
                 { score > 0 &&
                     <Text style={[styles.leftScore, { bottom: isLandscape ? landscapeScoreBottom : scoreBottom, fontSize: 63 * scale }]}>{score}&nbsp;<Ionicons name="caret-back" size={48 * scale} color="white" /></Text>
                 }
-                <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.62} style={[isLandscape? styles.leftName : styles.portraitLeftName, { marginTop: fighterNameTop }, compact && styles.compactName]}>{fighter1}</Text>
+                <View pointerEvents="none" style={[styles.fighterNameContainer, fighterNameBounds]}>
+                    <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.62} style={[isLandscape ? styles.leftName : styles.portraitLeftName, { marginTop: 0 }, compact && styles.compactName]}>{fighter1}</Text>
+                </View>
 
                 <Animated.Text
                     style={[
@@ -408,7 +474,7 @@ export default function RoundScoringScreen() {
 
                 <Pressable
                     style={isLandscape
-                        ? [styles.deductLeft, landscapeEdgeBottomControlStyle, { left: 0 }]
+                        ? [styles.deductLeft, landscapeEdgeBottomControlStyle, { left: landscapeBottomRowInset }]
                         : styles.portraitDeductLeft}
                     onPress={() => {
                         pulseAnimation(leftPulseAnim);
@@ -437,7 +503,7 @@ export default function RoundScoringScreen() {
                             numberOfLines={1}
                             adjustsFontSizeToFit
                             minimumFontScale={0.75}
-                            style={[styles.buttonText, styles.deductLeftText]}
+                            style={styles.landscapeButtonText}
                         >
                             Hold to Deduct
                         </Text>
@@ -481,7 +547,7 @@ export default function RoundScoringScreen() {
                         numberOfLines={isLandscape ? 1 : 2}
                         adjustsFontSizeToFit={isLandscape}
                         minimumFontScale={isLandscape ? 0.62 : undefined}
-                        style={[styles.buttonText, !isLandscape && styles.portraitKnockdownText]}
+                        style={isLandscape ? styles.landscapeButtonText : [styles.buttonText, styles.portraitKnockdownText]}
                     >
                         {isLandscape ? 'Hold for Knockdown' : 'Hold for\nKnockdown'}
                     </Text>
@@ -524,11 +590,12 @@ export default function RoundScoringScreen() {
                         resetLongPressFill(rightKDUndoProgress);
                     }}
                     style={[
-                        isLandscape ? styles.undoKDright : styles.portraitUndoRibbonRight,
+                        isLandscape ? [styles.undoKDright, styles.landscapeUndoRibbon] : styles.portraitUndoRibbonRight,
                         {
                             top: isLandscape ? topControlTop : portraitKnockdownTop,
-                            height: isLandscape ? undoHeight : portraitRibbonHeight,
+                            height: isLandscape ? toolbarHeight : portraitRibbonHeight,
                         },
+                        isLandscape && { right: landscapeKnockdownUndoInset, width: landscapeUndoWidth },
                     ]}
                     delayLongPress={800}>
                         <LinearGradient
@@ -539,8 +606,8 @@ export default function RoundScoringScreen() {
                             style={StyleSheet.absoluteFill}
                         />
                         <Animated.View pointerEvents="none" style={[styles.fillOverlayTopLeft, { width: rightKDUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '150%'] }) }]} />
-                        <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72} style={isLandscape ? styles.rightEvents2 : styles.portraitUndoEvent}>Knockdowns: {rightKnockdowns}</Text>
-                        <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={isLandscape ? styles.rightKdUndo : styles.portraitUndoInstruction}>Hold to Undo</Text>
+                        <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72} style={isLandscape ? styles.landscapeUndoEvent : styles.portraitUndoEvent}>Knockdowns: {rightKnockdowns}</Text>
+                        <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={isLandscape ? styles.landscapeUndoInstruction : styles.portraitUndoInstruction}>Hold to Undo</Text>
                 </Pressable>
 
                 { score < 0 &&
@@ -563,11 +630,12 @@ export default function RoundScoringScreen() {
                     }}
                     delayLongPress={800}
                     style={[
-                        isLandscape ? styles.undoDeductRight : styles.portraitUndoRibbonRight,
+                        isLandscape ? [styles.undoDeductRight, styles.landscapeUndoRibbon] : styles.portraitUndoRibbonRight,
                         {
                             top: isLandscape ? topControlTop : portraitDeductionTop,
-                            height: isLandscape ? undoHeight : portraitRibbonHeight,
+                            height: isLandscape ? toolbarHeight : portraitRibbonHeight,
                         },
+                        isLandscape && { right: landscapeTopRowInset, width: landscapeUndoWidth },
                     ]}
                 >
                     <LinearGradient
@@ -578,11 +646,13 @@ export default function RoundScoringScreen() {
                         style={StyleSheet.absoluteFill}
                     />
                     <Animated.View pointerEvents="none" style={[styles.fillOverlayTopLeft, { width: rightDeductUndoProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '150%'] }) }]} />
-                    <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.78} style={isLandscape ? styles.rightDedEvents : styles.portraitUndoEvent}>Deductions: {rightDeductions}</Text>
-                    <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={isLandscape ? styles.leftDedUndo : styles.portraitUndoInstruction}>Hold to Undo</Text>
+                    <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={isLandscape ? 0.72 : 0.78} style={isLandscape ? styles.landscapeUndoEvent : styles.portraitUndoEvent}>Deductions: {rightDeductions}</Text>
+                    <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8} style={isLandscape ? styles.landscapeUndoInstruction : styles.portraitUndoInstruction}>Hold to Undo</Text>
                 </Pressable>
 
-                <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.62} style={[isLandscape ? styles.rightName : styles.portraitRightName, { marginTop: fighterNameTop }, compact && styles.compactName]}>{fighter2}</Text>
+                <View pointerEvents="none" style={[styles.fighterNameContainer, fighterNameBounds]}>
+                    <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.62} style={[isLandscape ? styles.rightName : styles.portraitRightName, { marginTop: 0 }, compact && styles.compactName]}>{fighter2}</Text>
+                </View>
                 <Animated.Text
                     style={[
                         styles.plusSign,
@@ -642,7 +712,7 @@ export default function RoundScoringScreen() {
                         numberOfLines={isLandscape ? 1 : 2}
                         adjustsFontSizeToFit={isLandscape}
                         minimumFontScale={isLandscape ? 0.62 : undefined}
-                        style={[styles.buttonText, !isLandscape && styles.portraitKnockdownText]}
+                        style={isLandscape ? styles.landscapeButtonText : [styles.buttonText, styles.portraitKnockdownText]}
                     >
                         {isLandscape ? 'Hold for Knockdown' : 'Hold for\nKnockdown'}
                     </Text>
@@ -651,7 +721,7 @@ export default function RoundScoringScreen() {
                 {/* right pen */}
                 <Pressable
                     style={isLandscape
-                        ? [styles.deductRight, landscapeEdgeBottomControlStyle, { right: 0 }]
+                        ? [styles.deductRight, landscapeEdgeBottomControlStyle, { right: landscapeBottomRowInset }]
                         : styles.portraitDeductRight}
                     onPress={() => {
                         pulseAnimation(rightPulseAnim);
@@ -680,7 +750,7 @@ export default function RoundScoringScreen() {
                             numberOfLines={1}
                             adjustsFontSizeToFit
                             minimumFontScale={0.75}
-                            style={[styles.buttonText, styles.deductRightText]}
+                            style={styles.landscapeButtonText}
                         >
                             Hold to Deduct
                         </Text>
@@ -699,9 +769,10 @@ export default function RoundScoringScreen() {
                     isLandscape ? styles.exitButton : styles.portraitExitButton,
                     {
                         top: topControlTop,
-                        width: isLandscape ? 230 * sx : portraitExitWidth,
+                        left: isLandscape ? landscapeControlCenter : '50%',
+                        width: isLandscape ? landscapeExitWidth : portraitExitWidth,
                         height: isLandscape ? toolbarHeight : portraitActionControlHeight,
-                        transform: [{ translateX: isLandscape ? -115 * sx : -portraitExitWidth / 2 }],
+                        transform: [{ translateX: isLandscape ? -landscapeExitWidth / 2 : -portraitExitWidth / 2 }],
                         backgroundColor: '#d7b55d',
                     },
                 ]}
@@ -752,7 +823,7 @@ export default function RoundScoringScreen() {
                         numberOfLines={1}
                         adjustsFontSizeToFit
                         minimumFontScale={0.8}
-                        style={styles.exitButtonText}
+                        style={styles.landscapeButtonText}
                     >
                         Hold to Save & Exit Round {round}
                     </Text>
@@ -796,7 +867,7 @@ export default function RoundScoringScreen() {
                         numberOfLines={1}
                         adjustsFontSizeToFit={isLandscape}
                         minimumFontScale={isLandscape ? 0.62 : 0.8}
-                        style={styles.stoppageButtonText}
+                        style={styles.landscapeButtonText}
                     >
                         Hold to Mark Stoppage
                     </Text>
@@ -826,7 +897,7 @@ export default function RoundScoringScreen() {
                     paddingLeft: insets.left + 16,
                     paddingRight: insets.right + 16,
                 }]}>
-                    <View style={[styles.stoppageModalCard, { height: Math.max(0, Math.min(380, contentHeight - 24) - (isPremium ? 50 : 0)) }]}>
+                    <View style={[styles.stoppageModalCard, { height: Math.max(0, Math.min(380, height - 24) - (isPremium ? 50 : 0)) }]}>
                         <View style={styles.stoppageModalContent}>
                             <ModalTitleHeader
                                 title="Mark Stoppage"
@@ -940,6 +1011,8 @@ export default function RoundScoringScreen() {
                 </View>
             </Modal>
         </View>
+        </ScoringSafeAreaView>
+        </View>
     );
 }
 
@@ -947,6 +1020,47 @@ const styles = StyleSheet.create({
     buttonText: {
         color: '#000',
         zIndex: 1,
+    },
+    landscapeButtonText: {
+        color: '#000',
+        fontSize: 14,
+        width: '100%',
+        flexShrink: 1,
+        paddingHorizontal: 4,
+        textAlign: 'center',
+        textAlignVertical: 'center',
+        includeFontPadding: false,
+        zIndex: 1,
+    },
+    landscapeUndoRibbon: {
+        gap: 2,
+        paddingHorizontal: 4,
+        paddingVertical: 4,
+        borderRadius: 15,
+    },
+    landscapeUndoEvent: {
+        color: '#000',
+        width: '100%',
+        flexShrink: 1,
+        fontSize: 12,
+        textAlign: 'center',
+        textAlignVertical: 'center',
+        includeFontPadding: false,
+        zIndex: 1,
+    },
+    landscapeUndoInstruction: {
+        color: '#000',
+        width: '100%',
+        flexShrink: 1,
+        fontSize: 10,
+        textAlign: 'center',
+        textAlignVertical: 'center',
+        includeFontPadding: false,
+        zIndex: 1,
+    },
+    screen: {
+        flex: 1,
+        backgroundColor: '#333A3F',
     },
     container: {
         flex: 1,
@@ -1023,6 +1137,7 @@ const styles = StyleSheet.create({
         height: 60,
         justifyContent: 'center',
         alignItems: 'center',
+        borderTopLeftRadius: 15,
         borderTopRightRadius: 15,
         overflow: 'hidden',
         backgroundColor: '#d7b55d',
@@ -1040,12 +1155,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#d7b55d',
     },
-    deductLeftText: {
-        fontSize: 14,
-        textAlign: 'center',
-        width: '100%',
-        marginLeft: '7%'
-    },
     portraitDeductText: {
         lineHeight: 18,
         fontSize: 12,
@@ -1059,6 +1168,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         borderTopLeftRadius: 15,
+        borderTopRightRadius: 15,
         overflow: 'hidden',
         backgroundColor: '#d7b55d',
     },
@@ -1076,12 +1186,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#d7b55d',
     },
 
-    deductRightText: {
-        fontSize: 14,
-        textAlign: 'center',
-        width: '100%',
-        marginRight: '7%'
-    },
     description: {
         color: '#333',
         fontSize: 14,
@@ -1094,8 +1198,7 @@ const styles = StyleSheet.create({
         width: 230,
         maxWidth: '38%',
         minHeight: 44,
-        borderBottomRightRadius: 15,
-        borderBottomLeftRadius: 15,
+        borderRadius: 15,
         justifyContent: 'center',
         alignItems: 'center',
         top: 0,
@@ -1119,13 +1222,6 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         zIndex: 5,
     },
-    exitButtonText: {   
-        color: '#000',
-        textAlign: 'center',
-        fontSize: 14,
-        marginTop: 0,
-        zIndex: 1,
-    },
     portraitExitButtonText: {   
         color: '#000',
         textAlign: 'center',
@@ -1134,11 +1230,6 @@ const styles = StyleSheet.create({
         zIndex: 1,
     },
 
-    leftEvents: {
-        color: '#000',
-        fontSize: 12,
-        textAlign: 'center',
-    },
     portraitLeftEvents: {
         color: '#000',
         fontSize: 10,
@@ -1191,23 +1282,6 @@ const styles = StyleSheet.create({
         lineHeight: 13,
         textAlign: 'center',
         zIndex: 1,
-    },
-    leftDedUndo: {
-        color: '#000',
-        fontSize: 10,
-        textAlign: 'center',
-    },
-    leftKdUndo: {
-        fontSize: 11,
-        // left: 191,
-        top: 8,
-        color: '#000',
-    },
-    rightKdUndo: {
-        fontSize: 11,
-        // left: 191,
-        top: 8,
-        color: '#000',
     },
     undoDeductLeft: {
         alignItems: 'center',
@@ -1280,7 +1354,6 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         transform: [{ translateX: -75 }],
-        paddingTop: 5,
         overflow: 'hidden',
         backgroundColor: '#d7b55d',
     },
@@ -1326,9 +1399,6 @@ const styles = StyleSheet.create({
         transform: [{ translateX: -90 }],
         overflow: 'hidden',
         zIndex: 5,
-    },
-    stoppageButtonText: {
-
     },
     portraitStoppageButtonText: {
         alignSelf: 'center',
@@ -1445,7 +1515,6 @@ const styles = StyleSheet.create({
     rightkd: {
         bottom: 0,
         left: '43%',
-        paddingBottom: 6
     },
     portraitRightKd: {
         bottom: '8%',
@@ -1490,13 +1559,11 @@ const styles = StyleSheet.create({
         width: '116%',
         height: '116%',
     },
-    leftEvents2: {
+    fighterNameContainer: {
         position: 'absolute',
-        color: '#000',
-        left: 12,
-        top: 5,
-        textAlign: 'center',
-        fontSize: 12
+        left: 0,
+        right: 0,
+        justifyContent: 'center',
     },
     leftName: {
         color: '#fff',
@@ -1517,7 +1584,6 @@ const styles = StyleSheet.create({
     leftkd: {
         bottom: 0,
         left: '57%',
-        paddingBottom: 6
     },
     portraitLeftKd: {
         bottom: '8%',
@@ -1570,12 +1636,6 @@ const styles = StyleSheet.create({
         minWidth: 0,
         overflow: 'hidden',
     },
-    rightDedEvents: {
-        color: '#000',
-        fontSize: 12,
-        textAlign: 'center',
-        zIndex: 1,
-    },
     rightEvents: {
         position: 'absolute',
         color: 'white',
@@ -1583,14 +1643,6 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         textAlign: 'center',
-    },
-    rightEvents2: {
-        position: 'absolute',
-        color: '#000',
-        left: 12,
-        top: 5,
-        textAlign: 'center',
-        fontSize: 12
     },
 
     rightName: {

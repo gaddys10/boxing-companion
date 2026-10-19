@@ -640,7 +640,7 @@ export default function HomeScreen() {
                   <View style={[styles.settingsModalActions, isLandscape && styles.landscapeSettingsModalActions]}>
                     <View style={[styles.settingsModalColumns, isLandscape && styles.landscapeSettingsColumns]}>
                     <View style={[styles.settingsModalActions, isLandscape && styles.landscapeSettingsColumn]}>
-                    {/* <Pressable
+                    <Pressable
                       style={[styles.limitModalButton, styles.limitPremiumButton, isPremium && styles.premiumActiveButton]}
                       onPress={isPremium ? undefined : handlePurchasePremium}
                       disabled={isPremium}
@@ -661,7 +661,7 @@ export default function HomeScreen() {
                         <Ionicons name="checkmark-circle" size={18} color="#D99B28" />
                         <Text style={styles.premiumChecklistText}>Access to ALL future premium features</Text>
                       </View>
-                    </View> */}
+                    </View>
                     </View>
                     <View style={[styles.settingsModalActions, isLandscape && styles.landscapeSettingsColumn]}>
                     <Pressable
@@ -967,14 +967,14 @@ export default function HomeScreen() {
                 Delete a saved card, purchase Premium, or watch an ad to create another scorecard.
               </Text>
               <View style={styles.limitModalActions}>
-                {/* <Pressable
+                <Pressable
                   style={[styles.limitModalButton, styles.limitPremiumButton]}
                   onPress={handlePurchasePremium}
                   disabled={isRewardedAdLoading}
                 >
                   <Ionicons name="star-outline" size={18} color="#fff" />
                   <Text style={styles.limitPrimaryButtonText}>Purchase Premium: $2.99</Text>
-                </Pressable> */}
+                </Pressable>
                 <Text style={styles.limitModalSubText}>
                 Premium removes ads, unlocks unlimited saved cards, and includes all future premium features!
               </Text>
