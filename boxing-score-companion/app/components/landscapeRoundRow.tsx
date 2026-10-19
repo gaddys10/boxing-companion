@@ -20,6 +20,7 @@ const SWIPE_REVEAL_DISTANCE = SWIPE_ACTIONS_HEIGHT + SWIPE_ACTIONS_BOTTOM + SWIP
 
 type RoundRowProps = {
     roundNumber: number;
+    compactColumnWidth?: number;
     leftScore?: string;
     rightScore?: string;
     leftTotal?: string;
@@ -60,6 +61,7 @@ type RoundRowProps = {
 
 export default function LandscapeRoundRow({
     roundNumber,
+    compactColumnWidth,
     leftScore,
     rightScore,
     leftTotal,
@@ -287,10 +289,20 @@ export default function LandscapeRoundRow({
     return (
         <>
             <GestureDetector gesture={verticalSwipe}>
-                <View style={styles.swipeViewport}>
+                <View style={[
+                    styles.swipeViewport,
+                    compactColumnWidth !== undefined && { width: compactColumnWidth },
+                    compactColumnWidth !== undefined && roundNumber === 15 && {
+                        width: compactColumnWidth + 4,
+                        paddingRight: 4,
+                    },
+                ]}>
                     {renderSwipeActions()}
                     <Animated.View style={[styles.swipeContent, swipeContentStyle]}>
-                    <View style={styles.row}>
+                    <View style={[styles.row, compactColumnWidth !== undefined && {
+                        width: roundNumber === 15 ? '100%' : '96%',
+                        borderRightWidth: roundNumber === 15 ? 1 : 0,
+                    }]}>
                         <View style={[styles.roundLabelContainer, { backgroundColor: roundLabelColor }]}>
                             <Text style={styles.roundLabel}>R{roundNumber}</Text>
                         </View>
@@ -376,10 +388,10 @@ export default function LandscapeRoundRow({
                             )}
                         </View>
                         {isAfterStoppage ? (
-                            <View style={styles.buttonSpacer} />
+                            <View style={[styles.buttonSpacer, compactColumnWidth !== undefined && { width: '100%', marginRight: 0 }]} />
                         ) : (
                             <Pressable
-                                style={styles.button}
+                                style={[styles.button, compactColumnWidth !== undefined && { paddingHorizontal: 0, marginRight: 0, width: '100%', alignItems: 'center' }]}
                                 onPress={() => setScoringModalVisible(true)}
                             >
                                 <MaterialCommunityIcons name="pencil" size={20} color="#333A3F" />

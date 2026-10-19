@@ -332,13 +332,14 @@ export default function ExportCardScreen() {
     const fighter1 = String(firstParam(params.fighter1) || 'Fighter 1');
     const fighter2 = String(firstParam(params.fighter2) || 'Fighter 2');
     const roundCount = Math.max(1, Number(firstParam(params.rounds) || 10));
+    const fitFifteenRounds = roundCount === 15;
     const availableHeight = height - insets.top - insets.bottom;
-    const compactLayout = (roundCount >= 12 && availableHeight < 820) || availableHeight < 760;
+    const compactLayout = fitFifteenRounds || (roundCount >= 12 && availableHeight < 820) || availableHeight < 760;
     const [measuredRowHeight, setMeasuredRowHeight] = useState(ROW_HEIGHT);
 
     const rowScale = Math.min(
         1.15,
-        Math.max(1, measuredRowHeight / ROW_HEIGHT)
+        Math.max(fitFifteenRounds ? 0.75 : 1, measuredRowHeight / ROW_HEIGHT)
     );
 
     const rating = normalizeMatchRating(params.rating);
@@ -646,6 +647,7 @@ export default function ExportCardScreen() {
                 contentContainerStyle={[
                     styles.scrollContent,
                     styles.scrollContentNoScroll,
+                    fitFifteenRounds && { flex: 1 },
                     {
                         paddingHorizontal: Math.max(horizontalGutter * 0.3, 8),
                         paddingBottom: Math.max(insets.bottom, 8),
@@ -658,7 +660,7 @@ export default function ExportCardScreen() {
                 <View
                     ref={exportCardRef}
                     collapsable={false}
-                    style={[styles.exportCard, compactLayout && styles.compactExportCard]}
+                    style={[styles.exportCard, compactLayout && styles.compactExportCard, fitFifteenRounds && { flex: 1, minHeight: 0 }]}
                 >
                     <Image
                         source={require('../assets/images/bgfbsc.jpg')}
@@ -770,7 +772,7 @@ export default function ExportCardScreen() {
 
 
 
-                    <View style={[styles.rowsWrap, compactLayout && styles.compactRowsWrap]}>
+                    <View style={[styles.rowsWrap, compactLayout && styles.compactRowsWrap, fitFifteenRounds && { flex: 1, minHeight: 0, gap: 2 }]}>
                         {exportRows.map((row) => {
                             const score = row.score;
                             const leftKD = numericValue(score?.leftKnockdowns);
@@ -782,7 +784,7 @@ export default function ExportCardScreen() {
                             return (
                                 <View
                                     key={row.roundNumber}
-                                    style={[styles.scoreRow]}
+                                    style={[styles.scoreRow, fitFifteenRounds && { minHeight: 0 }]}
                                     onLayout={
                                             row.roundNumber === 1
                                                 ? (event) => setMeasuredRowHeight(event.nativeEvent.layout.height)
