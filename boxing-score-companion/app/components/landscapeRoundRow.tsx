@@ -1,3 +1,4 @@
+import { BUTTON_SHADOW } from '../../constants/button-shadow';
 import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, Modal, Platform } from 'react-native';
 import { router } from 'expo-router';
@@ -91,6 +92,7 @@ export default function LandscapeRoundRow({
 }: RoundRowProps) {
     const { isPremium } = usePremium();
     const { contentHeight, insets } = useResponsiveLayout();
+    const isLastRound = roundNumber === Number(rounds);
     const swipeOffset = useSharedValue(0);
     const swipeStartOffset = useSharedValue(0);
     const plusMinusNumber = plusMinus && plusMinus !== '-' ? Number(plusMinus) : null;
@@ -292,7 +294,7 @@ export default function LandscapeRoundRow({
                 <View style={[
                     styles.swipeViewport,
                     compactColumnWidth !== undefined && { width: compactColumnWidth },
-                    compactColumnWidth !== undefined && roundNumber === 15 && {
+                    compactColumnWidth !== undefined && isLastRound && {
                         width: compactColumnWidth + 4,
                         paddingRight: 4,
                     },
@@ -300,8 +302,8 @@ export default function LandscapeRoundRow({
                     {renderSwipeActions()}
                     <Animated.View style={[styles.swipeContent, swipeContentStyle]}>
                     <View style={[styles.row, compactColumnWidth !== undefined && {
-                        width: roundNumber === 15 ? '100%' : '96%',
-                        borderRightWidth: roundNumber === 15 ? 1 : 0,
+                        width: isLastRound ? '100%' : '96%',
+                        borderRightWidth: isLastRound ? 1 : 0,
                     }]}>
                         <View style={[styles.roundLabelContainer, { backgroundColor: roundLabelColor }]}>
                             <Text style={styles.roundLabel}>R{roundNumber}</Text>
@@ -867,14 +869,11 @@ const styles = StyleSheet.create({
         color: '#333',
     },
     cancelButton: {
+        ...BUTTON_SHADOW,
         alignSelf: 'center',
         backgroundColor: '#d32f2f',
         marginTop: 12,
         width: 180,
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
     },
     scoringMethodActions: {
         flexDirection: 'row',
@@ -894,12 +893,8 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     clearRoundButton: {
+        ...BUTTON_SHADOW,
         backgroundColor: '#000',
-        boxShadow: '4',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
     },
     cancelButtonText: {
         color: '#fff',
@@ -1040,20 +1035,14 @@ const styles = StyleSheet.create({
     },
     stoppageModalButton: { minWidth: 88, paddingVertical: 8, borderRadius: 8, alignItems: 'center' },
     stoppageCancelButton: {
+        ...BUTTON_SHADOW,
         backgroundColor: '#d32f2f',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
     },
     stoppageConfirmButton: {
+        ...BUTTON_SHADOW,
         backgroundColor: '#fff',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
     },
@@ -1172,6 +1161,7 @@ const styles = StyleSheet.create({
         fontWeight: '700',
     },
     scoringButton: {
+        ...BUTTON_SHADOW,
         alignItems: 'center',
         backgroundColor: '#fff',
         borderRadius: 12,
@@ -1181,10 +1171,6 @@ const styles = StyleSheet.create({
         minHeight: 50,
         width: '75%',
         marginBottom: '2.5%',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
     },

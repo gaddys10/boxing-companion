@@ -1,3 +1,4 @@
+import { BUTTON_SHADOW } from '../constants/button-shadow';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import React, { useRef } from 'react';
 import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -170,23 +171,19 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   cancel: {
+    ...BUTTON_SHADOW,
     alignItems: 'center',
     alignSelf: 'center',
     backgroundColor: '#D32F2F',
     borderColor: '#D32F2F',
     borderRadius: 10,
     borderWidth: 1,
-    elevation: 4,
     flexDirection: 'row',
     gap: 7,
     justifyContent: 'center',
     marginTop: 14,
     minHeight: 44,
     width: 104,
-    shadowColor: '#11334b',
-    shadowOffset: { width: 5, height: 5 },
-    shadowOpacity: 0.4,
-    shadowRadius: 1,
   },
   cancelText: {
     color: '#fff',

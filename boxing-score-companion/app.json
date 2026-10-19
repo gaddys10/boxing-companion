@@ -2,7 +2,7 @@
   "expo": {
     "name": "Boxing Score",
     "slug": "boxing-score-companion",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "orientation": "default",
     "icon": "./assets/images/box-sc-icon--optimized.png",
     "scheme": "boxingscorecompanion",
@@ -35,6 +35,9 @@
           "backgroundColor": "#ffffff",
           "dark": {
             "backgroundColor": "#000000"
+          },
+          "android": {
+            "image": "./assets/images/bsc-splash-android-padded.png"
           }
         }
       ],

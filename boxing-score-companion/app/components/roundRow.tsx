@@ -1,3 +1,4 @@
+import { BUTTON_SHADOW } from '../../constants/button-shadow';
 import React, {useState} from 'react';
 import { View, Text, Pressable, StyleSheet, Modal, Platform, Image, useWindowDimensions } from 'react-native';
 import { Image as ExpoImage } from 'expo-image';
@@ -800,24 +801,16 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     stoppageCancelButton: {
+        ...BUTTON_SHADOW,
         backgroundColor: '#d32f2f',
         marginLeft: 0,
-        boxShadow: '4',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
     },
     stoppageConfirmButton: {
+        ...BUTTON_SHADOW,
         backgroundColor: '#fff',
         marginLeft: 0,
-        boxShadow: '4',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
     },
@@ -869,6 +862,7 @@ const styles = StyleSheet.create({
         color: '#fff',
     },
     quickScoring: {
+        ...BUTTON_SHADOW,
         width: '75%',
         alignSelf: 'center',
         backgroundColor: '#fff',
@@ -878,11 +872,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: '5%',
-        boxShadow: '4',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
     },
@@ -1016,6 +1005,7 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     fullScoring: {
+        ...BUTTON_SHADOW,
         width: '75%',
         alignSelf: 'center',
         backgroundColor: '#fff',
@@ -1024,22 +1014,13 @@ const styles = StyleSheet.create({
         borderRadius: 15,
         justifyContent: 'center',
         alignItems: 'center',
-        boxShadow: '4',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
         marginBottom: '5%',
     },
     cancelButton: {
+        ...BUTTON_SHADOW,
         backgroundColor: '#d32f2f',
-        boxShadow: '4',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
     },
     confirmDeleteButton: {
         backgroundColor: '#d32f2f',
@@ -1102,20 +1083,12 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     clearRoundButton: {
+        ...BUTTON_SHADOW,
         backgroundColor: '#000',
-        boxShadow: '4',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
     },
     saveQuickButton: {
+        ...BUTTON_SHADOW,
         backgroundColor: '#1976D2',
-        boxShadow: '4',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1
     },
     saveQuickButtonText: {
         color: '#fff',

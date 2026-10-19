@@ -1,3 +1,4 @@
+import { BUTTON_SHADOW } from '../constants/button-shadow';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { StatusBar } from 'expo-status-bar';
@@ -19,6 +20,7 @@ import { normalizeMatchRating, parseMatchDescription, serializeMatchDescription 
 import mobileAds from 'react-native-google-mobile-ads';
 import CollapsibleBannerAd from './components/collapsibleBannerAd';
 import { usePremium } from '../contexts/PremiumContext';
+import { useScorecardDraft } from '../hooks/use-scorecard-draft';
 
 const MAX_RATING = 5;
 const RATING_STEP = 0.5;
@@ -192,7 +194,7 @@ export default function MatchNotesScreen() {
     const router = useRouter();
     const { isPremium } = usePremium();
     const params = useLocalSearchParams();
-    const { width, isLandscape, insets, sx, sy, horizontalGutter } = useResponsiveLayout();
+    const { width, contentHeight, isLandscape, insets, sx, sy, horizontalGutter } = useResponsiveLayout();
     const landscapeHeaderHeight = Math.max(38, Math.min(42, 40 * sy));
     const landscapeSafeLeft = Math.max(insets.left, 16 * sx);
     const landscapeSafeRight = Math.max(insets.right, 16 * sx);
@@ -210,9 +212,16 @@ export default function MatchNotesScreen() {
     const [selectedDescriptors, setSelectedDescriptors] = useState<string[]>(() =>
         parseMatchDescription(params.description).slice(0, MAX_DESCRIPTORS),
     );
+    useScorecardDraft('/matchNotes', {
+        ...params,
+        rating: rating.toFixed(1),
+        description: serializeMatchDescription(selectedDescriptors),
+    });
     const [descriptorContentHeight, setDescriptorContentHeight] = useState(0);
     const [descriptorViewportHeight, setDescriptorViewportHeight] = useState(0);
     const [descriptorScrollOffset, setDescriptorScrollOffset] = useState(0);
+    const [notesViewportHeight, setNotesViewportHeight] = useState(0);
+    const [ratingCardHeight, setRatingCardHeight] = useState(0);
     const [selectedDescriptorHeight, setSelectedDescriptorHeight] = useState(0);
     const [descriptorHeadingHeight, setDescriptorHeadingHeight] = useState(0);
     const [adsReady, setAdsReady] = useState(false);
@@ -348,13 +357,24 @@ export default function MatchNotesScreen() {
     const descriptorScrollbarTop = descriptorContentHeight > descriptorViewportHeight
         ? Math.max(0, Math.min(1, descriptorScrollOffset / (descriptorContentHeight - descriptorViewportHeight))) * descriptorScrollbarTrackHeight
         : 0;
-    const descriptorBaseMaxHeight = isLandscape ? 150 : 368;
-    const descriptorScrollMaxHeight = Math.max(
-        120,
-        descriptorBaseMaxHeight
-            - selectedDescriptorHeight
-            - (selectedDescriptorHeight > 0 ? 14 : 0),
+    const availableNotesHeight = Math.min(notesViewportHeight, contentHeight);
+    const descriptorAvailableHeight = Math.max(
+        0,
+        availableNotesHeight
+            - ratingCardHeight
+            - (width * 0.9 * 0.07)
+            - 22
+            - descriptorHeadingHeight
+            - (selectedDescriptorHeight > 0 ? selectedDescriptorHeight + 14 : 0),
     );
+    const descriptorScrollMaxHeight = isLandscape
+        ? Math.max(
+            120,
+            150
+                - selectedDescriptorHeight
+                - (selectedDescriptorHeight > 0 ? 14 : 0),
+        )
+        : Math.min(368, descriptorAvailableHeight);
     const handleDescriptorScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
         setDescriptorScrollOffset(event.nativeEvent.contentOffset.y);
     };
@@ -393,8 +413,12 @@ export default function MatchNotesScreen() {
                         alignSelf: 'flex-start',
                     },
                 ]}
+                onLayout={(event) => setNotesViewportHeight(event.nativeEvent.layout.height)}
             >
-                <View style={[styles.card, styles.ratingCard, isLandscape && styles.landscapeRatingCard]}>
+                <View
+                    style={[styles.card, styles.ratingCard, isLandscape && styles.landscapeRatingCard]}
+                    onLayout={(event) => setRatingCardHeight(event.nativeEvent.layout.height)}
+                >
                     <View style={isLandscape && styles.landscapeHeadingCopy}>
                         <Text style={styles.sectionTitle}>Rate this fight</Text>
                         <Text style={[styles.sectionDescription, isLandscape && styles.landscapeSectionDescription]}>
@@ -1032,6 +1056,7 @@ const styles = StyleSheet.create({
         minWidth: 0,
     },
     cancelButton: {
+        ...BUTTON_SHADOW,
         minHeight: 40,
         backgroundColor: RED,
         flexDirection: 'row',
@@ -1040,16 +1065,11 @@ const styles = StyleSheet.create({
         borderWidth: 0,
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '4',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
-        elevation: 4,
         flex: 1,
 
     },
     saveButton: {
+        ...BUTTON_SHADOW,
         minHeight: 40,
         backgroundColor: '#307Fb6',
         flexDirection: 'row',
@@ -1058,12 +1078,6 @@ const styles = StyleSheet.create({
         borderWidth: 0,
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '4',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
-        elevation: 4,
         flex: 1,
     },
     cancelButtonText: {

@@ -1,3 +1,4 @@
+import { BUTTON_SHADOW } from '../../constants/button-shadow';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -313,16 +314,12 @@ const styles = StyleSheet.create({
         position: 'relative',
     },
     swipeContent: {
+        ...BUTTON_SHADOW,
         height: '100%',
         width: '100%',
         backgroundColor: 'white',
         borderRadius: 15,
         overflow: 'visible',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
-        elevation: 6,
         zIndex: 2,
     },
     swipeSeparation: {
@@ -510,18 +507,13 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     modalButton: {
+        ...BUTTON_SHADOW,
         minWidth: 88,
         paddingHorizontal: 16,
         paddingVertical: 10,
         borderRadius: 8,
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '4',
-        elevation: 4,
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
     },
     modalOverlay: {
         flex: 1,

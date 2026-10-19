@@ -1,3 +1,4 @@
+import { BUTTON_SHADOW } from '../../constants/button-shadow';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useRef, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
@@ -318,17 +319,13 @@ const styles = StyleSheet.create({
     borderBottomColor: '#d32f2f',
   },
   savedCard: {
+    ...BUTTON_SHADOW,
     width: '100%',
     height: 90,
     backgroundColor: 'white',
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 15,
-    boxShadow: '4',
-    shadowColor: '#11334b',
-    shadowOffset: { width: 5, height: 5 },
-    shadowOpacity: 0.4,
-    shadowRadius: 1,
     marginBottom: 0,
     borderWidth: 1,
     borderColor: '#B6C6D1',
@@ -592,18 +589,13 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   modalButton: {
+    ...BUTTON_SHADOW,
     minWidth: 88,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '4',
-    elevation: 4,
-    shadowColor: '#11334b',
-    shadowOffset: { width: 5, height: 5 },
-    shadowOpacity: 0.4,
-    shadowRadius: 1,
   },
   cancelButton: {
     backgroundColor: '#fff',

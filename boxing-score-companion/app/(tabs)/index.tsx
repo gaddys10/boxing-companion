@@ -1,3 +1,4 @@
+import { BUTTON_SHADOW, SMALL_BUTTON_SHADOW } from '../../constants/button-shadow';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Linking, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -54,13 +55,13 @@ const SPECIAL_THANKS: {
 }[] = [
   { name: 'My father, for introducing me to boxing' },
   { name: 'Carmine Martinez' },
-  { name: 'Carmine Delarosa and his beautiful family' },
+  { name: 'Michael Delarosa and his beautiful family' },
   {
     name: 'Jaz Hannah-Melvin',
     spotify: { artist: 'Jaz Perignon', url: 'https://open.spotify.com/artist/2Rw3EZH710W7FLlxDowVS2' },
   },
   {
-    name: 'Aasin Baker aka Ace of Billionaire Boxing TV',
+    name: 'Aasin "Ace" Baker of Billionaire Boxing TV',
     twitter: 'billionboxingtv',
     youtube: 'BILLIONAIREBOXINGTV',
     instagram: 'billionaireboxingtv',
@@ -74,8 +75,8 @@ const SPECIAL_THANKS: {
   { name: 'Doom', twitter: 'SamuraiiDoom' },
   { name: 'Rude', twitter: 'RudeChildV' },
   { name: 'Monsoor', twitter: 'Monsoor_9' },
-  { name: 'Jay', twitter: 'DTBJay3x' },
-  { name: 'Alexia of Beauty in Boxing Media', twitter: 'AlexiaApples' },
+  { name: 'Jay of Delusional Podcast', twitter: 'DTBJay3x', youtube: 'D3lusi0nal997' },
+  { name: 'Alexia mof Beauty in Boxing Media', twitter: 'AlexiaApples' },
   { name: 'Peace', twitter: 'ohhpeace_boxing' },
   { name: 'Joe Leary', twitter: 'Finesse2286' },
   { name: 'Ron', twitter: 'MakerClimbAxe' },
@@ -639,7 +640,7 @@ export default function HomeScreen() {
                   <View style={[styles.settingsModalActions, isLandscape && styles.landscapeSettingsModalActions]}>
                     <View style={[styles.settingsModalColumns, isLandscape && styles.landscapeSettingsColumns]}>
                     <View style={[styles.settingsModalActions, isLandscape && styles.landscapeSettingsColumn]}>
-                    {/* <Pressable
+                    <Pressable
                       style={[styles.limitModalButton, styles.limitPremiumButton, isPremium && styles.premiumActiveButton]}
                       onPress={isPremium ? undefined : handlePurchasePremium}
                       disabled={isPremium}
@@ -660,7 +661,7 @@ export default function HomeScreen() {
                         <Ionicons name="checkmark-circle" size={18} color="#D99B28" />
                         <Text style={styles.premiumChecklistText}>Access to ALL future premium features</Text>
                       </View>
-                    </View> */}
+                    </View>
                     </View>
                     <View style={[styles.settingsModalActions, isLandscape && styles.landscapeSettingsColumn]}>
                     <Pressable
@@ -966,14 +967,14 @@ export default function HomeScreen() {
                 Delete a saved card, purchase Premium, or watch an ad to create another scorecard.
               </Text>
               <View style={styles.limitModalActions}>
-                {/* <Pressable
+                <Pressable
                   style={[styles.limitModalButton, styles.limitPremiumButton]}
                   onPress={handlePurchasePremium}
                   disabled={isRewardedAdLoading}
                 >
                   <Ionicons name="star-outline" size={18} color="#fff" />
                   <Text style={styles.limitPrimaryButtonText}>Purchase Premium: $2.99</Text>
-                </Pressable> */}
+                </Pressable>
                 <Text style={styles.limitModalSubText}>
                 Premium removes ads, unlocks unlimited saved cards, and includes all future premium features!
               </Text>
@@ -1187,18 +1188,14 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   limitModalButton: {
+    ...BUTTON_SHADOW,
     alignItems: 'center',
     borderRadius: 10,
-    elevation: 4,
     flexDirection: 'row',
     gap: 7,
     justifyContent: 'center',
     minHeight: 44,
     paddingHorizontal: 16,
-    shadowColor: '#11334b',
-    shadowOffset: { width: 5, height: 5 },
-    shadowOpacity: 0.4,
-    shadowRadius: 1,
   },
   limitBackButton: {
     backgroundColor: '#fff',
@@ -1216,6 +1213,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#D99B28',
   },
   premiumActiveButton: {
+    boxShadow: 'none',
     elevation: 0,
     shadowOpacity: 0,
   },
@@ -1336,6 +1334,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
   },
   button: {
+    ...BUTTON_SHADOW,
     backgroundColor: '#307Fb6',
     flexDirection: 'row',
     gap: 5,
@@ -1345,11 +1344,6 @@ const styles = StyleSheet.create({
     marginTop: 50,
     bottom: '4%',
     position: 'absolute',
-    boxShadow: '4',
-    shadowColor: '#11334b',
-    shadowOffset: { width: 5, height: 5 },
-    shadowOpacity: 0.4,
-    shadowRadius: 1,
     borderWidth: 0,
     justifyContent: 'center',
     alignItems: 'center'
@@ -1414,16 +1408,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   settingsButton: {
+    ...SMALL_BUTTON_SHADOW,
     alignItems: 'center',
     backgroundColor: '#307FB6',
     borderRadius: 12,
-    elevation: 4,
     height: 35,
     justifyContent: 'center',
-    shadowColor: '#11334b',
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 0.35,
-    shadowRadius: 1,
     width: 44,
   },
   settingsButtonPressed: {
@@ -1519,6 +1509,7 @@ const styles = StyleSheet.create({
   //Landscape styles
 
   landscapeButton: {
+    ...BUTTON_SHADOW,
     backgroundColor: '#307Fb6',
     flexDirection: 'row',
     gap: 5,
@@ -1530,11 +1521,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '4',
-    shadowColor: '#11334b',
-    shadowOffset: { width: 5, height: 5 },
-    shadowOpacity: 0.4,
-    shadowRadius: 1,
     borderWidth: 0,
   },
   landscapeContainer: {

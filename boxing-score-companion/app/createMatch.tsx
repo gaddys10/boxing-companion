@@ -1,3 +1,4 @@
+import { BUTTON_SHADOW } from '../constants/button-shadow';
 import { FontAwesome6, Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
@@ -10,6 +11,7 @@ import CollapsibleBannerAd from './components/collapsibleBannerAd';
 import StableCenteredModalFrame from './components/stableCenteredModalFrame';
 import { ModalTitleHeader } from './components/modalCloseButton';
 import { usePremium } from '../contexts/PremiumContext';
+import { useScorecardDraft } from '../hooks/use-scorecard-draft';
 
 type RoundScore = {
     left?: string;
@@ -90,22 +92,83 @@ export default function CreateMatch() {
             year: 'numeric',
         })
         : 'Select fight date';
+    const landscapeFightDateDisplay = fightDate
+        ? fightDate.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+        })
+        : 'Select date';
 
 
     const buttonText = isReviewBeforeShare ? 'Continue' : String(params.buttonText || "Create Scorecard");
     const rounds = [1, 3, 4, 6, 8, 10, 12, 15];
-    const { height, isLandscape, insets, sx, sy, scale, horizontalGutter } = useResponsiveLayout();
+    const { height, fontScale, contentWidth, isLandscape, insets, sx, sy, scale, horizontalGutter } = useResponsiveLayout();
+    const smallLandscape = isLandscape && contentWidth < 740;
+    const [formViewportHeight, setFormViewportHeight] = useState(0);
     const id = params.id ? String(params.id) : undefined;
+    useScorecardDraft('/createMatch', {
+        ...params,
+        fighter1: fighter1Name,
+        fighter2: fighter2Name,
+        rounds: selectedRounds,
+        gender: selectedGender,
+        weight: selectedWeight,
+        fightDate: fightDateParam,
+    });
 
+    const landscapeDensity = isLandscape && formViewportHeight > 0
+        ? Math.min(1, formViewportHeight / 300)
+        : 1;
     const landscapeInputHeight = Math.max(
         36,
-        Math.min(40, height * 0.05)
+        20 * fontScale + 12,
+        Math.min(40, height * 0.05 * landscapeDensity),
     );
-    const landscapeHeaderHeight = Math.max(38, Math.min(42, 40 * sy));
-    const landscapeActionLift = 5 * sy;
-    const roundButtonSize = Math.max(32, Math.min(40, 32 * sx));
-    const genderPillHeight = Math.max(36, Math.min(48, 36 * sy));
-    const weightPillHeight = Math.max(32, Math.min(40, 36 * sy));
+    const landscapeHeaderHeight = Math.max(30, Math.min(38, 36 * sy * landscapeDensity));
+    const landscapePillHeight = Math.max(
+        28,
+        Math.min(40, 36 * sy * landscapeDensity),
+        20 * fontScale + 12,
+    );
+    const pillHeight = isLandscape
+        ? landscapePillHeight
+        : Math.max(36, Math.min(40, 36 * sy), 20 * fontScale + 16);
+    const roundButtonSize = Math.max(pillHeight, 24 * fontScale + 12);
+    const landscapeRoundButtonWidth = smallLandscape ? Math.max(32, roundButtonSize - 4) : roundButtonSize;
+    const landscapeRoundButtonHeight = smallLandscape ? Math.max(32, pillHeight - 4) : pillHeight;
+    const formInnerWidth = Math.max(0, contentWidth - 2 * horizontalGutter);
+    // Budget space for Women's, the icon, padding and borders before using columns.
+    const portraitGenderWidth = ((formInnerWidth - 18) / 2) * 0.75;
+    const landscapeGenderWidth = (((formInnerWidth - 12) / 3.15) * (smallLandscape ? 0.96 : 0.9) - 4) / 2;
+    const stackPortraitSelectors = !isLandscape
+        && (portraitGenderWidth < 56 * fontScale + 41 || fontScale > 1.3);
+    const stackLandscapeSelectors = isLandscape
+        && (landscapeGenderWidth < 56 * fontScale + 25 || fontScale > 1.3);
+    const weightColumns = isLandscape
+        ? Math.min(9, Math.max(1, Math.floor(formInnerWidth / Math.max(64, (34 * fontScale + 10) / 0.7))))
+        : Math.min(3, Math.max(1,
+            Math.floor(formInnerWidth / Math.max(80, (50 * fontScale + 16) / 0.85))
+        ));
+    const weights: (number | string)[] = [
+        102, 105, isLandscape ? 110 : 108, 112, 115, 118,
+        122, 126, 130, 135, 140, 147, 154, 160, 168, 175, 200, '200+',
+    ];
+    const [portraitFormBaseBottom, setPortraitFormBaseBottom] = useState(0);
+    const [portraitActionsHeight, setPortraitActionsHeight] = useState(0);
+    // The action bar includes 8px of top padding; reserve another 10px so
+    // the visible buttons have the same 18px base gap as the form sections.
+    const portraitBaseBottomPadding = portraitActionsHeight
+        ? portraitActionsHeight + 10
+        : Math.max(insets.bottom, 12) + 60;
+    // Share surplus across three section gaps and the gap above the buttons.
+    const portraitExtraGap = !isLandscape && portraitFormBaseBottom > 0
+        ? Math.max(0, (formViewportHeight - portraitBaseBottomPadding - portraitFormBaseBottom) / 4)
+        : 0;
+    const portraitBottomPadding = portraitBaseBottomPadding + portraitExtraGap;
+    const portraitSectionSpacing = { marginTop: portraitExtraGap };
+    const weightRowCount = Math.ceil(weights.length / weightColumns);
+    const weightBlockHeight = pillHeight * weightRowCount + 4 * (weightRowCount - 1);
 
 
     const handleStartFight = () => {
@@ -294,7 +357,7 @@ export default function CreateMatch() {
                         style={[
                             isLandscape ? styles.landscapeRoundButton : styles.roundButton,
                             isLandscape
-                                ? { minHeight: roundButtonSize }
+                                ? { height: landscapeRoundButtonHeight, width: landscapeRoundButtonWidth }
                                 : { height: roundButtonSize, width: roundButtonSize },
                             selectedRounds === round && styles.roundButtonSelected,
                         ]}
@@ -317,12 +380,12 @@ export default function CreateMatch() {
             <Text style={isLandscape ? styles.landscapeRoundLabel : styles.blackNameLabel}>
                 Select gender: <Text style={styles.optionalLabel}>(optional)</Text>
             </Text>
-            <View style={[styles.genderPills, isLandscape && styles.landscapeGenderPills, { minHeight: genderPillHeight }]}>
+            <View style={[styles.genderPills, isLandscape && styles.landscapeGenderPills, smallLandscape && styles.smallLandscapeGenderPills, { minHeight: pillHeight }]}>
                 <Pressable
                     style={[
                         styles.malePill,
                         isLandscape && styles.landscapeGenderPill,
-                        { height: genderPillHeight },
+                        { height: pillHeight },
                         selectedGender === "mens" && styles.malePillSelected
                     ]}
                     onPress={() => selectedGender === "mens" ? setSelectedGender("idk") : setSelectedGender('mens')}
@@ -341,7 +404,7 @@ export default function CreateMatch() {
                 <Pressable style={[
                     styles.femalePill,
                     isLandscape && styles.landscapeGenderPill,
-                    { height: genderPillHeight },
+                    { height: pillHeight },
                     selectedGender === "womens" && styles.femalePillSelected
                     ]}
                     onPress={() => selectedGender=== "womens" ? setSelectedGender("idk") : setSelectedGender("womens")}
@@ -372,22 +435,28 @@ export default function CreateMatch() {
             />
             <ScrollView
                 style={styles.formScroll}
+                onLayout={(event) => setFormViewportHeight(event.nativeEvent.layout.height)}
                 contentContainerStyle={[
                     isLandscape ? styles.landscapeContainer : styles.container,
                     !isLandscape && {
+                        minHeight: formViewportHeight,
+                        height: portraitFormBaseBottom > 0
+                            ? Math.max(formViewportHeight, portraitFormBaseBottom + portraitBaseBottomPadding + portraitExtraGap * 4)
+                            : undefined,
                         paddingTop: 0,
-                        paddingBottom: Math.max(insets.bottom, 12) + 60,
-                        paddingHorizontal: horizontalGutter,
+                        paddingBottom: portraitBottomPadding,
+                        paddingLeft: Math.max(insets.left, horizontalGutter),
+                        paddingRight: Math.max(insets.right, horizontalGutter),
                     },
                     isLandscape && {
                         paddingLeft: Math.max(insets.left, 16 * sx),
                         paddingRight: Math.max(insets.right, 16 * sx),
-                        paddingBottom: Math.max(insets.bottom, 8 * sy),
-                        minHeight: Math.max(0, height - insets.top),
+                        paddingBottom: 0,
+                        minHeight: formViewportHeight,
                     },
                 ]}
                 keyboardShouldPersistTaps="handled"
-                scrollEnabled={false}
+                scrollEnabled={!isLandscape}
                 bounces={false}
                 alwaysBounceVertical={false}
                 overScrollMode="never"
@@ -401,6 +470,7 @@ export default function CreateMatch() {
             >
                 <Text style={isLandscape ? styles.landscapeTitle : styles.title}>{title}</Text>
             </View>
+            {isLandscape && <View style={styles.landscapeSectionSpacer} />}
 
             {/* Text Input Container  */}
             <View style={isLandscape ? styles.landscapeInputContainer : styles.inputContainer}>
@@ -409,10 +479,12 @@ export default function CreateMatch() {
                 <View style ={isLandscape ? styles.landscapeFighter1Box : styles.fighter1Box}>
                     <Text style={isLandscape ? styles.landscapeNameLabel : styles.redNameLabel}>Red corner name:</Text>
                     <TextInput
+                        key={isLandscape ? 'landscape-red-name' : 'portrait-red-name'}
                         placeholder="Enter red corner's name.."
                         value={fighter1Name}
                         placeholderTextColor="#D32f2f"
                         onChangeText={setFighter1Name}
+                        textAlignVertical={isLandscape ? 'center' : undefined}
                         style={isLandscape ? [styles.landscapeFighter1Input, { height: landscapeInputHeight }] : [styles.fighter1input, { minHeight: Math.max(38, 38 * scale) }]}
                     />
                 </View>
@@ -421,25 +493,28 @@ export default function CreateMatch() {
                 <View style={ isLandscape ? styles.landscapeFighter2Box : styles.fighter2Box}>
                     <Text style={isLandscape ? styles.landscapeNameLabel : styles.blueNameLabel}>Blue corner name:</Text>
                     <TextInput
+                        key={isLandscape ? 'landscape-blue-name' : 'portrait-blue-name'}
                         placeholder="Enter blue corner's name.."
                         placeholderTextColor="#307Fb6"
                         value={fighter2Name}
                         onChangeText={setFighter2Name}
-                        style={isLandscape ? [styles.landscapeFighter2Input, { height: landscapeInputHeight }] : [styles.fighter2Input, { minHeight: Math.max(38, 38 * scale) }]}
+                        textAlignVertical={isLandscape ? 'center' : undefined}
+                        style={isLandscape ? [styles.landscapeFighter2Input, { height: landscapeInputHeight }] : [styles.fighter2Input, { minHeight: Math.max(38, 38 * scale), marginBottom: 18 }]}
                     />
                 </View>
             </View>
+            {isLandscape && <View style={styles.landscapeSectionSpacer} />}
             {isLandscape ? (
-                <View style={styles.landscapeRoundGenderRow}>
-                    <View style={styles.landscapeRoundContainer}>
+                <View style={[styles.landscapeRoundGenderRow, stackLandscapeSelectors && styles.stackedSelectors]}>
+                    <View style={[styles.landscapeRoundContainer, smallLandscape && styles.smallLandscapeRoundContainer, stackLandscapeSelectors && styles.fullWidthSelector]}>
                         {roundSelector}
                     </View>
 
-                    <View style={styles.landscapeGenderContainer}>
+                    <View style={[styles.landscapeGenderContainer, stackLandscapeSelectors && styles.fullWidthSelector]}>
                         {genderSelector}
                     </View>
 
-                    <View style={styles.landscapeDateContainer}>
+                    <View style={[styles.landscapeDateContainer, smallLandscape && styles.smallLandscapeDateContainer, stackLandscapeSelectors && styles.fullWidthSelector]}>
                         <Text style={styles.landscapeRoundLabel}>
                             Select Date: <Text style={styles.optionalLabel}>(optional)</Text>
                         </Text>
@@ -458,12 +533,14 @@ export default function CreateMatch() {
 
                             <Text
                                 numberOfLines={1}
+                                adjustsFontSizeToFit
+                                minimumFontScale={0.85}
                                 style={[
                                     styles.datePickerText,
                                     !fightDate && styles.datePickerPlaceholder,
                                 ]}
                             >
-                                {fightDateDisplay}
+                                {landscapeFightDateDisplay}
                             </Text>
 
                             <Ionicons name="chevron-down" size={16} color="#307Fb6" />
@@ -471,9 +548,9 @@ export default function CreateMatch() {
                     </View>
                 </View>
             ) : (
-                <View style={styles.roundGenderRow}>
+                <View style={[styles.roundGenderRow, portraitSectionSpacing, stackPortraitSelectors && styles.stackedSelectors]}>
                     {/* Rounds */}
-                    <View style={styles.roundGenderColumn}>
+                    <View style={[styles.roundGenderColumn, stackPortraitSelectors && styles.fullWidthSelector]}>
                         <Text style={styles.compactSectionLabel}>
                             Select rounds:
                         </Text>
@@ -486,6 +563,7 @@ export default function CreateMatch() {
                                             key={round}
                                             style={[
                                                 styles.portraitRoundButton,
+                                                { height: pillHeight },
                                                 selectedRounds === round && styles.roundButtonSelected,
                                             ]}
                                             onPress={() => setSelectedRounds(round)}
@@ -506,7 +584,7 @@ export default function CreateMatch() {
                     </View>
 
                     {/* Gender */}
-                    <View style={styles.roundGenderColumn}>
+                    <View style={[styles.roundGenderColumn, stackPortraitSelectors && styles.fullWidthSelector]}>
                         <Text style={styles.compactSectionLabel}>
                             Select gender:{' '}
                             <Text style={styles.optionalLabel}>(optional)</Text>
@@ -516,6 +594,8 @@ export default function CreateMatch() {
                             <Pressable
                                 style={[
                                     styles.portraitGenderPill,
+                                    stackPortraitSelectors && { width: '100%' },
+                                    { height: pillHeight },
                                     selectedGender === 'mens' && styles.malePillSelected,
                                 ]}
                                 onPress={() =>
@@ -542,6 +622,8 @@ export default function CreateMatch() {
                             <Pressable
                                 style={[
                                     styles.portraitGenderPill,
+                                    stackPortraitSelectors && { width: '100%' },
+                                    { height: pillHeight },
                                     selectedGender === 'womens' && styles.femalePillSelected,
                                 ]}
                                 onPress={() =>
@@ -568,10 +650,11 @@ export default function CreateMatch() {
                     </View>
                 </View>
             )}
+            {isLandscape && <View style={styles.landscapeSectionSpacer} />}
 
             {!isLandscape && (
                 <>
-                    <Text style={styles.blackNameLabel}>
+                    <Text style={[styles.blackNameLabel, portraitSectionSpacing]}>
                         Select Date: <Text style={styles.optionalLabel}>(optional)</Text>
                     </Text>
 
@@ -652,232 +735,117 @@ export default function CreateMatch() {
                 </Modal>
             )}
 
-            <Text style={isLandscape ? styles.landscapeWeightLabel : styles.blackNameLabel}>
+            <Text style={isLandscape ? styles.landscapeWeightLabel : [styles.blackNameLabel, portraitSectionSpacing]}>
                 Select weight class: <Text style={styles.optionalLabel}>(optional)</Text>
             </Text>
 
-            {!isLandscape ?
-                <View style={[styles.weightClassContainer]}>
-                    <View style={styles.weightColumnLeft}>
-                        {[102, 112, 122, 135, 154, 175].map((weight) => (
-                            <Pressable
-                                key={weight}
-                                style={[
-                                    styles.weightPill,
-                                    { height: weightPillHeight },
-                                    selectedWeight === weight && styles.weightPillSelected,
-                                ]}
-                                onPress={() => setSelectedWeight(selectedWeight === weight ? 0 : weight)}
-                            >
-                                <Text style={selectedWeight === weight ? styles.weightPillTextSelected : styles.weightPillText}>
-                                    {weight}lbs
-                                </Text>
-                            </Pressable>
-                        ))}
-                    </View>
-                    <View style={styles.weightColumnCenter}>
-                        {[105, 115, 126, 140, 160, 200].map((weight) => (
-                            <Pressable
-                                key={weight}
-                                style={[
-                                    styles.weightPill,
-                                    { height: weightPillHeight },
-                                    selectedWeight === weight && styles.weightPillSelected
-                                ]}
-                                onPress={() => setSelectedWeight(selectedWeight === weight ? 0 : weight)}
-                            >
-                                <Text style={selectedWeight === weight ? styles.weightPillTextSelected : styles.weightPillText}>
-                                    {weight}lbs
-                                </Text>
-                            </Pressable>
-                        ))}
-                    </View>
-                    <View style={styles.weightColumnRight}>
-                        {[108, 118, 130, 147, 168, '200+'].map((weight) => (
-                            <Pressable
-                                key={weight}
-                                style={[
-                                    isLandscape ? styles.landscapeWeightPill : styles.weightPill,
-                                    { height: weightPillHeight },
-                                    selectedWeight === weight && styles.weightPillSelected
-                                ]}
-                                onPress={() => setSelectedWeight(selectedWeight === weight ? 0 : weight)}
-                            >
-                                <Text style={selectedWeight === weight ? styles.weightPillTextSelected : styles.weightPillText}>
-                                    {weight}lbs
-                                </Text>
-                            </Pressable>
-                        ))}
-                    </View>
-                </View>
-            :
-                <View style={[
-                    styles.weightClassContainer, 
-                    isLandscape && styles.landscapeWeightClassContainer]}>
-                    <View style={[styles.weightColumnLeft, styles.landscapeWeightColumn]}>
-                        {[102, 122, 154].map((weight) => (
-                            <Pressable
-                                key={weight}
-                                style={[
-                                    styles.landscapeWeightPill,
-                                    { height: weightPillHeight },
-                                    selectedWeight === weight && styles.landscapeWeightPillSelected
-                                ]}
-                                onPress={() => setSelectedWeight(selectedWeight === weight ? 0 : weight)}
-                            >
-                                <Text style={selectedWeight === weight ? styles.weightPillTextSelected : styles.weightPillText}>
-                                    {weight}lbs
-                                </Text>
-                            </Pressable>
-                        ))}
-                    </View>
-                    <View style={[styles.weightColumnCenter, styles.landscapeWeightColumn]}>
-                        {[105, 126, 160, ].map((weight) => (
-                            <Pressable
-                                key={weight}
-                                style={[
-                                    isLandscape ? styles.landscapeWeightPill : styles.weightPill,
-                                    { height: weightPillHeight },
-                                    selectedWeight === weight && styles.landscapeWeightPillSelected
-                                ]}
-                                onPress={() => setSelectedWeight(selectedWeight === weight ? 0 : weight)}
-                            >
-                                <Text style={selectedWeight === weight ? styles.weightPillTextSelected : styles.weightPillText}>
-                                    {weight}lbs
-                                </Text>
-                            </Pressable>
-                        ))}
-                    </View>
-                    <View style={[styles.weightColumnRight, styles.landscapeWeightColumn]}>
-                        {[110, 130, 168].map((weight) => (
-                            <Pressable
-                                key={weight}
-                                style={[
-                                    isLandscape ? styles.landscapeWeightPill : styles.weightPill,
-                                    { height: weightPillHeight },
-                                    selectedWeight === weight && styles.landscapeWeightPillSelected
-                                ]}
-                                onPress={() => setSelectedWeight(selectedWeight === weight ? 0 : weight)}
-                            >
-                                <Text style={selectedWeight === weight ? styles.weightPillTextSelected : styles.weightPillText}>
-                                    {weight}lbs
-                                </Text>
-                            </Pressable>
-                        ))}
-                    </View>
-                    <View style={[styles.weightColumnRight, styles.landscapeWeightColumn]}>
-                        {[112, 135, 175].map((weight) => (
-                            <Pressable
-                                key={weight}
-                                style={[
-                                    isLandscape ? styles.landscapeWeightPill : styles.weightPill,
-                                    { height: weightPillHeight },
-                                    selectedWeight === weight && styles.landscapeWeightPillSelected
-                                ]}
-                                onPress={() => setSelectedWeight(selectedWeight === weight ? 0 : weight)}
-                            >
-                                <Text style={selectedWeight === weight ? styles.weightPillTextSelected : styles.weightPillText}>
-                                    {weight}lbs
-                                </Text>
-                            </Pressable>
-                        ))}
-                    </View>
-                    <View style={[styles.weightColumnRight, styles.landscapeWeightColumn]}>
-                        {[115, 140, 200].map((weight) => (
-                            <Pressable
-                                key={weight}
-                                style={[
-                                    isLandscape ? styles.landscapeWeightPill : styles.weightPill,
-                                    { height: weightPillHeight },
-                                    selectedWeight === weight && styles.landscapeWeightPillSelected
-                                ]}
-                                onPress={() => setSelectedWeight(selectedWeight === weight ? 0 : weight)}
-                            >
-                                <Text style={selectedWeight === weight ? styles.weightPillTextSelected : styles.weightPillText}>
-                                    {weight}lbs
-                                </Text>
-                            </Pressable>
-                        ))}
-                    </View>
-                    <View style={[styles.weightColumnRight, styles.landscapeWeightColumn]}>
-                        {[118, 147, '200+'].map((weight) => (
-                            <Pressable
-                                key={weight}
-                                style={[
-                                    isLandscape ? styles.landscapeWeightPill : styles.weightPill,
-                                    { height: weightPillHeight },
-                                    selectedWeight === weight && styles.landscapeWeightPillSelected
-                                ]}
-                                onPress={() => setSelectedWeight(selectedWeight === weight ? 0 : weight)}
-                            >
-                                <Text style={selectedWeight === weight ? styles.weightPillTextSelected : styles.weightPillText}>
-                                    {weight}lbs
-                                </Text>
-                            </Pressable>
-                        ))}
-                    </View>
-                </View>
-            }
-
-
-            {isLandscape &&
-                <View
-                    style={[
-                        isEditing ? styles.landscapeEditButtonContainer : styles.landscapeButtonContainer,
-                        { transform: [{ translateY: -landscapeActionLift }] },
-                    ]}
-                >
-
-                    {/* Cancel button  */}
-                    <Pressable
-                        style={[
-                            isEditing ? styles.landscapeEditCancelButton : styles.landscapeCancelButton,
-                            styles.buttonWithIcon,
-                            styles.actionButtonShadow,
-                            !isEditing && styles.initialLandscapeCancelButton,
-                            isReviewBeforeShare && styles.reviewActionButton,
-                        ]}
-                        onPress={handleCancel}
-                    >
-                        <Ionicons name={isReviewBeforeShare ? 'chevron-back' : 'trash-outline'} size={18} color="#fff" />
-                        <Text style={styles.cancelButtonText}>Cancel</Text>
-                    </Pressable>
-
-
-                    {/* save and exit button  */}
-                    {isEditing && !isReviewBeforeShare &&
+            <View
+                style={[
+                    styles.weightClassContainer,
+                    { height: weightBlockHeight },
+                    isLandscape && styles.landscapeWeightGrid,
+                ]}
+                onLayout={!isLandscape ? (event) => {
+                    const { y, height: blockHeight } = event.nativeEvent.layout;
+                    const baseBottom = y + blockHeight - portraitExtraGap * 3;
+                    setPortraitFormBaseBottom((previous) =>
+                        Math.abs(previous - baseBottom) > 1 ? baseBottom : previous
+                    );
+                } : undefined}
+            >
+                {weights.map((weight) => (
+                    <View key={weight} style={[styles.weightCell, { width: `${100 / weightColumns}%` }]}>
                         <Pressable
-                            style={[styles.landscapeEditSaveButton, styles.landscapeActionButton, styles.actionButtonShadow]}
-                            onPress={handleSaveChangesAndExit}
+                            style={[
+                                isLandscape ? styles.landscapeWeightPill : styles.weightPill,
+                                isLandscape && smallLandscape && styles.smallLandscapeWeightPill,
+                                { height: pillHeight },
+                                selectedWeight === weight && styles.weightPillSelected,
+                            ]}
+                            onPress={() => setSelectedWeight(selectedWeight === weight ? 0 : weight)}
                         >
-                            <Text style={[styles.buttonText, styles.saveExitButtonText]}>Save & Exit</Text>
+                            <Text style={selectedWeight === weight ? styles.weightPillTextSelected : styles.weightPillText}>
+                                {weight}lbs
+                            </Text>
                         </Pressable>
-                    }
+                    </View>
+                ))}
+            </View>
+            {isLandscape && <View style={styles.landscapeSectionSpacer} />}
 
 
-                    {/* Enter scorecard button  */}
-                    <Pressable
-                        style={[
-                            isEditing? styles.landscapeEditContinueButton : styles.landscapeButton,
-                            styles.buttonWithIcon,
-                            styles.actionButtonShadow,
-                            !isEditing && styles.initialLandscapeCreateButton,
-                            isReviewBeforeShare && styles.reviewActionButton,
-                        ]}
-                        onPress={handleStartFight}
-                    >
-                        {!isEditing && <FontAwesome6 name="plus" size={16} color="#fff" />}
-                        <Text style={[styles.buttonText, isEditing && styles.editingButtonText]} onPress={handleStartFight}>
-                            {buttonText}
-                        </Text>
-                        {isEditing && <Ionicons name="chevron-forward" size={18} color="#fff" />}
-                    </Pressable>
-                </View>
-            }
             {/* <Image source={tIcon} style={styles.icon} resizeMode="contain" /> */}
             </ScrollView>
+            {isLandscape && (
+                <View
+                    style={[
+                        styles.landscapeFooter,
+                        {
+                            paddingLeft: Math.max(insets.left, 16 * sx),
+                            paddingRight: Math.max(insets.right, 16 * sx),
+                            paddingBottom: Math.max(insets.bottom, 8) + 8,
+                        },
+                    ]}
+                >
+                    <View
+                        style={[
+                            isEditing ? styles.landscapeEditButtonContainer : styles.landscapeButtonContainer,
+                            styles.landscapeFooterActionRow,
+                        ]}
+                    >
+
+                        {/* Cancel button  */}
+                        <Pressable
+                            style={[
+                                isEditing ? styles.landscapeEditCancelButton : styles.landscapeCancelButton,
+                                styles.buttonWithIcon,
+                                styles.actionButtonShadow,
+                                !isEditing && styles.initialLandscapeCancelButton,
+                                isReviewBeforeShare && styles.reviewActionButton,
+                            ]}
+                            onPress={handleCancel}
+                        >
+                            <Ionicons name={isReviewBeforeShare ? 'chevron-back' : 'trash-outline'} size={18} color="#fff" />
+                            <Text style={styles.cancelButtonText}>Cancel</Text>
+                        </Pressable>
+
+
+                        {/* save and exit button  */}
+                        {isEditing && !isReviewBeforeShare &&
+                            <Pressable
+                                style={[styles.landscapeEditSaveButton, styles.landscapeActionButton, styles.actionButtonShadow]}
+                                onPress={handleSaveChangesAndExit}
+                            >
+                                <Text style={[styles.buttonText, styles.saveExitButtonText]}>Save & Exit</Text>
+                            </Pressable>
+                        }
+
+
+                        {/* Enter scorecard button  */}
+                        <Pressable
+                            style={[
+                                isEditing? styles.landscapeEditContinueButton : styles.landscapeButton,
+                                styles.buttonWithIcon,
+                                styles.actionButtonShadow,
+                                !isEditing && styles.initialLandscapeCreateButton,
+                                isReviewBeforeShare && styles.reviewActionButton,
+                            ]}
+                            onPress={handleStartFight}
+                        >
+                            {!isEditing && <FontAwesome6 name="plus" size={16} color="#fff" />}
+                            <Text style={[styles.buttonText, isEditing && styles.editingButtonText]} onPress={handleStartFight}>
+                                {buttonText}
+                            </Text>
+                            {isEditing && <Ionicons name="chevron-forward" size={18} color="#fff" />}
+                        </Pressable>
+                    </View>
+                </View>
+            )}
             {!isLandscape && (
-                <View style={[styles.buttonContainer, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+                <View
+                    style={[styles.buttonContainer, { paddingBottom: Math.max(insets.bottom, 8) }]}
+                    onLayout={(event) => setPortraitActionsHeight(event.nativeEvent.layout.height)}
+                >
                     <Pressable
                         style={[
                             styles.cancelButton,
@@ -1009,19 +977,15 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     discardModalButton: {
+        ...BUTTON_SHADOW,
         alignItems: 'center',
         borderColor: 'rgba(200, 200, 200, 0.7)',
         borderRadius: 10,
         borderWidth: 1,
-        elevation: 2,
         flex: 1,
         justifyContent: 'center',
         minHeight: 44,
         paddingHorizontal: 12,
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
     },
     keepEditingButton: {
         backgroundColor: '#fff',
@@ -1029,6 +993,15 @@ const styles = StyleSheet.create({
     keepEditingButtonText: {
         color: '#307Fb6',
         fontWeight: '700',
+    },
+    fullWidthSelector: {
+        flexGrow: 0,
+        flexShrink: 0,
+        flexBasis: 'auto',
+        width: '100%',
+    },
+    stackedSelectors: {
+        flexDirection: 'column',
     },
     roundGenderRow: {
     width: '100%',
@@ -1038,7 +1011,8 @@ const styles = StyleSheet.create({
 },
 
 roundGenderColumn: {
-    flex: 1,
+    flexGrow: 1,
+    flexBasis: 0,
     minWidth: 0,
 },
 
@@ -1055,13 +1029,14 @@ portraitRoundsGrid: {
 
 portraitRoundsRow: {
     flexDirection: 'row',
-    gap: 8,
+    flexWrap: 'nowrap',
+    columnGap: 6,
 },
 
 portraitRoundButton: {
     backgroundColor: '#fff',
-    width: 36,
-    flexShrink: 1,
+    flex: 1,
+    minWidth: 0,
     height: 32,
     borderWidth: 1,
     borderColor: '#B6C6D1',
@@ -1078,6 +1053,7 @@ portraitGenderStack: {
 },
 
 portraitGenderPill: {
+    paddingHorizontal: 8,
     backgroundColor: '#fff',
     width: '75%',
     height: 32,
@@ -1098,23 +1074,27 @@ portraitGenderPill: {
     landscapeRoundGenderRow: {
         flexDirection: 'row',
         width: '100%',
-        height: '17%',
+        alignItems: 'flex-start',
+        marginBottom: 4,
         gap: 6,
     },
     landscapeRoundContainer: {
-        flex: 1.05,
-        height: '100%',
+        flex: 1.4,
         minWidth: 0,
     },
+    smallLandscapeRoundContainer: {
+        flex: 1.45,
+    },
     landscapeGenderContainer: {
-        flex: 1.15,
-        height: '100%',
+        flex: 1,
         minWidth: 0,
     },
     landscapeDateContainer: {
-        flex: 0.95,
-        height: '100%',
+        flex: 0.75,
         minWidth: 0,
+    },
+    smallLandscapeDateContainer: {
+        flex: 0.7,
     },
     screen: {
         flex: 1,
@@ -1144,7 +1124,6 @@ portraitGenderPill: {
         minWidth: '25%',
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '4',
         borderWidth: 1,
         borderColor: '#B6C6D1',
         minHeight: 42,
@@ -1158,7 +1137,6 @@ portraitGenderPill: {
         minWidth: '25%',
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '4',
         borderWidth: 0,
         borderBottomWidth: 0,
         minHeight: 42,
@@ -1170,7 +1148,6 @@ portraitGenderPill: {
         // marginTop: 25,
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '4',
         borderWidth: 1,
         borderColor: '#B6C6D1',
         paddingHorizontal: '6%',
@@ -1213,7 +1190,17 @@ portraitGenderPill: {
         width: '80%',
         gap: 12,
         paddingBottom: 12,
-        height: 54,
+        minHeight: 54,
+    },
+    landscapeFooter: {
+        backgroundColor: '#f1f5f8',
+        alignItems: 'center',
+        flexShrink: 0,
+        paddingTop: 8,
+    },
+    landscapeFooterActionRow: {
+        paddingBottom: 0,
+        minHeight: 42,
     },
 
     buttonText: {
@@ -1227,12 +1214,7 @@ portraitGenderPill: {
         gap: 6,
     },
     actionButtonShadow: {
-        boxShadow: '4',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
-        elevation: 4,
+        ...BUTTON_SHADOW,
     },
     initialCancelButton: {
         flex: 0.9,
@@ -1280,7 +1262,6 @@ portraitGenderPill: {
 
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '4',
         minHeight: 42,
         borderWidth: 0,
     },
@@ -1296,7 +1277,6 @@ portraitGenderPill: {
         borderColor: '#B6C6D1',
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '4',
     },
     landscapeEditCancelButton: {
         backgroundColor: '#de2f2f',
@@ -1309,7 +1289,6 @@ portraitGenderPill: {
         borderColor: '#B6C6D1',
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '4',
     },
     landscapeEditButton: {
         backgroundColor: '#fff',
@@ -1319,7 +1298,6 @@ portraitGenderPill: {
         height: '39%',
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '4',
         borderWidth: 1,
         borderColor: '#B6C6D1',
         color: '#307Fb6',
@@ -1334,7 +1312,6 @@ portraitGenderPill: {
         height: 42,
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '4',
         borderWidth: 1,
         borderColor: '#B6C6D1',
         color: '#307Fb6',
@@ -1351,7 +1328,6 @@ portraitGenderPill: {
         borderColor: '#B6C6D1',
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '4',
     },
     landscapeEditContinueButton: {
         backgroundColor: '#307Fb6',
@@ -1365,7 +1341,6 @@ portraitGenderPill: {
         borderColor: '#B6C6D1',
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '4',
     },
     landscapeActionButton: {
         flex: 1,
@@ -1383,32 +1358,17 @@ portraitGenderPill: {
         textAlign: 'center'
     },
     weightClassContainer: {
-        height: '28%',
         width: '100%',
-        flexDirection: 'row'
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        rowGap: 4,
+        flexShrink: 0,
     },
-    weightColumnLeft: {
-        height: '100%',
-        width: '33%',
-        flexDirection: 'column',
+    weightCell: {
         alignItems: 'center',
-        gap: '2%',
-
     },
-    weightColumnCenter: {
-        height: '100%',
-        width: '33%',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '2%',
-
-    },
-    weightColumnRight: {
-        height: '100%',
-        width: '33%',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '2%',
+    landscapeWeightGrid: {
+        marginBottom: 0,
     },
     landscapeWeightPill: {
         backgroundColor: '#fff',
@@ -1420,12 +1380,8 @@ portraitGenderPill: {
         justifyContent: 'center',
         alignItems: 'center'
     },
-    landscapeWeightPillSelected: {
-        borderWidth: 0,
-        borderRadius: 25,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#307Fb6'
+    smallLandscapeWeightPill: {
+        width: '78%',
     },
     weightPill: {
         backgroundColor: '#fff',
@@ -1455,7 +1411,6 @@ portraitGenderPill: {
     },
 
     container: {
-        flex: 1,
         backgroundColor: '#f1f5f8',
         alignItems: 'center',
         // justifyContent: 'center',
@@ -1659,6 +1614,7 @@ portraitGenderPill: {
             backgroundColor: '#d32fba',
         },
         maleText: {
+            flexShrink: 1,
             color: '#000',
             marginLeft: 5
         },
@@ -1668,6 +1624,7 @@ portraitGenderPill: {
 
         },
         femaleText: {
+            flexShrink: 1,
             color: '#000',
             marginLeft: 5
         },
@@ -1753,7 +1710,7 @@ portraitGenderPill: {
         alignItems: 'center',
         borderBottomLeftRadius: 20,
         borderBottomRightRadius: 20,
-        marginBottom: '1.5%',
+        marginBottom: 4,
     },
     landscapeDatePickerButton: {
         width: '100%',
@@ -1765,7 +1722,7 @@ portraitGenderPill: {
 
 
     landscapeGenderPills: {
-        height: '55%',
+        height: 'auto',
         width: '90%',
         alignSelf: 'flex-start',
         paddingHorizontal: 0,
@@ -1773,22 +1730,14 @@ portraitGenderPill: {
         marginBottom: 0,
         gap: 4,
     },
+    smallLandscapeGenderPills: {
+        width: '96%',
+    },
     landscapeGenderPill: {
         flex: 1,
-        marginRight: 15,
+        minWidth: 0,
+        marginRight: 0,
         width: 'auto',
-    },
-    landscapeWeightClassContainer: {
-        height: '30%',
-        width: '100%',
-        alignSelf: 'center',
-        justifyContent: 'center',
-        marginBottom: '2%',
-        marginTop: '-.5%'
-    },
-    landscapeWeightColumn: {
-        width: '17.5%',
-        justifyContent: 'flex-start',
     },
 
 
@@ -1799,7 +1748,7 @@ portraitGenderPill: {
         width: '100%',
         gap: 12,
         paddingBottom: 12,
-        height: 54,
+        minHeight: 54,
     },
     landscapeContainer: {
         flexGrow: 1,
@@ -1807,6 +1756,11 @@ portraitGenderPill: {
         alignItems: 'center',
         // paddingHorizontal: 5,
         // paddingTop: 10,
+    },
+    landscapeSectionSpacer: {
+        flexBasis: 0,
+        flexGrow: 1,
+        minHeight: 0,
     },
     landscapeFighter1Box: {
         flex: 1,
@@ -1826,9 +1780,11 @@ portraitGenderPill: {
         width: '100%',
         height: 33,
         paddingHorizontal: 12,
+        paddingVertical: 0,
         borderRadius: 8,
         marginBottom: 8,
-        textAlign: 'center',
+        textAlign: 'left',
+        fontSize: 14,
         fontWeight: 600,
         borderWidth: 1,
         borderColor: '#B6C6D1',
@@ -1839,9 +1795,11 @@ portraitGenderPill: {
         width: '100%',
         height: 31,
         paddingHorizontal: 12,
+        paddingVertical: 0,
         borderRadius: 8,
         marginBottom: 8,
-        textAlign: 'center',
+        textAlign: 'left',
+        fontSize: 14,
         fontWeight: 600,
         borderWidth: 1,
         borderColor: '#B6C6D1',
@@ -1850,13 +1808,13 @@ portraitGenderPill: {
         color: '#333A3F',
         fontSize: 14,
         fontWeight: '700',
-        marginBottom: '2%',
+        marginBottom: 3,
     },
     landscapeRoundLabel: {
         color: '#333A3F',
         fontSize: 14,
         fontWeight: '700',
-        marginBottom: '2%',
+        marginBottom: 3,
         alignSelf: 'flex-start',
     },
 
@@ -1864,25 +1822,26 @@ portraitGenderPill: {
         color: '#333A3F',
         fontSize: 14,
         fontWeight: '700',
-        marginBottom: '1.5%',
+        marginBottom: 3,
         alignSelf: 'flex-start',
     },
     landscapeInputContainer: {
         width: '100%',
         flexDirection: 'row',
         gap: 14,
-        marginBottom: '1%',
+        marginBottom: 0,
     },
     landscapeRoundsContainer: {
         flexDirection: 'row',
+        flexWrap: 'wrap',
+        rowGap: 4,
         justifyContent: 'flex-start',
         width: '100%',
-        height: '40%'
     },
 
     landscapeTitle: {
         color: '#fff',
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: '700',
         // marginBottom: 25,
         // marginTop: -25,

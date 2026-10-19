@@ -1,3 +1,4 @@
+import { BUTTON_SHADOW } from '../constants/button-shadow';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import * as MediaLibrary from 'expo-media-library';
@@ -14,7 +15,6 @@ import {
     Image,
     Platform,
     Pressable,
-    ScrollView,
     Share,
     StyleSheet,
     Text,
@@ -23,6 +23,7 @@ import {
 } from 'react-native';
 import ExportFormatModal from '../components/export-format-modal';
 import { useScorecardExport } from '../hooks/use-scorecard-export';
+import { useScorecardDraft } from '../hooks/use-scorecard-draft';
 import type { ExportImageFormat } from '../utils/export-image';
 import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 import { normalizeMatchRating, parseMatchDescription } from '../types/matchNotes';
@@ -136,16 +137,16 @@ const getWeightClassAbbreviation = (value: string) => {
 };
 
 
-function RatingStar({ fill }: { fill: number }) {
+function RatingStar({ fill, size }: { fill: number; size: number }) {
     return (
-        <View style={styles.star} accessible={false}>
-            <Ionicons name="star-outline" size={STAR_SIZE} color={MUTED} />
+        <View style={[styles.star, { width: size, height: size }]} accessible={false}>
+            <Ionicons name="star-outline" size={size} color={MUTED} />
             {fill > 0 && (
                 <View
                     pointerEvents="none"
-                    style={[styles.starFillClip, { width: STAR_SIZE * fill }]}
+                    style={[styles.starFillClip, { width: size * fill, height: size }]}
                 >
-                    <Ionicons name="star" size={STAR_SIZE} color={GOLD} />
+                    <Ionicons name="star" size={size} color={GOLD} />
                 </View>
             )}
         </View>
@@ -157,11 +158,13 @@ function EventBadge({
     deductions,
     color,
     side,
+    scale,
 }: {
     knockdowns: number;
     deductions: number;
     color: string;
     side: 'left' | 'right';
+    scale: number;
 }) {
     if (knockdowns <= 0 && deductions <= 0) return null;
 
@@ -170,11 +173,11 @@ function EventBadge({
             style={[
                 styles.eventBadge,
                 side === 'left' ? styles.leftEventBadge : styles.rightEventBadge,
-                { backgroundColor: color },
+                { backgroundColor: color, paddingVertical: 3 * scale },
             ]}
         >
-            {knockdowns > 0 && <Text style={styles.eventBadgeText}>KD{knockdowns}</Text>}
-            {deductions > 0 && <Text style={styles.eventBadgeText}>PD{deductions}</Text>}
+            {knockdowns > 0 && <Text style={[styles.eventBadgeText, { fontSize: 8 * scale, lineHeight: 10 * scale }]}>KD{knockdowns}</Text>}
+            {deductions > 0 && <Text style={[styles.eventBadgeText, { fontSize: 8 * scale, lineHeight: 10 * scale }]}>PD{deductions}</Text>}
         </View>
     );
 }
@@ -223,7 +226,7 @@ function QuickAwareMomentumCell({
     if (parsed === null || parsed === 0) {
         return (
             <View style={styles.momentumWrap}>
-                <View style={[styles.momentumPill, styles.momentumNeutral]}>
+                <View style={[styles.momentumPill, styles.momentumNeutral, { height: 20 * scale }]}>
                     <Text style={[
                         styles.momentumText,
                         { fontSize: 14 * scale },
@@ -240,12 +243,8 @@ function QuickAwareMomentumCell({
 
     return (
         <View style={styles.momentumWrap}>
-            {leftFavored && <Ionicons name="caret-back" size={16} color={color} style={{ position: 'absolute', left: 2 }} />}
-            <View style={[styles.momentumPill, { backgroundColor: color ,
-            //  minWidth: 38 * scale,
-            height: 20 * scale,
-            // paddingHorizontal: 7 * scale,
-            }]}>
+            {leftFavored && <Ionicons name="caret-back" size={16 * scale} color={color} style={{ position: 'absolute', left: 2 }} />}
+            <View style={[styles.momentumPill, { backgroundColor: color, height: 20 * scale }]}>
                 <Text style={[
                     styles.momentumText,
                     { fontSize: 14 * scale },
@@ -253,7 +252,7 @@ function QuickAwareMomentumCell({
                     {isQuickScore ? '\u00A0' : Math.abs(parsed)}
                 </Text>
             </View>
-            {!leftFavored && <Ionicons name="caret-forward" size={16} color={color} style={{ position: 'absolute', right: 2 }} />}
+            {!leftFavored && <Ionicons name="caret-forward" size={16 * scale} color={color} style={{ position: 'absolute', right: 2 }} />}
         </View>
     );
 }
@@ -261,8 +260,10 @@ function QuickAwareMomentumCell({
 export default function ExportCardScreen() {
     const router = useRouter();
     const params = useLocalSearchParams();
+    useScorecardDraft('/exportCard', params);
     const { insets, horizontalGutter } = useResponsiveLayout();
     const { width, height } = useWindowDimensions();
+    const narrowLayout = width - insets.left - insets.right < 360;
     const railWidth = Math.max(44, Math.min(52, width * 0.12));
     const exportCardRef = useRef<View>(null);
     const { captureExportCard, exportCanvas } = useScorecardExport(exportCardRef);
@@ -332,15 +333,23 @@ export default function ExportCardScreen() {
     const fighter1 = String(firstParam(params.fighter1) || 'Fighter 1');
     const fighter2 = String(firstParam(params.fighter2) || 'Fighter 2');
     const roundCount = Math.max(1, Number(firstParam(params.rounds) || 10));
-    const fitFifteenRounds = roundCount === 15;
     const availableHeight = height - insets.top - insets.bottom;
-    const compactLayout = fitFifteenRounds || (roundCount >= 12 && availableHeight < 820) || availableHeight < 760;
+    const compactLayout = roundCount >= 15 || (roundCount >= 12 && availableHeight < 820) || availableHeight < 760;
+    const smallScreenHeader =
+        (roundCount === 12 || roundCount === 15) &&
+        height > width &&
+        (availableHeight < 700 || narrowLayout);
     const [measuredRowHeight, setMeasuredRowHeight] = useState(ROW_HEIGHT);
+    const [measuredRatingWidth, setMeasuredRatingWidth] = useState(0);
 
     const rowScale = Math.min(
         1.15,
-        Math.max(fitFifteenRounds ? 0.75 : 1, measuredRowHeight / ROW_HEIGHT)
+        // Reserve the row borders when scaling the two stacked event labels.
+        Math.max(0.1, Math.min(measuredRowHeight / ROW_HEIGHT, (measuredRowHeight - 2) / 26))
     );
+    const ratingStarSize = narrowLayout && measuredRatingWidth > 0
+        ? Math.max(8, Math.min(STAR_SIZE, (measuredRatingWidth - (compactLayout ? 14 : 22) - 5) / 5))
+        : STAR_SIZE;
 
     const rating = normalizeMatchRating(params.rating);
     const descriptors = parseMatchDescription(params.description).slice(0, MAX_DESCRIPTORS);
@@ -640,27 +649,21 @@ export default function ExportCardScreen() {
             />
             <StatusBar style="dark" />
 
-            <View style={{ height: insets.top, backgroundColor: SCREEN }} />
-
-            <ScrollView
-                style={styles.scroll}
-                contentContainerStyle={[
-                    styles.scrollContent,
-                    styles.scrollContentNoScroll,
-                    fitFifteenRounds && { flex: 1 },
+            <View
+                style={[
+                    styles.content,
                     {
-                        paddingHorizontal: Math.max(horizontalGutter * 0.3, 8),
-                        paddingBottom: Math.max(insets.bottom, 8),
+                        paddingTop: insets.top + 8,
+                        paddingLeft: insets.left + Math.max(horizontalGutter * 0.3, 8),
+                        paddingRight: insets.right + Math.max(horizontalGutter * 0.3, 8),
+                        paddingBottom: insets.bottom + 10,
                     },
                 ]}
-                showsVerticalScrollIndicator={false}
-                bounces={false}
-                scrollEnabled={false}
             >
                 <View
                     ref={exportCardRef}
                     collapsable={false}
-                    style={[styles.exportCard, compactLayout && styles.compactExportCard, fitFifteenRounds && { flex: 1, minHeight: 0 }]}
+                    style={[styles.exportCard, compactLayout && styles.compactExportCard]}
                 >
                     <Image
                         source={require('../assets/images/bgfbsc.jpg')}
@@ -670,7 +673,7 @@ export default function ExportCardScreen() {
 
                     
                     <View style={styles.matchupHeader}>
-                        <View style={[styles.metadataRail, { width: railWidth }]}>
+                        <View style={[styles.metadataRail, smallScreenHeader && styles.smallMetadataRail, { width: railWidth }]}>
                             <View style={styles.metadataRailGroup}>
                                 <View
                                     style={[
@@ -679,6 +682,7 @@ export default function ExportCardScreen() {
                                         genderValue === 'womens'
                                             ? styles.womensGenderPill
                                             : styles.mensGenderPill,
+                                        smallScreenHeader && styles.smallHeaderPill,
                                     ]}
                                 >
                                     <Ionicons
@@ -687,18 +691,18 @@ export default function ExportCardScreen() {
                                         color="#fff"
                                     />
                                 </View>
-                                <Text style={styles.genderValue}>{genderLabel}</Text>
+                                <Text style={[styles.genderValue, smallScreenHeader && styles.smallMetadataText]}>{genderLabel}</Text>
                             </View>
 
                             {(weightClassAbbrev || (weightValue !== '0' && weightValue !== 'undefined' && weightValue !== 'null')) && (
                                 <View style={styles.metadataRailGroup}>
                                     {weightClassAbbrev && (
-                                        <View style={[styles.headerPill, styles.metadataRailPill, styles.weightClassPill]}>
+                                        <View style={[styles.headerPill, styles.metadataRailPill, styles.weightClassPill, smallScreenHeader && styles.smallHeaderPill]}>
                                             <Text style={styles.headerPillText}>{weightClassAbbrev}</Text>
                                         </View>
                                     )}
                                     {weightValue !== '0' && weightValue !== 'undefined' && weightValue !== 'null' && (
-                                        <Text style={styles.metadataRailWeight}>
+                                        <Text style={[styles.metadataRailWeight, smallScreenHeader && styles.smallMetadataText]}>
                                             {weightValue}
                                             {!String(weightValue).toLowerCase().includes('lb') ? ' lbs' : ''}
                                         </Text>
@@ -707,52 +711,52 @@ export default function ExportCardScreen() {
                             )}
 
                             {matchDateLabel && (
-                                <Text style={styles.metadataRailDate}>{matchDateLabel}</Text>
+                                <Text style={[styles.metadataRailDate, smallScreenHeader && styles.smallMetadataDate]}>{matchDateLabel}</Text>
                             )}
                         </View>
 
-                        <View style={styles.leftFighterBlock}>
-                            <View style={styles.fighterNameSlot}>
+                        <View style={[styles.leftFighterBlock, smallScreenHeader && styles.smallFighterBlock]}>
+                            <View style={[styles.fighterNameSlot, compactLayout && styles.compactFighterNameSlot, smallScreenHeader && styles.smallFighterNameSlot]}>
                                 <Text
                                     numberOfLines={2}
                                     adjustsFontSizeToFit
                                     minimumFontScale={0.72}
-                                    style={[styles.fighterName, { color: RED }]}
+                                    style={[styles.fighterName, compactLayout && styles.compactFighterName, smallScreenHeader && styles.smallFighterName, { color: RED }]}
                                 >
                                     {fighter1}
                                 </Text>
                             </View>
 
-                            <Text style={[styles.finalScore, { color: RED }]}>
+                            <Text style={[styles.finalScore, compactLayout && styles.compactFinalScore, smallScreenHeader && styles.smallFinalScore, { color: RED }]}>
                                 {finalScores.left}
                             </Text>
 
-                            <Text style={[styles.eventSummary, { color: RED }]}>
+                            <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} style={[styles.eventSummary, compactLayout && styles.compactEventSummary, smallScreenHeader && styles.smallEventSummary, { color: RED }]}>
                                 KD: {totals.fighter1KD} • Deductions: {totals.fighter1Pen}
                             </Text>
                         </View>
 
-                        <View style={styles.vsColumn}>
-                            <Text style={styles.vs}>vs</Text>
+                        <View style={[styles.vsColumn, compactLayout && styles.compactVsColumn, smallScreenHeader && styles.smallVsColumn]}>
+                            <Text style={[styles.vs, smallScreenHeader && styles.smallFighterName]}>vs</Text>
                         </View>
 
-                        <View style={styles.fighterBlock}>
-                            <View style={styles.fighterNameSlot}>
+                        <View style={[styles.fighterBlock, smallScreenHeader && styles.smallFighterBlock]}>
+                            <View style={[styles.fighterNameSlot, compactLayout && styles.compactFighterNameSlot, smallScreenHeader && styles.smallFighterNameSlot]}>
                                 <Text
                                     numberOfLines={2}
                                     adjustsFontSizeToFit
                                     minimumFontScale={0.72}
-                                    style={[styles.fighterName, { color: BLUE }]}
+                                    style={[styles.fighterName, compactLayout && styles.compactFighterName, smallScreenHeader && styles.smallFighterName, { color: BLUE }]}
                                 >
                                     {fighter2}
                                 </Text>
                             </View>
 
-                            <Text style={[styles.finalScore, { color: BLUE }]}>
+                            <Text style={[styles.finalScore, compactLayout && styles.compactFinalScore, smallScreenHeader && styles.smallFinalScore, { color: BLUE }]}>
                                 {finalScores.right}
                             </Text>
 
-                            <Text style={[styles.eventSummary, { color: BLUE }]}>
+                            <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75} style={[styles.eventSummary, compactLayout && styles.compactEventSummary, smallScreenHeader && styles.smallEventSummary, { color: BLUE }]}>
                                 KD: {totals.fighter2KD} • Deductions: {totals.fighter2Pen}
                             </Text>
                         </View>
@@ -772,7 +776,7 @@ export default function ExportCardScreen() {
 
 
 
-                    <View style={[styles.rowsWrap, compactLayout && styles.compactRowsWrap, fitFifteenRounds && { flex: 1, minHeight: 0, gap: 2 }]}>
+                    <View style={[styles.rowsWrap, compactLayout && styles.compactRowsWrap]}>
                         {exportRows.map((row) => {
                             const score = row.score;
                             const leftKD = numericValue(score?.leftKnockdowns);
@@ -784,7 +788,7 @@ export default function ExportCardScreen() {
                             return (
                                 <View
                                     key={row.roundNumber}
-                                    style={[styles.scoreRow, fitFifteenRounds && { minHeight: 0 }]}
+                                    style={styles.scoreRow}
                                     onLayout={
                                             row.roundNumber === 1
                                                 ? (event) => setMeasuredRowHeight(event.nativeEvent.layout.height)
@@ -817,6 +821,7 @@ export default function ExportCardScreen() {
                                             deductions={leftPen}
                                             color={RED}
                                             side="left"
+                                            scale={rowScale}
                                         />
                                         <Text style={[
                                             styles.scoreText,
@@ -854,6 +859,7 @@ export default function ExportCardScreen() {
                                             deductions={rightPen}
                                             color={BLUE}
                                             side="right"
+                                            scale={rowScale}
                                         />
                                     </View>
 
@@ -875,10 +881,13 @@ export default function ExportCardScreen() {
                     </View>
 
                     <View style={[styles.notesSummaryRow, compactLayout && styles.compactNotesSummaryRow]}>
-                        <View style={[styles.infoCard, styles.ratingCard, compactLayout && styles.compactInfoCard]}>
+                        <View
+                            style={[styles.infoCard, styles.ratingCard, compactLayout && styles.compactInfoCard]}
+                            onLayout={narrowLayout ? (event) => setMeasuredRatingWidth(event.nativeEvent.layout.width) : undefined}
+                        >
                             <Text style={[styles.infoTitle, compactLayout && styles.compactInfoTitle]}>Fight Rating</Text>
                             <View
-                                style={styles.starsRow}
+                                style={[styles.starsRow, { transform: [{ translateY: -(ratingStarSize / 2) }] }]}
                                 accessibilityRole="image"
                                 accessibilityLabel={`${rating.toFixed(1)} out of 5 stars`}
                             >
@@ -886,6 +895,7 @@ export default function ExportCardScreen() {
                                     <RatingStar
                                         key={star}
                                         fill={Math.min(1, Math.max(0, rating - (star - 1)))}
+                                        size={ratingStarSize}
                                     />
                                 ))}
                             </View>
@@ -897,10 +907,10 @@ export default function ExportCardScreen() {
 
                         <View style={[styles.infoCard, styles.descriptorCard, compactLayout && styles.compactInfoCard]}>
                             <Text style={[styles.infoTitle, compactLayout && styles.compactInfoTitle]}>Fight Description</Text>
-                            <View style={styles.descriptorWrap}>
+                            <View style={[styles.descriptorWrap, compactLayout && styles.compactDescriptorWrap]}>
                                 {descriptors.length > 0 ? (
                                     descriptors.map((descriptor) => (
-                                        <View key={descriptor} style={styles.descriptorChip}>
+                                        <View key={descriptor} style={[styles.descriptorChip, compactLayout && styles.compactDescriptorChip]}>
                                             <Text
                                                 numberOfLines={1}
                                                 adjustsFontSizeToFit
@@ -912,14 +922,14 @@ export default function ExportCardScreen() {
                                         </View>
                                     ))
                                 ) : (
-                                    <View style={styles.descriptorChip}>
+                                    <View style={[styles.descriptorChip, compactLayout && styles.compactDescriptorChip]}>
                                         <Text style={styles.descriptorText}>None selected</Text>
                                     </View>
                                 )}
                             </View>
                         </View>
                     </View>
-                    <View style={[styles.brandRow, compactLayout && styles.compactBrandRow]}>
+                    <View style={[styles.brandRow, compactLayout && styles.compactBrandRow, narrowLayout && styles.narrowBrandRow]}>
                         <View style={styles.brandIdentity}>
                             <Image
                                 source={require('../assets/images/flatwhiteicon-optimized.png')}
@@ -937,19 +947,17 @@ export default function ExportCardScreen() {
                         <Image
                             source={require('../assets/images/appstore-optimized.png')}
                             resizeMode="contain"
-                            style={[styles.appStoreBadge, 
-                                // compactLayout && styles.compactAppStoreBadge
-                            ]}
+                            style={[styles.appStoreBadge, compactLayout && styles.compactAppStoreBadge]}
                         />
                         <Image
                             source={require('../assets/images/google-play-store-badge.png')}
                             resizeMode="contain"
                             style={[
-                                styles.googlePlayBadge, 
-                                // compactLayout && styles.compactGooglePlayBadge
+                                styles.googlePlayBadge,
+                                compactLayout && styles.compactGooglePlayBadge,
                         ]}
                         />
-                        <View style={styles.socialBox}>
+                        <View style={[styles.socialBox, narrowLayout && styles.narrowSocialBox]}>
                             <View style={styles.socialItem}>
                                 {/* <Image
                                     source={require('../assets/images/twitter-x-jyw81k7vr85ry57c7ym2d.webp')}
@@ -1031,7 +1039,7 @@ export default function ExportCardScreen() {
                         )}
                     </Pressable>
                 </View>
-            </ScrollView>
+            </View>
             <ExportFormatModal
                 action={formatAction}
                 onClose={() => setFormatAction(null)}
@@ -1046,15 +1054,9 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: SCREEN,
     },
-    scroll: {
+    content: {
         flex: 1,
-    },
-    scrollContent: {
-        paddingTop: 10,
-    },
-    scrollContentNoScroll: {
-        flexGrow: 1,
-        justifyContent: 'space-between',
+        minHeight: 0,
     },
     exportCard: {
         position: 'relative',
@@ -1071,7 +1073,9 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.18,
         shadowRadius: 4,
         elevation: 3,
-        flexGrow: 1,
+        // Bound every card to the safe viewport; the rows share the remaining height.
+        flex: 1,
+        minHeight: 0,
     },
     compactExportCard: {
         paddingHorizontal: 8,
@@ -1096,6 +1100,11 @@ const styles = StyleSheet.create({
     },
     compactBrandRow: {
         gap: 4,
+        marginTop: 5,
+    },
+    narrowBrandRow: {
+        flexWrap: 'wrap',
+        justifyContent: 'center',
     },
     brandIdentity: {
         flexDirection: 'row',
@@ -1114,6 +1123,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         gap: 2,
     },
+    narrowSocialBox: {
+        flexBasis: '100%',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        gap: 10,
+    },
     socialItem: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -1129,8 +1144,8 @@ const styles = StyleSheet.create({
         marginRight: 5,
     },
     compactBrandIcon: {
-        width: 30,
-        height: 30,
+        width: 28,
+        height: 28,
     },
     brandTextWrap: {
         minWidth: 57,
@@ -1165,12 +1180,13 @@ const styles = StyleSheet.create({
         height: 35,
     },
     compactAppStoreBadge: {
-        width: 60,
-        height: 35,
+        width: 80,
+        height: 28,
+        marginRight: -8,
     },
     compactGooglePlayBadge: {
-        width: 52,
-        height: 20,
+        width: 70,
+        height: 28,
     },
     genderValue: {
         fontSize: 9,
@@ -1196,6 +1212,14 @@ const styles = StyleSheet.create({
         paddingVertical: 5,
         paddingRight: 2,
         // marginRight: 8
+    },
+    smallMetadataRail: {
+        paddingVertical: 1,
+        marginRight: 3,
+    },
+    smallMetadataText: {
+        lineHeight: 10,
+        includeFontPadding: false,
     },
     metadataRailGroup: {
         alignItems: 'center',
@@ -1231,6 +1255,11 @@ const styles = StyleSheet.create({
         fontWeight: 500,
         textAlign: 'center',
     },
+    smallMetadataDate: {
+        fontSize: 9,
+        lineHeight: 10,
+        includeFontPadding: false,
+    },
     headerPill: {
         minWidth: 32,
         minHeight: 20,
@@ -1258,6 +1287,10 @@ const styles = StyleSheet.create({
         fontSize: 9,
         fontWeight: '800',
     },
+    smallHeaderPill: {
+        minHeight: 18,
+        marginBottom: 1,
+    },
     compactMatchupRow: {
         marginBottom: -2,
     },
@@ -1274,6 +1307,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
+    smallFighterBlock: {
+        justifyContent: 'center',
+        paddingHorizontal: 2,
+        paddingTop: 0,
+        // Balance the card's top padding while preserving the header height.
+        paddingBottom: 6,
+        gap: 0,
+    },
     fighterName: {
         width: '100%',
         textAlign: 'center',
@@ -1288,9 +1329,20 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     compactFighterName: {
-        height: 30,
+        fontSize: 16,
+        lineHeight: 18,
+    },
+    compactFighterNameSlot: {
+        height: 36,
+    },
+    smallFighterName: {
         fontSize: 15,
         lineHeight: 16,
+        includeFontPadding: false,
+    },
+    smallFighterNameSlot: {
+        height: 32,
+        justifyContent: 'flex-start',
     },
     vs: {
         color: '#222',
@@ -1303,6 +1355,16 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
+    compactVsColumn: {
+        width: 32,
+        height: 36,
+    },
+    smallVsColumn: {
+        width: 28,
+        height: 32,
+        justifyContent: 'flex-start',
+        paddingTop: 1,
+    },
     finalScore: {
         width: '100%',
         textAlign: 'center',
@@ -1311,8 +1373,12 @@ const styles = StyleSheet.create({
         fontWeight: '800',
     },
     compactFinalScore: {
-        fontSize: 40,
-        lineHeight: 44,
+        fontSize: 38,
+        lineHeight: 40,
+    },
+    smallFinalScore: {
+        fontSize: 28,
+        lineHeight: 30,
     },
 
     eventSummary: {
@@ -1322,6 +1388,14 @@ const styles = StyleSheet.create({
         lineHeight: 13,
         fontWeight: '700',
         marginBottom: 5
+    },
+    compactEventSummary: {
+        fontSize: 9,
+        lineHeight: 11,
+        marginBottom: 3,
+    },
+    smallEventSummary: {
+        marginBottom: 0,
     },
     divider: {
         height: 1,
@@ -1371,14 +1445,15 @@ const styles = StyleSheet.create({
     },
     rowsWrap: {
         gap: 3,
-        flexGrow: 1
+        flex: 1,
+        minHeight: 0,
     },
     compactRowsWrap: {
         gap: 2,
     },
     scoreRow: {
         flex: 1,
-        minHeight: 33,
+        minHeight: 0,
         maxHeight: 40,
         flexDirection: 'row',
         alignItems: 'center',
@@ -1493,6 +1568,7 @@ const styles = StyleSheet.create({
     },
     compactInfoCard: {
         padding: 6,
+        minHeight: 90,
     },
     ratingCard: {
         flex: 0.61,
@@ -1567,6 +1643,9 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         gap: 5,
     },
+    compactDescriptorWrap: {
+        gap: 4,
+    },
     descriptorChip: {
         maxWidth: '100%',
         minHeight: 26,
@@ -1578,12 +1657,19 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
+    compactDescriptorChip: {
+        flexBasis: '47%',
+        flexGrow: 1,
+        minHeight: 20,
+        paddingHorizontal: 4,
+    },
     descriptorText: {
         color: TEXT,
         fontSize: 9.5,
         fontWeight: '500',
     },
     actionRow: {
+        flexShrink: 0,
         flexDirection: 'row',
         alignItems: 'flex-end',
         gap: 8,
@@ -1596,33 +1682,25 @@ const styles = StyleSheet.create({
         paddingHorizontal: 6,
     },
     compactActionButton: {
-        minHeight: 40,
+        minHeight: 44,
         borderRadius: 12,
     },
     actionButton: {
+        ...BUTTON_SHADOW,
         flex: 1,
         minWidth: 0,
-        minHeight: 40,
+        minHeight: 44,
         borderRadius: 12,
         paddingHorizontal: 8,
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '4',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
     },
     shareButton: {
+        ...BUTTON_SHADOW,
         backgroundColor: HEADER_BLUE,
         borderWidth: 0,
         transform: [{ translateY: 1 }],
         flexDirection: 'row',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
-        elevation: 3,
     },
     shareButtonText: {
         color: '#fff',
@@ -1632,15 +1710,11 @@ const styles = StyleSheet.create({
         marginLeft: 7,
     },
     saveImageButton: {
+        ...BUTTON_SHADOW,
         backgroundColor: HEADER_BLUE,
         borderWidth: 0,
         transform: [{ translateY: 1 }],
         flexDirection: 'row',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
-        elevation: 2,
     },
     saveImageButtonText: {
         color: '#fff',
@@ -1649,22 +1723,18 @@ const styles = StyleSheet.create({
         marginLeft: 5,
     },
     backButton: {
+        ...BUTTON_SHADOW,
         flexDirection: 'row',
         backgroundColor: '#fff',
         borderWidth: 1,
         borderColor: '#E0E4E7',
-        shadowColor: '#11334b',
-        shadowOffset: { width: 5, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 1,
-        elevation: 2,
     },
     actionBackButton: {
         marginTop: 0,
     },
     compactBackButton: {
         marginTop: 0,
-        minHeight: 40,
+        minHeight: 44,
     },
     backText: {
         color: HEADER_BLUE,
