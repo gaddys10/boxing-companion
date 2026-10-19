@@ -55,13 +55,13 @@ const SPECIAL_THANKS: {
 }[] = [
   { name: 'My father, for introducing me to boxing' },
   { name: 'Carmine Martinez' },
-  { name: 'Carmine Delarosa and his beautiful family' },
+  { name: 'Michael Delarosa and his beautiful family' },
   {
     name: 'Jaz Hannah-Melvin',
     spotify: { artist: 'Jaz Perignon', url: 'https://open.spotify.com/artist/2Rw3EZH710W7FLlxDowVS2' },
   },
   {
-    name: 'Aasin Baker aka Ace of Billionaire Boxing TV',
+    name: 'Aasin "Ace" Baker of Billionaire Boxing TV',
     twitter: 'billionboxingtv',
     youtube: 'BILLIONAIREBOXINGTV',
     instagram: 'billionaireboxingtv',
@@ -75,8 +75,8 @@ const SPECIAL_THANKS: {
   { name: 'Doom', twitter: 'SamuraiiDoom' },
   { name: 'Rude', twitter: 'RudeChildV' },
   { name: 'Monsoor', twitter: 'Monsoor_9' },
-  { name: 'Jay', twitter: 'DTBJay3x' },
-  { name: 'Alexia of Beauty in Boxing Media', twitter: 'AlexiaApples' },
+  { name: 'Jay of Delusional Podcast', twitter: 'DTBJay3x', youtube: 'D3lusi0nal997' },
+  { name: 'Alexia mof Beauty in Boxing Media', twitter: 'AlexiaApples' },
   { name: 'Peace', twitter: 'ohhpeace_boxing' },
   { name: 'Joe Leary', twitter: 'Finesse2286' },
   { name: 'Ron', twitter: 'MakerClimbAxe' },

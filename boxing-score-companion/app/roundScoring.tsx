@@ -57,7 +57,7 @@ export default function RoundScoringScreen() {
     const [rightKnockdowns, setRightKnockdowns] = useState(Number(savedRound?.rightKnockdowns ?? 0));
     const [leftScore, setLeftScore] = useState(Number(savedRound?.left ?? 10));
     const [rightScore, setRightScore] = useState(Number(savedRound?.right ?? 10));
-    const [showTapInstruction, setShowTapInstruction] = useState(true);
+    const [showTapInstruction, setShowTapInstruction] = useState(!savedRound);
     const [tenEightModalVisible, setTenEightModalVisible] = useState(false);
     const [stoppageModalVisible, setStoppageModalVisible] = useState(false);
     const [stoppageReason, setStoppageReason] = useState<'KO' | 'TKO' | 'DQ' | 'NC' | undefined>(savedRound?.stoppageReason);
@@ -119,6 +119,8 @@ export default function RoundScoringScreen() {
         ? landscapeTopContentOffset
         : portraitControlsBottom + portraitContentGap;
     const landscapeBottomControlHeight = Math.max(44, Math.min(52, usableHeight * 0.12));
+    const landscapeBottomLabelWrap = width < 730;
+    const landscapeBottomLabelLines = landscapeBottomLabelWrap ? 2 : 1;
     const landscapeEdgeBottomControlWidth = Math.min(150, width * 0.16);
     const landscapeInteriorBottomControlWidth = Math.min(180, width * 0.19);
     const landscapeStoppageBottomControlWidth = Math.min(200, width * 0.21);
@@ -315,7 +317,7 @@ export default function RoundScoringScreen() {
                 paddingTop: useNativeScoringInsets ? 0 : insets.top,
                 ...(useNativeScoringInsets && { backgroundColor: '#d7b55d' }),
                 ...(!useNativeScoringInsets && {
-                    paddingBottom: insets.bottom,
+                    paddingBottom: isLandscape ? 0 : insets.bottom,
                     paddingLeft: insets.left,
                     paddingRight: insets.right,
                 }),
@@ -343,21 +345,33 @@ export default function RoundScoringScreen() {
             />
 
             <Pressable 
-                style={styles.leftArea}
+                style={[styles.leftArea, isLandscape && styles.landscapeScoringArea]}
                 onPress={() => {
                     pulseAnimation(leftPulseAnim);
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     handleScorePress('left');
                 }}
             >
-                <ExpoImage
-                    // source={require('../assets/images/bg1.png')}
-                    source={require('../assets/images/bg1.jpg')}
-                    style={[StyleSheet.absoluteFill, styles.leftAreaImage, { opacity: 0.8 }]}
-                    contentFit="cover"
-                    cachePolicy="memory-disk"
-                    transition={0}
-                />
+                <View
+                    pointerEvents="none"
+                    style={[
+                        styles.scoringBackground,
+                        { backgroundColor: '#b63030' },
+                        isLandscape && {
+                            top: -insets.top,
+                            bottom: -insets.bottom,
+                            left: -insets.left,
+                        },
+                    ]}
+                >
+                    <ExpoImage
+                        source={require('../assets/images/bg1.jpg')}
+                        style={[StyleSheet.absoluteFill, styles.leftAreaImage, { opacity: 0.8 }]}
+                        contentFit="cover"
+                        cachePolicy="memory-disk"
+                        transition={0}
+                    />
+                </View>
 
                 {/* Undo left deductions */}
                 <Pressable
@@ -500,12 +514,10 @@ export default function RoundScoringScreen() {
                     <Animated.View pointerEvents="none" style={[styles.fillOverlayLeft, { width: leftDeductProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                     {isLandscape ? (
                         <Text
-                            numberOfLines={1}
-                            adjustsFontSizeToFit
-                            minimumFontScale={0.75}
-                            style={styles.landscapeButtonText}
+                            numberOfLines={landscapeBottomLabelLines}
+                            style={[styles.landscapeButtonText, styles.landscapeBottomButtonText]}
                         >
-                            Hold to Deduct
+                            {landscapeBottomLabelWrap ? 'Hold to\nDeduct' : 'Hold to Deduct'}
                         </Text>
                     ) : (
                         <Text numberOfLines={2} style={[styles.buttonText, styles.portraitDeductText]}>
@@ -544,30 +556,41 @@ export default function RoundScoringScreen() {
                     />
                     <Animated.View pointerEvents="none" style={[styles.fillOverlay, { width: leftKdProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                     <Text
-                        numberOfLines={isLandscape ? 1 : 2}
-                        adjustsFontSizeToFit={isLandscape}
-                        minimumFontScale={isLandscape ? 0.62 : undefined}
-                        style={isLandscape ? styles.landscapeButtonText : [styles.buttonText, styles.portraitKnockdownText]}
+                        numberOfLines={isLandscape ? landscapeBottomLabelLines : 2}
+                        style={isLandscape ? [styles.landscapeButtonText, styles.landscapeBottomButtonText] : [styles.buttonText, styles.portraitKnockdownText]}
                     >
-                        {isLandscape ? 'Hold for Knockdown' : 'Hold for\nKnockdown'}
+                        {isLandscape && !landscapeBottomLabelWrap ? 'Hold for Knockdown' : 'Hold for\nKnockdown'}
                     </Text>
                 </Pressable>
             </Pressable>
 
-            <Pressable style={styles.rightArea} onPress={() => {
+            <Pressable style={[styles.rightArea, isLandscape && styles.landscapeScoringArea]} onPress={() => {
                 pulseAnimation(rightPulseAnim);
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 handleScorePress('right');
             }}>
-                <ExpoImage
-                    source={require('../assets/images/bg2.jpg')}
-                    style={[StyleSheet.absoluteFill, 
-                        isLandscape ? styles.rightAreaImage : styles.portraitRightAreaImage, 
-                        { opacity: 0.8 }]}
-                    contentFit="cover"
-                    cachePolicy="memory-disk"
-                    transition={0}
-                />
+                <View
+                    pointerEvents="none"
+                    style={[
+                        styles.scoringBackground,
+                        { backgroundColor: '#307Fb6' },
+                        isLandscape && {
+                            top: -insets.top,
+                            bottom: -insets.bottom,
+                            right: -insets.right,
+                        },
+                    ]}
+                >
+                    <ExpoImage
+                        source={require('../assets/images/bg2.jpg')}
+                        style={[StyleSheet.absoluteFill,
+                            isLandscape ? styles.rightAreaImage : styles.portraitRightAreaImage,
+                            { opacity: 0.8 }]}
+                        contentFit="cover"
+                        cachePolicy="memory-disk"
+                        transition={0}
+                    />
+                </View>
 
                 {/* undo right knockdowns */}
                 <Pressable
@@ -709,12 +732,10 @@ export default function RoundScoringScreen() {
                     />
                     <Animated.View pointerEvents="none" style={[styles.fillOverlay, { width: rightKdProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                     <Text
-                        numberOfLines={isLandscape ? 1 : 2}
-                        adjustsFontSizeToFit={isLandscape}
-                        minimumFontScale={isLandscape ? 0.62 : undefined}
-                        style={isLandscape ? styles.landscapeButtonText : [styles.buttonText, styles.portraitKnockdownText]}
+                        numberOfLines={isLandscape ? landscapeBottomLabelLines : 2}
+                        style={isLandscape ? [styles.landscapeButtonText, styles.landscapeBottomButtonText] : [styles.buttonText, styles.portraitKnockdownText]}
                     >
-                        {isLandscape ? 'Hold for Knockdown' : 'Hold for\nKnockdown'}
+                        {isLandscape && !landscapeBottomLabelWrap ? 'Hold for Knockdown' : 'Hold for\nKnockdown'}
                     </Text>
                 </Pressable>
 
@@ -747,12 +768,10 @@ export default function RoundScoringScreen() {
                     <Animated.View pointerEvents="none" style={[styles.fillOverlay, { width: rightDeductProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '105%'] }) }]} />
                     {isLandscape ? (
                         <Text
-                            numberOfLines={1}
-                            adjustsFontSizeToFit
-                            minimumFontScale={0.75}
-                            style={styles.landscapeButtonText}
+                            numberOfLines={landscapeBottomLabelLines}
+                            style={[styles.landscapeButtonText, styles.landscapeBottomButtonText]}
                         >
-                            Hold to Deduct
+                            {landscapeBottomLabelWrap ? 'Hold to\nDeduct' : 'Hold to Deduct'}
                         </Text>
                     ) : (
                         <Text numberOfLines={2} style={[styles.buttonText, styles.portraitDeductText]}>
@@ -864,12 +883,10 @@ export default function RoundScoringScreen() {
                 <Animated.View pointerEvents="none" style={[styles.fillOverlay, { width: stoppageProgress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
                 {isLandscape ? 
                     <Text
-                        numberOfLines={1}
-                        adjustsFontSizeToFit={isLandscape}
-                        minimumFontScale={isLandscape ? 0.62 : 0.8}
-                        style={styles.landscapeButtonText}
+                        numberOfLines={landscapeBottomLabelLines}
+                        style={[styles.landscapeButtonText, styles.landscapeBottomButtonText]}
                     >
-                        Hold to Mark Stoppage
+                        {landscapeBottomLabelWrap ? 'Hold to\nMark Stoppage' : 'Hold to Mark Stoppage'}
                     </Text>
                 : 
                     <Text
@@ -1031,6 +1048,11 @@ const styles = StyleSheet.create({
         textAlignVertical: 'center',
         includeFontPadding: false,
         zIndex: 1,
+    },
+    landscapeBottomButtonText: {
+        fontSize: 12,
+        lineHeight: 16,
+        flexShrink: 0,
     },
     landscapeUndoRibbon: {
         gap: 2,
@@ -1531,6 +1553,13 @@ const styles = StyleSheet.create({
         lineHeight: 18,
         textAlign: 'center',
         fontSize: 12
+    },
+    landscapeScoringArea: {
+        overflow: 'visible',
+    },
+    scoringBackground: {
+        ...StyleSheet.absoluteFill,
+        overflow: 'hidden',
     },
     leftArea: {
         backgroundColor: '#b63030',
