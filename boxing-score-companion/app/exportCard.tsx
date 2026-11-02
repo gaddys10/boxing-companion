@@ -341,6 +341,14 @@ export default function ExportCardScreen() {
         (availableHeight < 700 || narrowLayout);
     const [measuredRowHeight, setMeasuredRowHeight] = useState(ROW_HEIGHT);
     const [measuredRatingWidth, setMeasuredRatingWidth] = useState(0);
+    const [measuredDescriptionTitleWidth, setMeasuredDescriptionTitleWidth] = useState(0);
+    const infoTitleBaseFontSize = compactLayout ? 12 : 14;
+    const infoTitleAvailableWidth = measuredRatingWidth > 0
+        ? measuredRatingWidth - (compactLayout ? 12 : 20) - 2
+        : 0;
+    const infoTitleFontSize = infoTitleAvailableWidth > 0 && measuredDescriptionTitleWidth > 0
+        ? infoTitleBaseFontSize * Math.min(1, Math.max(0, infoTitleAvailableWidth - 1) / measuredDescriptionTitleWidth)
+        : infoTitleBaseFontSize;
 
     const rowScale = Math.min(
         1.15,
@@ -883,21 +891,35 @@ export default function ExportCardScreen() {
                     <View style={[styles.notesSummaryRow, compactLayout && styles.compactNotesSummaryRow]}>
                         <View
                             style={[styles.infoCard, styles.ratingCard, compactLayout && styles.compactInfoCard]}
-                            onLayout={narrowLayout ? (event) => setMeasuredRatingWidth(event.nativeEvent.layout.width) : undefined}
+                            onLayout={(event) => {
+                                const nextWidth = event.nativeEvent.layout.width;
+                                setMeasuredRatingWidth((current) => current === nextWidth ? current : nextWidth);
+                            }}
                         >
-                            <Text style={[styles.infoTitle, compactLayout && styles.compactInfoTitle]}>Fight Rating</Text>
-                            <View
-                                style={[styles.starsRow, { transform: [{ translateY: -(ratingStarSize / 2) }] }]}
-                                accessibilityRole="image"
-                                accessibilityLabel={`${rating.toFixed(1)} out of 5 stars`}
+                            <Text
+                                numberOfLines={1}
+                                style={[
+                                    styles.infoTitle,
+                                    compactLayout && styles.compactInfoTitle,
+                                    { fontSize: infoTitleFontSize },
+                                ]}
                             >
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                    <RatingStar
-                                        key={star}
-                                        fill={Math.min(1, Math.max(0, rating - (star - 1)))}
-                                        size={ratingStarSize}
-                                    />
-                                ))}
+                                Fight Rating
+                            </Text>
+                            <View style={styles.ratingStarsSpace}>
+                                <View
+                                    style={styles.starsRow}
+                                    accessibilityRole="image"
+                                    accessibilityLabel={`${rating.toFixed(1)} out of 5 stars`}
+                                >
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <RatingStar
+                                            key={star}
+                                            fill={Math.min(1, Math.max(0, rating - (star - 1)))}
+                                            size={ratingStarSize}
+                                        />
+                                    ))}
+                                </View>
                             </View>
                             <View style={styles.ratingValueRow}>
                                 <Text style={styles.ratingValue}>{rating.toFixed(1)}</Text>
@@ -906,7 +928,22 @@ export default function ExportCardScreen() {
                         </View>
 
                         <View style={[styles.infoCard, styles.descriptorCard, compactLayout && styles.compactInfoCard]}>
-                            <Text style={[styles.infoTitle, compactLayout && styles.compactInfoTitle]}>Fight Description</Text>
+                            <Text
+                                numberOfLines={1}
+                                onTextLayout={(event) => {
+                                    const titleWidth = event.nativeEvent.lines[0]?.width ?? 0;
+                                    if (titleWidth > 0) {
+                                        setMeasuredDescriptionTitleWidth((current) => current || titleWidth);
+                                    }
+                                }}
+                                style={[
+                                    styles.infoTitle,
+                                    compactLayout && styles.compactInfoTitle,
+                                    { fontSize: infoTitleFontSize },
+                                ]}
+                            >
+                                Fight Description
+                            </Text>
                             <View style={[styles.descriptorWrap, compactLayout && styles.compactDescriptorWrap]}>
                                 {descriptors.length > 0 ? (
                                     descriptors.map((descriptor) => (
@@ -1594,16 +1631,15 @@ const styles = StyleSheet.create({
         marginBottom: 4,
     },
     starsRow: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        top: '50%',
-        transform: [{ translateY: -(STAR_SIZE / 2) }],
-
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         gap: 1.25,
+    },
+    ratingStarsSpace: {
+        flex: 1,
+        justifyContent: 'center',
+        transform: [{ translateY: -2 }],
     },
     star: {
         width: STAR_SIZE,
@@ -1619,11 +1655,6 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
     },
     ratingValueRow: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        bottom: 10,
-
         flexDirection: 'row',
         alignItems: 'baseline',
         justifyContent: 'center',
