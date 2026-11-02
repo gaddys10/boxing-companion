@@ -50,6 +50,7 @@ const SPECIAL_THANKS: {
   twitter?: string;
   youtube?: string;
   instagram?: string;
+  tiktok?: string;
   facebook?: { page: string; url: string };
   spotify?: { artist: string; url: string };
 }[] = [
@@ -65,6 +66,7 @@ const SPECIAL_THANKS: {
     twitter: 'billionboxingtv',
     youtube: 'BILLIONAIREBOXINGTV',
     instagram: 'billionaireboxingtv',
+    tiktok: 'billionaireboxingtv',
     facebook: {
       page: 'Billionaire Boxing TV',
       url: 'https://www.facebook.com/profile.php?id=61579439153265',
@@ -89,6 +91,7 @@ const THANKS_SOCIAL_PLATFORMS = [
   SOCIAL_PLATFORMS[1],
   { key: 'youtube', label: 'YouTube', icon: 'logo-youtube', baseUrl: 'https://www.youtube.com/@' },
   SOCIAL_PLATFORMS[0],
+  { key: 'tiktok', label: 'TikTok', icon: 'logo-tiktok', baseUrl: 'https://www.tiktok.com/@' },
 ] as const;
 
 async function openSocialProfile(url: string) {
@@ -1372,7 +1375,7 @@ const styles = StyleSheet.create({
     bottom: 90,
     width: '100%',
     // borderRadius: 25,
-    backgroundColor: 'rgba(255, 255, 255, 0.28)',
+    backgroundColor: '#f1f5f8',
     overflow: 'hidden',
   },
   savedCardContent: {

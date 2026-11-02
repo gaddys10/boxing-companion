@@ -83,6 +83,7 @@ export default function RoundScoringScreen() {
     const height = scoringAreaSize?.height ?? contentHeight;
     const isLandscape = scoringOrientation === 'landscape';
     const useNativeScoringInsets = Platform.OS === 'android' && isLandscape;
+    const extendPortraitBackgroundIntoSafeArea = Platform.OS !== 'web' && !isLandscape;
     const ScoringSafeAreaView = useNativeScoringInsets ? SafeAreaView : View;
     const usableHeight = height;
     const toolbarHeight = Math.max(44, Math.min(50, usableHeight * 0.14));
@@ -113,6 +114,8 @@ export default function RoundScoringScreen() {
     const portraitKnockdownTop = portraitSafeAreaTop;
     const portraitDeductionTop = portraitKnockdownTop + portraitRibbonTierGap;
     const portraitControlsBottom = portraitDeductionTop + portraitRibbonHeight;
+    const portraitKnockdownBottom = height * 0.08;
+    const portraitDeductionBottom = portraitKnockdownBottom + portraitRibbonHeight + portraitTopGap;
     const portraitContentGap = Math.max(10, Math.min(16, usableHeight * 0.022));
     const landscapeTopContentOffset = topControlTop + topControlHeight + Math.max(10, usableHeight * 0.025);
     const topContentOffset = isLandscape
@@ -312,12 +315,13 @@ export default function RoundScoringScreen() {
     return (
         
         <View style={styles.screen}>
+        {Platform.OS === 'ios' && <StatusBar barStyle="light-content" />}
         <ScoringSafeAreaView
             style={[styles.screen, {
                 paddingTop: useNativeScoringInsets ? 0 : insets.top,
                 ...(useNativeScoringInsets && { backgroundColor: '#d7b55d' }),
                 ...(!useNativeScoringInsets && {
-                    paddingBottom: isLandscape ? 0 : insets.bottom,
+                    paddingBottom: isLandscape || Platform.OS === 'ios' ? 0 : insets.bottom,
                     paddingLeft: insets.left,
                     paddingRight: insets.right,
                 }),
@@ -340,12 +344,16 @@ export default function RoundScoringScreen() {
                     headerShown: false,
                     navigationBarHidden: Platform.OS === 'android',
                     statusBarHidden: useNativeScoringInsets,
-                    statusBarStyle: useNativeScoringInsets ? 'dark' : undefined,
+                    ...(Platform.OS === 'android' && { statusBarStyle: 'light' }),
                 }}
             />
 
             <Pressable 
-                style={[styles.leftArea, isLandscape && styles.landscapeScoringArea]}
+                style={[
+                    styles.leftArea,
+                    isLandscape && styles.landscapeScoringArea,
+                    extendPortraitBackgroundIntoSafeArea && { overflow: 'visible' },
+                ]}
                 onPress={() => {
                     pulseAnimation(leftPulseAnim);
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -357,6 +365,8 @@ export default function RoundScoringScreen() {
                     style={[
                         styles.scoringBackground,
                         { backgroundColor: '#b63030' },
+                        extendPortraitBackgroundIntoSafeArea && { top: -insets.top },
+                        Platform.OS === 'ios' && !isLandscape && { bottom: -insets.bottom },
                         isLandscape && {
                             top: -insets.top,
                             bottom: -insets.bottom,
@@ -489,7 +499,7 @@ export default function RoundScoringScreen() {
                 <Pressable
                     style={isLandscape
                         ? [styles.deductLeft, landscapeEdgeBottomControlStyle, { left: landscapeBottomRowInset }]
-                        : styles.portraitDeductLeft}
+                        : [styles.portraitDeductLeft, { bottom: portraitDeductionBottom }]}
                     onPress={() => {
                         pulseAnimation(leftPulseAnim);
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -531,7 +541,7 @@ export default function RoundScoringScreen() {
                 <Pressable
                     style={isLandscape
                         ? [styles.kdButton, styles.leftkd, landscapeBottomControlStyle, { left: landscapeLeftKnockdownCenter }]
-                        : [styles.portraitKdButton, styles.portraitLeftKd]}
+                        : [styles.portraitKdButton, styles.portraitLeftKd, { bottom: portraitKnockdownBottom }]}
                     onPress={() => {
                         pulseAnimation(leftPulseAnim);
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -564,16 +574,25 @@ export default function RoundScoringScreen() {
                 </Pressable>
             </Pressable>
 
-            <Pressable style={[styles.rightArea, isLandscape && styles.landscapeScoringArea]} onPress={() => {
-                pulseAnimation(rightPulseAnim);
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                handleScorePress('right');
-            }}>
+            <Pressable
+                style={[
+                    styles.rightArea,
+                    isLandscape && styles.landscapeScoringArea,
+                    extendPortraitBackgroundIntoSafeArea && { overflow: 'visible' },
+                ]}
+                onPress={() => {
+                    pulseAnimation(rightPulseAnim);
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    handleScorePress('right');
+                }}
+            >
                 <View
                     pointerEvents="none"
                     style={[
                         styles.scoringBackground,
                         { backgroundColor: '#307Fb6' },
+                        extendPortraitBackgroundIntoSafeArea && { top: -insets.top },
+                        Platform.OS === 'ios' && !isLandscape && { bottom: -insets.bottom },
                         isLandscape && {
                             top: -insets.top,
                             bottom: -insets.bottom,
@@ -707,7 +726,7 @@ export default function RoundScoringScreen() {
                 <Pressable
                     style={isLandscape
                         ? [styles.kdButton, styles.rightkd, landscapeBottomControlStyle, { left: landscapeRightKnockdownCenter }]
-                        : [styles.portraitKdButton, styles.portraitRightKd]}
+                        : [styles.portraitKdButton, styles.portraitRightKd, { bottom: portraitKnockdownBottom }]}
                     onPress={() => {
                         pulseAnimation(rightPulseAnim);
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -743,7 +762,7 @@ export default function RoundScoringScreen() {
                 <Pressable
                     style={isLandscape
                         ? [styles.deductRight, landscapeEdgeBottomControlStyle, { right: landscapeBottomRowInset }]
-                        : styles.portraitDeductRight}
+                        : [styles.portraitDeductRight, { bottom: portraitDeductionBottom }]}
                     onPress={() => {
                         pulseAnimation(rightPulseAnim);
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

@@ -18,7 +18,11 @@
     "android": {
       "softwareKeyboardLayoutMode": "pan",
       "predictiveBackGestureEnabled": false,
-      "package": "com.gaddico.boxingscorecompanion"
+      "package": "com.gaddico.boxingscorecompanion",
+      "blockedPermissions": [
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO"
+      ]
     },
     "web": {
       "output": "static",
