@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import SavedCard from '../components/savedCard';
 import LandscapeSavedCard from '../components/landscapeSavedCard';
 import LandscapeNativeAd from '../components/landscapeNativeAd';
+import PortraitNativeAd from '../components/portraitNativeAd';
 import { LANDSCAPE_CARD_LIST_BOTTOM_PADDING, LANDSCAPE_CARD_MIN_HEIGHT } from '../../constants/landscape-card';
 import { StatusBar } from 'expo-status-bar';
 import { useResponsiveLayout } from '../../hooks/use-responsive-layout';
@@ -19,8 +20,6 @@ import BlueScrollView from '../../components/blue-scroll-view';
 import BlueTextInput from '../../components/blue-text-input';
 import mobileAds, {
   AdEventType,
-  BannerAd,
-  BannerAdSize,
   RewardedAd,
   RewardedAdEventType,
   TestIds,
@@ -120,33 +119,6 @@ type Scorecard = {
   rating?: MatchRating;
   description?: MatchDescription;
 };
-
-function IndexBannerAd({ landscape = false }: { landscape?: boolean }) {
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  return (
-    <View
-      pointerEvents={isLoaded ? 'auto' : 'none'}
-      style={
-        isLoaded
-          ? landscape
-            ? styles.landscapeBannerAdContainer
-            : styles.bannerAdContainer
-          : styles.unloadedBannerAdContainer
-      }
-    >
-      <BannerAd
-        unitId={TestIds.BANNER}
-        size={BannerAdSize.BANNER}
-        onAdLoaded={() => setIsLoaded(true)}
-        onAdFailedToLoad={(error) => {
-          setIsLoaded(false);
-          console.warn('Banner ad failed:', error);
-        }}
-      />
-    </View>
-  );
-}
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -589,12 +561,12 @@ export default function HomeScreen() {
                 onDelete={handleDeleteCard}
               />
               {adsReady && !isPremium &&  filteredCards.length >= 5 && (index + 1) % 5 === 0 && (
-                <IndexBannerAd />
+                <PortraitNativeAd />
               )}
               </React.Fragment>
             ))}
             {adsReady && !isPremium &&  filteredCards.length <= 4 && (
-              <IndexBannerAd />
+              <PortraitNativeAd />
             )}
           </BlueScrollView>
         }
@@ -1382,18 +1354,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 0
   },
-  bannerAdContainer: {
-    alignSelf: 'center',
-    marginTop: 0,
-    marginBottom: 15,
-  },
-  unloadedBannerAdContainer: {
-    height: 50,
-    opacity: 0,
-    overflow: 'hidden',
-    position: 'absolute',
-    width: 320,
-  },
   search: {
     color: "#fff",
     fontWeight: 700,
@@ -1557,12 +1517,6 @@ const styles = StyleSheet.create({
     gap: 13,
     paddingRight: 12,
     paddingBottom: LANDSCAPE_CARD_LIST_BOTTOM_PADDING,
-  },
-  landscapeBannerAdContainer: {
-    width: 320,
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   landscapeSearchBox: {
     position: 'absolute',

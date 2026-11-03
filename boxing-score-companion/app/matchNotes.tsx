@@ -18,7 +18,7 @@ import {
 import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 import { normalizeMatchRating, parseMatchDescription, serializeMatchDescription } from '../types/matchNotes';
 import mobileAds from 'react-native-google-mobile-ads';
-import CollapsibleBannerAd from './components/collapsibleBannerAd';
+import MatchNotesNativeAd from './components/matchNotesNativeAd';
 import { usePremium } from '../contexts/PremiumContext';
 import { useScorecardDraft } from '../hooks/use-scorecard-draft';
 
@@ -52,6 +52,18 @@ const FIGHT_DESCRIPTORS = [
     'Dogfight',
     'Early Stoppage',
     'FOTY',
+    'Body Shot KO',
+    'Walk-Off KO',
+    'Gut Check',
+    "Bad Matchmaking",
+    "Rope-a-Dope",
+    "Bad Weight Cut",
+    "No Respect",
+    "Smothered Work",
+    "Good Matchmaking",
+    'Trash',
+    'POTY',
+    'Personal Favorite',
     'ROTY',
     'Tense',
     'Dramatic',
@@ -65,10 +77,95 @@ const FIGHT_DESCRIPTORS = [
     'Barn Burner',
     'Street Fight',
     'Saved by Bell',
+    'Saved by Ref',
+    'Rounds Flew By',
+    'Ugly Kit',
+    'Nice Gloves',
+    "Reach Difference",
+    'P4P Performance',
+    'Same Size',
+    'Demon',
+    'Accurate Punching',
+    'Styled on',
+    'Stepped on',
+    "Walked Down",
     'Strong Finish',
     'Wild Punches',
     'Boring',
+    'Fraud Check',
+    "Home Cooking",
+    "Gassed Out",
+    "Iron Chin",
+    "Statement Win",
+    "Passing the Torch",
+    "Gift Decision",
+    "Revenge",
+    "Schooled",
+    "Ring Generalship",
+    "Feint Heavy",
+    "Switch Hitting",
+    "Outworked",
+    "Southpaw Trouble",
+    "Glass Chin",
+    "Second Wind",
+    "Quit on Stool",
+    "Doctor Stoppage",
+    "Near Stoppage",
+    "Threw in Towel",
+    "OH MY GOD!",
+    "Need to See More",
+    "Not Convinced",
+    "Made me a Believer",
+    "I was Right",
+    "I was Wrong",
+    "Fell out the Ring",
+    "Water in Ring",
+    "Crowd Booed",
+    "It Only Takes One",
+    "Swing Rounds",
+    "Slip Ruled Down",
+    "Late Stoppage",
+    "Bad Deduction",
+    "Controversial Draw",
+    "Redemption",
+    "Grudge Match",
+    "Career-Defining",
+    "Career-Ending",
+    "Best Win Yet",
+    "Short Notice",
+    "Prospect Tested",
+    "Gatekeeper Test",
+    "Eliminator",
+    "Styles Make Fights",
+    "Last Hurrah",
+    "Rubber Match",
+    "Resurgence",
+    "Momentum Shift",
+    "Good Production",
+    "Hype Job",
+    "Weight Bully",
+    "Cherry Pick",
+    "Tomato Can",
+    "Washed",
+    "Chinny",
+    "No Plan B",
+    "Built Different",
+    "Special",
+    "Stock Went Up",
+    "Stock Went Down",
+    "Crowd Silenced",
+    "Closed Eye",
+    "Bloody Nose",
+    "Busted Lip",
+    "Bled Into Eye",
+    "Trapped on Ropes",
+    "Electric",
+    "Weird Deduction",
+    "Breakout Win",
     'Both Hurt',
+    'Both Down',
+    'KO of the Year',
+    'Punching Bag',
     'Brawl',
     'Brutal',
     'Chess Match',
@@ -80,8 +177,10 @@ const FIGHT_DESCRIPTORS = [
     'Cuts',
     'Dead Crowd',
     'Developmental',
+    "Grew Mid-Fight",
     'Pillow Fists',
     "Snoozer",
+    "Had to See Live",
     "Good Game Plan",
     "Bad Game Plan",
     'Dirty',
@@ -142,6 +241,14 @@ const FIGHT_DESCRIPTORS = [
     'Loud Crowd',
     'Low Blows',
     'Low Volume',
+    'Made Adjustments',
+    'Trading Leather',
+    'Cutman Magic',
+    'Power Jabs',
+    'Exposed',
+    'Survival Mode',
+    'Here for a Check',
+    "Hell of a Fighter",
     'Masterclass',
     'Messy',
     'Methodical',
@@ -154,6 +261,7 @@ const FIGHT_DESCRIPTORS = [
     'Rough',
     'Scrappy',
     'Showboating',
+    'Met Expectations',
     'Showcase',
     'Shutout',
     'Track Meet',
@@ -162,14 +270,24 @@ const FIGHT_DESCRIPTORS = [
     'Slow Start',
     'Slugfest',
     "Stylish",
+    "Bad Form",
+    "Ugly Style",
+    "Stuck in Mud",
     'Swelling',
     'Tactical',
+    'Overconfident',
     'Technical',
-    'Ugly',
+    'Ugly Fight',
+    "Ring Rust",
+    "Liver Shots",
+    "Liver Shot KO",
     'Upset',
+    'Heartbreaking',
+    'War of Attrition',
+    "Veteran Moves",
     'War',
     'Wide Cards',
-];
+].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
 
 const clampAndRound = (value: number) =>
     Math.min(MAX_RATING, Math.max(0, Math.round(value / RATING_STEP) * RATING_STEP));
@@ -565,7 +683,7 @@ export default function MatchNotesScreen() {
                             {FIGHT_DESCRIPTORS.map((descriptor, index) => {
                                 const selected = selectedDescriptors.includes(descriptor);
                                 const blocked = !selected && selectedDescriptors.length >= MAX_DESCRIPTORS;
-                                const shouldShowAd = (index + 1) % 30 === 0;
+                                const shouldShowAd = (index + 1) % 50 === 0;
 
                                 return (
                                     <React.Fragment key={descriptor}>
@@ -600,10 +718,7 @@ export default function MatchNotesScreen() {
                                             </Text>
                                         </Pressable>
                                         {shouldShowAd && adsReady && !isPremium &&  (
-                                            <CollapsibleBannerAd
-                                                containerStyle={styles.descriptorListAd}
-                                                failureMessage={`Match descriptor banner after item ${index + 1} failed:`}
-                                            />
+                                            <MatchNotesNativeAd />
                                         )}
                                     </React.Fragment>
                                 );
@@ -971,12 +1086,6 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         gap: 9,
         paddingBottom: 18,
-    },
-    descriptorListAd: {
-        alignItems: 'center',
-        marginBottom: 4,
-        marginTop: 12,
-        width: '100%',
     },
     descriptorScroll: {
         height: '100%',
