@@ -2,7 +2,7 @@
   "expo": {
     "name": "Boxing Score",
     "slug": "boxing-score-companion",
-    "version": "0.2.0",
+    "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/images/box-sc-icon--optimized.png",
     "scheme": "boxingscorecompanion",
