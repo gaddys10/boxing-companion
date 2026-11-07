@@ -1,3 +1,4 @@
+import { BUTTON_SHADOW } from '../../constants/button-shadow';
 import React, { useEffect } from 'react';
 import { LANDSCAPE_CARD_MIN_HEIGHT, LANDSCAPE_CARD_MIN_WIDTH } from '../../constants/landscape-card';
 import { ActivityIndicator, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
@@ -54,9 +55,15 @@ export default function LandscapeNativeAd() {
 }
 
 const styles = StyleSheet.create({
-    slot: { height: '100%', minHeight: LANDSCAPE_CARD_MIN_HEIGHT },
-    card: {
+    slot: {
         height: '100%',
+        minHeight: LANDSCAPE_CARD_MIN_HEIGHT,
+        overflow: 'visible',
+        paddingBottom: 8,
+    },
+    card: {
+        ...BUTTON_SHADOW,
+        flex: 1,
         backgroundColor: '#fff',
         borderRadius: 15,
         borderWidth: 1,

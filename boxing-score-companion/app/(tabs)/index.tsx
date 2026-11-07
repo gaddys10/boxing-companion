@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import SavedCard from '../components/savedCard';
 import LandscapeSavedCard from '../components/landscapeSavedCard';
 import LandscapeNativeAd from '../components/landscapeNativeAd';
+import PortraitNativeAd from '../components/portraitNativeAd';
 import { LANDSCAPE_CARD_LIST_BOTTOM_PADDING, LANDSCAPE_CARD_MIN_HEIGHT } from '../../constants/landscape-card';
 import { StatusBar } from 'expo-status-bar';
 import { useResponsiveLayout } from '../../hooks/use-responsive-layout';
@@ -19,8 +20,6 @@ import BlueScrollView from '../../components/blue-scroll-view';
 import BlueTextInput from '../../components/blue-text-input';
 import mobileAds, {
   AdEventType,
-  BannerAd,
-  BannerAdSize,
   RewardedAd,
   RewardedAdEventType,
   TestIds,
@@ -121,33 +120,6 @@ type Scorecard = {
   description?: MatchDescription;
 };
 
-function IndexBannerAd({ landscape = false }: { landscape?: boolean }) {
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  return (
-    <View
-      pointerEvents={isLoaded ? 'auto' : 'none'}
-      style={
-        isLoaded
-          ? landscape
-            ? styles.landscapeBannerAdContainer
-            : styles.bannerAdContainer
-          : styles.unloadedBannerAdContainer
-      }
-    >
-      <BannerAd
-        unitId={TestIds.BANNER}
-        size={BannerAdSize.BANNER}
-        onAdLoaded={() => setIsLoaded(true)}
-        onAdFailedToLoad={(error) => {
-          setIsLoaded(false);
-          console.warn('Banner ad failed:', error);
-        }}
-      />
-    </View>
-  );
-}
-
 export default function HomeScreen() {
   const router = useRouter();
   const { savedScorecard } = useLocalSearchParams();
@@ -155,7 +127,7 @@ export default function HomeScreen() {
   const [savedCards, setSavedCards] = useState<Scorecard[]>([]);
   const [searchInput, setSearchInput] = useState('');
   const [hasLoadedSavedCards, setHasLoadedSavedCards] = useState(false);
-  const { isLandscape, insets, contentWidth, contentHeight, sy, scale } = useResponsiveLayout();
+  const { isLandscape, insets, width, contentWidth, contentHeight, height, sy, scale } = useResponsiveLayout();
   const [adsReady, setAdsReady] = useState(false);
   const [settingsModalVisible, setSettingsModalVisible] = useState(false);
   const [settingsModalPage, setSettingsModalPage] = useState<'menu' | 'feedback' | 'about' | 'thanks'>('menu');
@@ -195,9 +167,63 @@ export default function HomeScreen() {
     + portraitTitleHeight
     + (portraitCardsTop - portraitTitleTop - portraitTitleHeight - searchBoxHeight) / 2;
 
+  const isAndroidLandscape = Platform.OS === 'android' && isLandscape;
+  const androidLandscapeSideInset = Math.max(insets.left, 8);
+  const androidLandscapeHeaderWidth = Math.max(
+    0,
+    width - androidLandscapeSideInset - Math.max(insets.right, 8),
+  );
+  const androidLandscapeRightOffset = isAndroidLandscape
+    ? androidLandscapeSideInset
+      - Math.max(insets.right, 8)
+      + androidLandscapeHeaderWidth * 0.0025
+    : undefined;
+  const landscapeLayoutHeight = isAndroidLandscape
+    ? Math.max(0, height - insets.bottom - 16)
+    : contentHeight;
+  const landscapeVerticalGap = Math.min(12, Math.max(4, landscapeLayoutHeight * 0.02));
   const landscapeHeaderHeight = contentHeight * 0.23;
-  const landscapeCardsTop = Math.min(contentHeight * 0.45, Math.max(0, contentHeight - LANDSCAPE_CARD_MIN_HEIGHT - LANDSCAPE_CARD_LIST_BOTTOM_PADDING));
-  const landscapeSearchTop = 6
+  const androidLandscapeSearchBoxHeight = Math.max(
+    35,
+    Math.min(
+      searchBoxHeight,
+      landscapeLayoutHeight
+        - LANDSCAPE_CARD_MIN_HEIGHT
+        - LANDSCAPE_CARD_LIST_BOTTOM_PADDING
+        - 44
+        - landscapeVerticalGap * 3,
+    ),
+  );
+  const androidLandscapeHeaderHeight = Math.max(
+    44,
+    Math.min(
+      landscapeLayoutHeight * 0.18,
+      landscapeLayoutHeight
+        - LANDSCAPE_CARD_MIN_HEIGHT
+        - LANDSCAPE_CARD_LIST_BOTTOM_PADDING
+        - androidLandscapeSearchBoxHeight
+        - landscapeVerticalGap * 3,
+    ),
+  );
+  const landscapeCardsTop = isAndroidLandscape
+    ? Math.max(
+        androidLandscapeHeaderHeight
+          + androidLandscapeSearchBoxHeight
+          + landscapeVerticalGap * 2,
+        Math.min(
+          landscapeLayoutHeight * 0.45,
+          landscapeLayoutHeight
+            - LANDSCAPE_CARD_MIN_HEIGHT
+            - LANDSCAPE_CARD_LIST_BOTTOM_PADDING,
+        ),
+      )
+    : Math.min(contentHeight * 0.45, Math.max(0, contentHeight - LANDSCAPE_CARD_MIN_HEIGHT - LANDSCAPE_CARD_LIST_BOTTOM_PADDING));
+  const landscapeSearchTop = isAndroidLandscape
+    ? androidLandscapeHeaderHeight
+      + (landscapeCardsTop
+        - androidLandscapeHeaderHeight
+        - androidLandscapeSearchBoxHeight) / 2
+    : 6
     + landscapeHeaderHeight
     + (landscapeCardsTop - 10 - landscapeHeaderHeight - searchBoxHeight) / 2;
 
@@ -427,7 +453,7 @@ export default function HomeScreen() {
 
   return (
     <>
-      <StatusBar style="dark" />
+      <StatusBar style="dark" hidden={isAndroidLandscape} />
       <View style={[
         isLandscape ? styles.landscapeContainer : styles.container,
         !isLandscape && {
@@ -440,8 +466,13 @@ export default function HomeScreen() {
         },
       ]}>
         {isLandscape ? (
-          <View style={[styles.landscapeHeader, { height: landscapeHeaderHeight }]}>
-            <View style={styles.landscapeTitleBigContainer}>
+          <View style={[styles.landscapeHeader, { height: isAndroidLandscape ? androidLandscapeHeaderHeight : landscapeHeaderHeight }]}>
+            <View
+              style={[
+                styles.landscapeTitleBigContainer,
+                isAndroidLandscape && { top: 0, height: androidLandscapeHeaderHeight },
+              ]}
+            >
               <View style={styles.landscapeTitleRight}>
                 <Text style={styles.landscapeTitle}>Boxing</Text>
                 <View style={styles.title2Container}><Text style={styles.landscapeTitle2}>Score</Text></View>
@@ -450,7 +481,15 @@ export default function HomeScreen() {
               <Image source={tIcon} style={styles.landscapeIcon} resizeMode="contain" />
               <Text style={styles.versionText}>v0.1</Text>
             </View>
-            <View style={[styles.landscapeSearchBox, { top: landscapeSearchTop, height: searchBoxHeight }]}>
+            <View
+              style={[
+                styles.landscapeSearchBox,
+                {
+                  top: landscapeSearchTop,
+                  height: isAndroidLandscape ? androidLandscapeSearchBoxHeight : searchBoxHeight,
+                },
+              ]}
+            >
               <View style={styles.searchInputBox}>
                 <Ionicons name="search" style={styles.searchIcon} />
                 <TextInput
@@ -465,7 +504,16 @@ export default function HomeScreen() {
                 />
               </View>
             </View>
-            <View style={[styles.landscapeSettingsPositioner, { top: landscapeSearchTop, height: searchBoxHeight }]}>
+            <View
+              style={[
+                styles.landscapeSettingsPositioner,
+                {
+                  top: landscapeSearchTop,
+                  height: isAndroidLandscape ? androidLandscapeSearchBoxHeight : searchBoxHeight,
+                  right: androidLandscapeRightOffset,
+                },
+              ]}
+            >
               <Pressable
                 style={({ pressed }) => [styles.settingsButton, pressed && styles.settingsButtonPressed]}
                 onPress={handleOpenSettings}
@@ -475,7 +523,16 @@ export default function HomeScreen() {
                 <Ionicons name="settings-sharp" size={20} color="#fff" />
               </Pressable>
             </View>
-            <Pressable style={styles.landscapeButton} onPress={handleStartFight}>
+            <Pressable
+              style={[
+                styles.landscapeButton,
+                isAndroidLandscape && {
+                  top: 0,
+                  right: androidLandscapeRightOffset,
+                },
+              ]}
+              onPress={handleStartFight}
+            >
               <FontAwesome6 name="plus" size={14} color="#fff" />
               <Text numberOfLines={1} style={styles.buttonText}>New Scorecard</Text>
             </Pressable>
@@ -520,7 +577,7 @@ export default function HomeScreen() {
           <ScrollView
             style={[styles.landscapeSavedCardContainer, {
               top: landscapeCardsTop,
-              height: contentHeight - landscapeCardsTop,
+              height: landscapeLayoutHeight - landscapeCardsTop,
               left: Math.max(insets.left, 8),
               right: Math.max(insets.right, 8),
             }]}
@@ -589,12 +646,12 @@ export default function HomeScreen() {
                 onDelete={handleDeleteCard}
               />
               {adsReady && !isPremium &&  filteredCards.length >= 5 && (index + 1) % 5 === 0 && (
-                <IndexBannerAd />
+                <PortraitNativeAd />
               )}
               </React.Fragment>
             ))}
             {adsReady && !isPremium &&  filteredCards.length <= 4 && (
-              <IndexBannerAd />
+              <PortraitNativeAd />
             )}
           </BlueScrollView>
         }
@@ -674,14 +731,14 @@ export default function HomeScreen() {
                       <Ionicons name="refresh-outline" size={19} color="#fff" style={styles.settingsButtonIcon} />
                       <Text style={styles.settingsOptionButtonText}>Restore Purchase</Text>
                     </Pressable>
-                    {/* <Pressable
+                    <Pressable
                       accessibilityRole="button"
                       style={[styles.limitModalButton, styles.settingsOptionButton]}
                       onPress={removePremiumForTesting}
                     >
                       <Ionicons name="flask-outline" size={19} color="#fff" style={styles.settingsButtonIcon} />
                       <Text style={styles.settingsOptionButtonText}>Remove Premium (Test)</Text>
-                    </Pressable> */}
+                    </Pressable>
                     <Pressable
                       style={[styles.limitModalButton, styles.settingsOptionButton]}
                       onPress={() => setSettingsModalPage('feedback')}
@@ -1382,18 +1439,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 0
   },
-  bannerAdContainer: {
-    alignSelf: 'center',
-    marginTop: 0,
-    marginBottom: 15,
-  },
-  unloadedBannerAdContainer: {
-    height: 50,
-    opacity: 0,
-    overflow: 'hidden',
-    position: 'absolute',
-    width: 320,
-  },
   search: {
     color: "#fff",
     fontWeight: 700,
@@ -1557,12 +1602,6 @@ const styles = StyleSheet.create({
     gap: 13,
     paddingRight: 12,
     paddingBottom: LANDSCAPE_CARD_LIST_BOTTOM_PADDING,
-  },
-  landscapeBannerAdContainer: {
-    width: 320,
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   landscapeSearchBox: {
     position: 'absolute',

@@ -18,7 +18,7 @@ import {
 import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 import { normalizeMatchRating, parseMatchDescription, serializeMatchDescription } from '../types/matchNotes';
 import mobileAds from 'react-native-google-mobile-ads';
-import CollapsibleBannerAd from './components/collapsibleBannerAd';
+import MatchNotesNativeAd from './components/matchNotesNativeAd';
 import { usePremium } from '../contexts/PremiumContext';
 import { useScorecardDraft } from '../hooks/use-scorecard-draft';
 
@@ -600,10 +600,7 @@ export default function MatchNotesScreen() {
                                             </Text>
                                         </Pressable>
                                         {shouldShowAd && adsReady && !isPremium &&  (
-                                            <CollapsibleBannerAd
-                                                containerStyle={styles.descriptorListAd}
-                                                failureMessage={`Match descriptor banner after item ${index + 1} failed:`}
-                                            />
+                                            <MatchNotesNativeAd />
                                         )}
                                     </React.Fragment>
                                 );
@@ -971,12 +968,6 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         gap: 9,
         paddingBottom: 18,
-    },
-    descriptorListAd: {
-        alignItems: 'center',
-        marginBottom: 4,
-        marginTop: 12,
-        width: '100%',
     },
     descriptorScroll: {
         height: '100%',
