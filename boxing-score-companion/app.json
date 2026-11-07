@@ -24,9 +24,9 @@
         "android.permission.READ_MEDIA_VIDEO"
       ],
       "adaptiveIcon": {
-      "foregroundImage": "./assets/images/droidicon.png",
-      "backgroundColor": "#046BD4"
-  }
+        "foregroundImage": "./assets/images/droidicon.png",
+        "backgroundColor": "#046BD4"
+      }
     },
     "web": {
       "output": "static",
