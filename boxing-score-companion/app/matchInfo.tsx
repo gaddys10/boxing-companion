@@ -27,7 +27,30 @@ export default function MatchInfoScreen() {
             return () => clearTimeout(resetTimer);
         }, [])
     );
-    const { width, isLandscape, insets, sx, sy, horizontalGutter } = useResponsiveLayout();
+    const { width, fontScale, isLandscape, insets, sx, horizontalGutter } = useResponsiveLayout();
+    const getPortraitNameStyle = (name: unknown) => {
+        const words = String(name ?? '').trim().split(/\s+/).filter(Boolean);
+        const lineLengths = [0, 0];
+
+        words.forEach((word) => {
+            const shorterLine = lineLengths[0] <= lineLengths[1] ? 0 : 1;
+            lineLengths[shorterLine] += word.length + (lineLengths[shorterLine] ? 1 : 0);
+        });
+
+        const longestLineLength = Math.max(1, ...lineLengths);
+        const cardContentWidth = width - 25 - 2 * Math.max(0, horizontalGutter - 15);
+        const nameColumnWidth = Math.max(0, cardContentWidth * 0.92 * 0.45);
+        const effectiveFontScale = Math.max(1, fontScale);
+        const fitFontSize = nameColumnWidth / (longestLineLength * 0.58 * effectiveFontScale);
+        const lengthFontSize = (16 * sx * 8) / longestLineLength;
+
+        const fontSize = Math.max(12, Math.min(16, 16 * sx, lengthFontSize, fitFontSize));
+
+        return {
+            fontSize,
+            lineHeight: fontSize * 1.2 * Math.max(1, fontScale),
+        };
+    };
     const routeParams = useLocalSearchParams();
     const { 
         id,
@@ -444,12 +467,20 @@ export default function MatchInfoScreen() {
 
                 {/* fighter name, point, and event container  */}
                 { !isLandscape ?
-                    <View style={[styles.summaryCard, { minHeight: 112 * sy, paddingHorizontal: Math.max(0, horizontalGutter - 15) }]}>
+                    <View style={[styles.summaryCard, { paddingHorizontal: Math.max(0, horizontalGutter - 15) }]}>
                         {/* Fighter 1 vs fighter 2 */}
                         <View style={styles.topDescription}>
-                            <Text numberOfLines={2} style={[styles.fighterText, styles.fighter1Name]}>{fighter1}</Text>
+                            <Text
+                                style={[styles.fighterText, styles.fighter1Name, getPortraitNameStyle(fighter1)]}
+                            >
+                                {fighter1}
+                            </Text>
                             <Text style={[styles.fighterText, styles.vsText]}>vs</Text>
-                            <Text numberOfLines={2} style={[styles.fighterText, styles.fighter2Name]}>{fighter2}</Text>
+                            <Text
+                                style={[styles.fighterText, styles.fighter2Name, getPortraitNameStyle(fighter2)]}
+                            >
+                                {fighter2}
+                            </Text>
                         </View>
 
                         {/* Score 1 .. score 2  */}
@@ -691,6 +722,11 @@ export default function MatchInfoScreen() {
                     </ScrollView>
                     
                 }
+                {isLandscape && (
+                    <Text pointerEvents="none" style={styles.landscapeSwipeInstruction}>
+                        Swipe row for more options
+                    </Text>
+                )}
                 {!isLandscape &&
                     <View style={[styles.buttonContainer, { paddingBottom: Math.max(insets.bottom, 8) }]}>
                         <Text pointerEvents="none" style={styles.swipeInstruction}>
@@ -892,6 +928,18 @@ const styles = StyleSheet.create({
         color: '#333',
         opacity: 0.4,
     },
+    landscapeSwipeInstruction: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        fontSize: 10,
+        lineHeight: 16,
+        fontWeight: '400',
+        textAlign: 'center',
+        color: '#333',
+        opacity: 0.4,
+    },
     headerText: {
         textAlign: 'center',
         color: '#333',
@@ -958,7 +1006,6 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: 'rgba(200, 200, 200, 0.7)',
         paddingVertical: 16,
-        height: '15%',
         marginBottom: 18,
         marginRight: '1%',
         width: '100%',

@@ -10,10 +10,11 @@ import {
     TestIds,
     useNativeAd,
 } from 'react-native-google-mobile-ads';
+import { adUnits } from '../../constants/adUnits';
 
 export default function LandscapeNativeAd() {
     const { width } = useWindowDimensions();
-    const { nativeAd, error, retry } = useNativeAd({ adUnitId: TestIds.NATIVE });
+    const { nativeAd, error, retry } = useNativeAd({ adUnitId: adUnits.savedCardsLandscape });
 
     useEffect(() => {
         if (error) console.warn('Landscape native ad failed:', error);

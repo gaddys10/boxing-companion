@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
+import { adUnits } from '../../constants/adUnits';
 
 type CollapsibleBannerAdProps = {
     containerStyle?: StyleProp<ViewStyle>;
@@ -21,7 +22,7 @@ export default function CollapsibleBannerAd({
             style={isLoaded ? [styles.loadedContainer, containerStyle] : styles.unloadedContainer}
         >
             <BannerAd
-                unitId={TestIds.BANNER}
+                unitId={adUnits.banner}
                 size={BannerAdSize.BANNER}
                 onAdLoaded={() => {
                     setIsLoaded(true);

@@ -8,12 +8,13 @@ import {
     TestIds,
     useNativeAd,
 } from 'react-native-google-mobile-ads';
+import { adUnits } from '../../constants/adUnits';
 
 const NATIVE_AD_CARD_HEIGHT = 136;
 const NATIVE_AD_MEDIA_SIZE = 120;
 
 export default function PortraitNativeAd() {
-    const { nativeAd, error, retry } = useNativeAd({ adUnitId: TestIds.NATIVE });
+    const { nativeAd, error, retry } = useNativeAd({ adUnitId: adUnits.savedCardsPortrait });
 
     useEffect(() => {
         if (error) console.warn('Portrait native ad failed:', error);
