@@ -25,6 +25,7 @@ import mobileAds, {
   TestIds,
 } from 'react-native-google-mobile-ads';
 import {usePremium} from '../../contexts/PremiumContext';
+import { adUnits } from '../../constants/adUnits';
 
 const tIcon = require('../../assets/images/flatwhitet.png');
 
@@ -299,7 +300,7 @@ export default function HomeScreen() {
     try {
       await mobileAds().initialize();
 
-      const rewardedAd = RewardedAd.createForAdRequest(TestIds.REWARDED);
+      const rewardedAd = RewardedAd.createForAdRequest(adUnits.rewarded, {});
       let rewardEarned = false;
       const unsubscribers: (() => void)[] = [];
 

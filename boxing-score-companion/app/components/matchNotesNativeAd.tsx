@@ -8,12 +8,13 @@ import {
     TestIds,
     useNativeAd,
 } from 'react-native-google-mobile-ads';
+import { adUnits } from '../../constants/adUnits';
 
 const AD_HEIGHT = 144;
 const MEDIA_SIZE = 126;
 
 export default function MatchNotesNativeAd() {
-    const { nativeAd, error, retry } = useNativeAd({ adUnitId: TestIds.NATIVE });
+    const { nativeAd, error, retry } = useNativeAd({ adUnitId: adUnits.matchNotesNative });
 
     useEffect(() => {
         if (error) console.warn('Match notes native ad failed:', error);
