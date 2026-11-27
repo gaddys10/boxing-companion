@@ -1243,7 +1243,7 @@ const styles = StyleSheet.create({
     metadataRail: {
         width: 44,
         alignItems: 'center',
-        justifyContent: 'space-between',
+        justifyContent: 'space-evenly',
         borderRightWidth: 1,
         borderRightColor: '#C7D3DC',
         paddingVertical: 5,
