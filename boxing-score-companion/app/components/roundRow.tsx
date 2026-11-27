@@ -392,6 +392,12 @@ export default function RoundRow({
                     >
                         <ModalTitleHeader
                             title={scoringMethodModalTitle}
+                            style={
+                                !quickScoringVisible
+                                    ? styles.scoringMethodHeader
+                                    : undefined
+                            }
+                            closeButtonStyle={!quickScoringVisible ? styles.scoringMethodCloseButton : undefined}
                             titleStyle={scoringMethodModalTitleStyle}
                             accessibilityLabel="Close scoring dialog"
                             onClose={closeScoringModal}
@@ -629,6 +635,8 @@ export default function RoundRow({
                     <View style={styles.stoppageModalCard}>
                         <ModalTitleHeader
                             title="Mark Stoppage"
+                            style={{ marginTop: 0 }}
+                            closeButtonStyle={{ top: -16 }}
                             titleStyle={styles.stoppageModalTitle}
                             accessibilityLabel="Close stoppage dialog"
                             onClose={cancelStoppageChanges}
@@ -1048,6 +1056,12 @@ const styles = StyleSheet.create({
     },
     scoringMethodTitle: {
         marginBottom: 16,
+    },
+    scoringMethodHeader: {
+        marginTop: 0,
+    },
+    scoringMethodCloseButton: {
+        top: -16,
     },
     scoringMethodDescription: {
         marginBottom: 12,

@@ -691,6 +691,7 @@ export default function HomeScreen() {
                     <ModalCloseButton
                       contentSpacer={false}
                       accessibilityLabel="Close settings"
+                      style={styles.settingsHeaderCloseButton}
                       onPress={() => {
                         setSettingsModalVisible(false);
                         setSettingsModalPage('menu');
@@ -784,6 +785,7 @@ export default function HomeScreen() {
                     <ModalCloseButton
                       contentSpacer={false}
                       accessibilityLabel="Close settings"
+                      style={styles.settingsHeaderCloseButton}
                       disabled={isSendingFeedback}
                       onPress={() => {
                         if (isSendingFeedback) return;
@@ -840,6 +842,7 @@ export default function HomeScreen() {
                     <ModalCloseButton
                       contentSpacer={false}
                       accessibilityLabel="Close settings"
+                      style={styles.settingsHeaderCloseButton}
                       onPress={() => {
                         setSettingsModalVisible(false);
                         setSettingsModalPage('menu');
@@ -908,11 +911,11 @@ export default function HomeScreen() {
                   </BlueScrollView>
 
                   <Pressable
-                    style={[styles.limitModalButton, styles.limitBackButton, styles.settingsSubpageActionButton]}
+                    style={[styles.limitModalButton, styles.limitBackButton, styles.settingsSubpageActionButton, styles.aboutBackButton]}
                     onPress={() => setSettingsModalPage('menu')}
                   >
-                    <Ionicons name="chevron-back" size={18} color="#307FB6" />
-                    <Text style={styles.limitBackButtonText}>Back</Text>
+                    <Ionicons name="chevron-back" size={18} color="#fff" />
+                    <Text style={styles.limitPrimaryButtonText}>Back</Text>
                   </Pressable>
                 </>
               ) : settingsModalPage === 'thanks' ? (
@@ -921,6 +924,7 @@ export default function HomeScreen() {
                     <ModalCloseButton
                       contentSpacer={false}
                       accessibilityLabel="Close settings"
+                      style={styles.settingsHeaderCloseButton}
                       onPress={() => {
                         setSettingsModalVisible(false);
                         setSettingsModalPage('menu');
@@ -991,11 +995,11 @@ export default function HomeScreen() {
                     )}
                   </BlueScrollView>
                   <Pressable
-                    style={[styles.limitModalButton, styles.limitBackButton, styles.settingsSubpageActionButton]}
+                    style={[styles.limitModalButton, styles.limitBackButton, styles.settingsSubpageActionButton, styles.aboutBackButton]}
                     onPress={() => setSettingsModalPage('menu')}
                   >
-                    <Ionicons name="chevron-back" size={18} color="#307FB6" />
-                    <Text style={styles.limitBackButtonText}>Back</Text>
+                    <Ionicons name="chevron-back" size={18} color="#fff" />
+                    <Text style={styles.limitPrimaryButtonText}>Back</Text>
                   </Pressable>
                 </>
               ) : null}
@@ -1227,9 +1231,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 10,
     marginHorizontal: -20,
-    marginTop: -20,
+    marginTop: 0,
     minHeight: 32,
     position: 'relative',
+  },
+  settingsHeaderCloseButton: {
+    top: -16,
   },
   settingsModalHeaderTitle: {
     marginBottom: 0,
@@ -1262,6 +1269,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderColor: '#B6C6D1',
     borderWidth: 1,
+  },
+  aboutBackButton: {
+    backgroundColor: '#D32F2F',
+    borderColor: '#D32F2F',
   },
   limitRowButton: {
     flex: 1,

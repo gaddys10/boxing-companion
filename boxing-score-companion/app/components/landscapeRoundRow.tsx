@@ -459,7 +459,8 @@ export default function LandscapeRoundRow({
                         {orientationChoiceVisible ? (
                             <ModalTitleHeader
                                 title="Choose Orientation"
-                                style={{ marginBottom: 24 }}
+                                style={{ marginTop: 0, marginBottom: 24 }}
+                                closeButtonStyle={{ top: -16 }}
                                 titleStyle={styles.landscapeQuickModalTitle}
                                 accessibilityLabel="Close scoring dialog"
                                 onClose={closeScoringModal}
@@ -468,7 +469,8 @@ export default function LandscapeRoundRow({
                         ) : !quickScoringVisible ? (
                             <ModalTitleHeader
                                 title="Select Scoring Method"
-                                style={{ marginBottom: 28 }}
+                                style={{ marginTop: 0, marginBottom: 28 }}
+                                closeButtonStyle={{ top: -16 }}
                                 titleStyle={styles.landscapeQuickModalTitle}
                                 accessibilityLabel="Close scoring dialog"
                                 onClose={closeScoringModal}
@@ -673,7 +675,8 @@ export default function LandscapeRoundRow({
                         <View style={styles.stoppageModalContent}>
                             <ModalTitleHeader
                                 title="Mark Stoppage"
-                                style={{ marginBottom: 4 }}
+                                style={{ marginTop: 0, marginBottom: 4 }}
+                                closeButtonStyle={{ top: -16 }}
                                 titleStyle={styles.stoppageModalTitle}
                                 accessibilityLabel="Close stoppage dialog"
                                 onClose={cancelStoppageChanges}
