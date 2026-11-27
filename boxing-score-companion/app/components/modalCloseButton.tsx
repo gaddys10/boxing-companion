@@ -7,6 +7,7 @@ type ModalCloseButtonProps = {
     accessibilityLabel?: string;
     disabled?: boolean;
     contentSpacer?: boolean;
+    style?: StyleProp<ViewStyle>;
 };
 
 export default function ModalCloseButton({
@@ -14,6 +15,7 @@ export default function ModalCloseButton({
     accessibilityLabel = 'Close modal',
     disabled = false,
     contentSpacer = true,
+    style,
 }: ModalCloseButtonProps) {
     return (
         <>
@@ -23,9 +25,9 @@ export default function ModalCloseButton({
                 disabled={disabled}
                 hitSlop={8}
                 onPress={onPress}
-                style={({ pressed }) => [styles.button, pressed && !disabled && styles.pressed, disabled && styles.disabled]}
+                style={({ pressed }) => [styles.button, style, pressed && !disabled && styles.pressed, disabled && styles.disabled]}
             >
-                <Ionicons name="close" size={18} color={disabled ? '#87939A' : '#46545D'} />
+                <Ionicons name="close" size={21} color={disabled ? '#87939A' : '#46545D'} />
             </Pressable>
             {contentSpacer && <View pointerEvents="none" style={styles.contentSpacer} />}
         </>
@@ -36,6 +38,7 @@ type ModalTitleHeaderProps = {
     title: string;
     titleStyle?: StyleProp<TextStyle>;
     style?: StyleProp<ViewStyle>;
+    closeButtonStyle?: StyleProp<ViewStyle>;
     onClose: () => void;
     accessibilityLabel?: string;
     disabled?: boolean;
@@ -46,6 +49,7 @@ export function ModalTitleHeader({
     title,
     titleStyle,
     style,
+    closeButtonStyle,
     onClose,
     accessibilityLabel = 'Close modal',
     disabled = false,
@@ -58,6 +62,7 @@ export function ModalTitleHeader({
                 accessibilityLabel={accessibilityLabel}
                 disabled={disabled}
                 contentSpacer={false}
+                style={closeButtonStyle}
             />
             <Text numberOfLines={2} style={[titleStyle, styles.titleRowText]}>
                 {title}
