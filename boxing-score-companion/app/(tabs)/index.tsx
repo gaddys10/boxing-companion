@@ -480,7 +480,7 @@ export default function HomeScreen() {
                 <Text style={styles.landscapeTitle3}>Companion</Text>
               </View>
               <Image source={tIcon} style={styles.landscapeIcon} resizeMode="contain" />
-              <Text style={styles.versionText}>v0.1</Text>
+              <Text style={styles.versionText}>v1.0</Text>
             </View>
             <View
               style={[
@@ -547,7 +547,7 @@ export default function HomeScreen() {
                 <View style={styles.title2Container}><Text style={styles.title2}>Score</Text></View>
                 <Text style={styles.title3}>Companion</Text>
               </View>
-              <Text style={styles.versionText}>v0.1</Text>
+              <Text style={styles.versionText}>v1.0</Text>
 
             </View>
             <View style={[styles.searchBox, {
