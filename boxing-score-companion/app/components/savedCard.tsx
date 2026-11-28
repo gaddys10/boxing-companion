@@ -154,7 +154,7 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
           <View style={styles.savedCardInfoRows}>
             <View style={styles.savedCardInfoRow}>
               <View style={styles.f1NameBox}>
-                <Text style={styles.fighter1}>{fighter1}</Text>
+                <Text numberOfLines={2} ellipsizeMode="tail" style={styles.fighter1}>{fighter1}</Text>
               </View>
               <View style={styles.scoreBox1}>
                 <Text style={[styles.f1Score, fighter1Score === 'NC' && styles.noContestScore]}>{displayedFighter1Score}</Text>
@@ -167,7 +167,7 @@ export default function SavedCard({id, fighter1, fighter2, fighter1Score, fighte
 
             <View style={styles.savedCardInfoRow}>
               <View style={styles.f2NameBox}>
-                <Text style={styles.fighter2}>{fighter2}</Text>
+                <Text numberOfLines={2} ellipsizeMode="tail" style={styles.fighter2}>{fighter2}</Text>
               </View>
               <View style={styles.scoreBox2}>
                 <Text style={[styles.f2Score, fighter2Score === 'NC' && styles.noContestScore]}>{displayedFighter2Score}</Text>
@@ -354,10 +354,16 @@ const styles = StyleSheet.create({
   fighter1: {
     color: '#fff',
     fontSize: 14,
+    width: '100%',
+    minWidth: 0,
+    flexShrink: 1,
   },
   fighter2: {
     color: '#fff',
     fontSize: 14,
+    width: '100%',
+    minWidth: 0,
+    flexShrink: 1,
   },
   f1Score: {
     color: '#D32f2f',
