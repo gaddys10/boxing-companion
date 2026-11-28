@@ -681,7 +681,14 @@ export default function ExportCardScreen() {
 
                     
                     <View style={styles.matchupHeader}>
-                        <View style={[styles.metadataRail, smallScreenHeader && styles.smallMetadataRail, { width: railWidth }]}>
+                        <View
+                            style={[
+                                styles.metadataRail,
+                                compactLayout && styles.compactMetadataRail,
+                                smallScreenHeader && styles.smallMetadataRail,
+                                { width: railWidth },
+                            ]}
+                        >
                             <View style={styles.metadataRailGroup}>
                                 <View
                                     style={[
@@ -706,7 +713,7 @@ export default function ExportCardScreen() {
                                 <View style={styles.metadataRailGroup}>
                                     {weightClassAbbrev && (
                                         <View style={[styles.headerPill, styles.metadataRailPill, styles.weightClassPill, smallScreenHeader && styles.smallHeaderPill]}>
-                                            <Text style={styles.headerPillText}>{weightClassAbbrev}</Text>
+                                            <Text style={[styles.headerPillText, smallScreenHeader && styles.smallHeaderPillText]}>{weightClassAbbrev}</Text>
                                         </View>
                                     )}
                                     {weightValue !== '0' && weightValue !== 'undefined' && weightValue !== 'null' && (
@@ -719,7 +726,9 @@ export default function ExportCardScreen() {
                             )}
 
                             {matchDateLabel && (
-                                <Text style={[styles.metadataRailDate, smallScreenHeader && styles.smallMetadataDate]}>{matchDateLabel}</Text>
+                                <View style={styles.metadataRailGroup}>
+                                    <Text style={[styles.metadataRailDate, smallScreenHeader && styles.smallMetadataDate]}>{matchDateLabel}</Text>
+                                </View>
                             )}
                         </View>
 
@@ -1243,26 +1252,35 @@ const styles = StyleSheet.create({
     metadataRail: {
         width: 44,
         alignItems: 'center',
-        justifyContent: 'space-evenly',
+        alignSelf: 'stretch',
+        justifyContent: 'space-between',
+        gap: 5,
         borderRightWidth: 1,
         borderRightColor: '#C7D3DC',
-        paddingVertical: 5,
+        paddingVertical: 0,
+        paddingBottom: 11,
         paddingRight: 2,
         // marginRight: 8
     },
+    compactMetadataRail: {
+        paddingBottom: 7,
+    },
     smallMetadataRail: {
-        paddingVertical: 1,
+        gap: 3,
         marginRight: 3,
     },
     smallMetadataText: {
-        lineHeight: 10,
+        fontSize: 8,
+        lineHeight: 9,
         includeFontPadding: false,
     },
     metadataRailGroup: {
         alignItems: 'center',
+        alignSelf: 'stretch',
+        gap: 2,
     },
     metadataRailPill: {
-        marginBottom: 2,
+        marginBottom: 0,
     },
     metadataRailText: {
         color: TEXT,
@@ -1282,19 +1300,22 @@ const styles = StyleSheet.create({
         color: TEXT,
         fontSize: 9,
         lineHeight: 11,
+        includeFontPadding: false,
         textAlign: 'center',
         fontWeight: '700',
     },
     metadataRailDate: {
         color: TEXT,
         fontSize: 9.5,
-        lineHeight: 9,
+        lineHeight: 11,
+        includeFontPadding: false,
         fontWeight: 500,
         textAlign: 'center',
+        alignSelf: 'stretch',
     },
     smallMetadataDate: {
-        fontSize: 9,
-        lineHeight: 10,
+        fontSize: 8,
+        lineHeight: 9,
         includeFontPadding: false,
     },
     headerPill: {
@@ -1325,8 +1346,11 @@ const styles = StyleSheet.create({
         fontWeight: '800',
     },
     smallHeaderPill: {
-        minHeight: 18,
-        marginBottom: 1,
+        minHeight: 16,
+        marginBottom: 0,
+    },
+    smallHeaderPillText: {
+        fontSize: 8,
     },
     compactMatchupRow: {
         marginBottom: -2,
